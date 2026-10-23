@@ -1,0 +1,122 @@
+[
+  {
+    "flag": "🇸🇴",
+    "capital": "Mogadishu",
+    "correct": "Somalia",
+    "options": ["Somalia", "Kenya", "Ethiopia", "Djibouti"]
+  },
+  {
+    "flag": "🇮🇹",
+    "capital": "Rome",
+    "correct": "Italy",
+    "options": ["France", "Italy", "Spain", "Germany"]
+  },
+  {
+    "flag": "🇯🇵",
+    "capital": "Tokyo",
+    "correct": "Japan",
+    "options": ["China", "Japan", "South Korea", "Vietnam"]
+  },
+  {
+    "flag": "🇺🇸",
+    "capital": "Washington, D.C.",
+    "correct": "United States",
+    "options": ["Canada", "United States", "United Kingdom", "Australia"]
+  },
+  {
+    "flag": "🇬🇧",
+    "capital": "London",
+    "correct": "United Kingdom",
+    "options": ["Ireland", "United Kingdom", "Germany", "France"]
+  },
+  {
+    "flag": "🇫🇷",
+    "capital": "Paris",
+    "correct": "France",
+    "options": ["Belgium", "France", "Spain", "Italy"]
+  },
+  {
+    "flag": "🇸🇦",
+    "capital": "Riyadh",
+    "correct": "Saudi Arabia",
+    "options": ["Qatar", "Saudi Arabia", "UAE", "Oman"]
+  },
+  {
+    "flag": "🇹🇷",
+    "capital": "Ankara",
+    "correct": "Turkey",
+    "options": ["Greece", "Turkey", "Iran", "Egypt"]
+  },
+  {
+    "flag": "🇰🇪",
+    "capital": "Nairobi",
+    "correct": "Kenya",
+    "options": ["Tanzania", "Kenya", "Uganda", "Rwanda"]
+  },
+  {
+    "flag": "🇪🇬",
+    "capital": "Cairo",
+    "correct": "Egypt",
+    "options": ["Sudan", "Egypt", "Libya", "Jordan"]
+  },
+  {
+    "flag": "🇩🇪",
+    "capital": "Berlin",
+    "correct": "Germany",
+    "options": ["Austria", "Germany", "Poland", "Netherlands"]
+  },
+  {
+    "flag": "🇧🇷",
+    "capital": "Brasilia",
+    "correct": "Brazil",
+    "options": ["Argentina", "Brazil", "Colombia", "Peru"]
+  },
+  {
+    "flag": "🇮🇳",
+    "capital": "New Delhi",
+    "correct": "India",
+    "options": ["Pakistan", "India", "Bangladesh", "Nepal"]
+  },
+  {
+    "flag": "🇨🇦",
+    "capital": "Ottawa",
+    "correct": "Canada",
+    "options": ["United States", "Canada", "Greenland", "Iceland"]
+  },
+  {
+    "flag": "🇦🇺",
+    "capital": "Canberra",
+    "correct": "Australia",
+    "options": ["New Zealand", "Australia", "Fiji", "Papua New Guinea"]
+  },
+  {
+    "flag": "🇿🇦",
+    "capital": "Pretoria",
+    "correct": "South Africa",
+    "options": ["Namibia", "South Africa", "Botswana", "Zimbabwe"]
+  },
+  {
+    "flag": "🇪🇸",
+    "capital": "Madrid",
+    "correct": "Spain",
+    "options": ["Portugal", "Spain", "France", "Italy"]
+  },
+  {
+    "flag": "🇷🇺",
+    "capital": "Moscow",
+    "correct": "Russia",
+    "options": ["Ukraine", "Russia", "Belarus", "Kazakhstan"]
+  },
+  {
+    "flag": "🇲🇦",
+    "capital": "Rabat",
+    "correct": "Morocco",
+    "options": ["Algeria", "Morocco", "Tunisia", "Spain"]
+  },
+  {
+    "flag": "🇶🇦",
+    "capital": "Doha",
+    "correct": "Qatar",
+    "options": ["Bahrain", "Qatar", "Saudi Arabia", "UAE"]
+  }
+]

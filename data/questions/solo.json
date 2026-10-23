@@ -1,0 +1,502 @@
+[
+  {
+    "question": "Waa maxay caasimadda Gobolka Bari?",
+    "options": ["Qardho", "Caluula", "Boosaaso", "Bandarbeyla"],
+    "correct": "Boosaaso"
+  },
+  {
+    "question": "Webiga Jubba wuxuu ku shubmaa Okeyaanka Hindiya iyadoo la maro magaalada Goobweyn.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay xubinta jirka aadanaha ee dhiigga pambaysa?",
+    "options": ["Beerka", "Wadnaha", "Kelyaha", "Sambabada"],
+    "correct": "Wadnaha"
+  },
+  {
+    "question": "Surat Al-Fatiha waa suradda ugu horraysa ee Qur'aanka Kariimka ah.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay meeraha ugu weyn Nidaamka Qorraxda?",
+    "options": ["Dhulka", "Mushtari (Jupiter)", "Zuhal (Saturn)", "Merikh (Mars)"],
+    "correct": "Mushtari (Jupiter)"
+  },
+  {
+    "question": "Waa maxay unugga cabbirka xoogga (Force) ee fiisigiska?",
+    "options": ["Joule", "Watt", "Newton", "Volt"],
+    "correct": "Newton"
+  },
+  {
+    "question": "Aaladda 'Router' waxaa loo kullan ka qeybinta shabakadda Internet-ka.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay maahmaahda Soomaaliyeed ee dhameystirta: 'Aqoon la'aani waa...'",
+    "options": ["Iftiin la'aan", "Orod la'aan", "Cunto la'aan", "Olol la'aan"],
+    "correct": "Iftiin la'aan"
+  },
+  {
+    "question": "Kismaayo waxay ku taal Gobolka Jubbada Hoose.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay xagasha guud ee saddex-xagalka (Triangle) marka la isku daro?",
+    "options": ["90 digrii", "180 digrii", "270 digrii", "360 digrii"],
+    "correct": "180 digrii"
+  },
+  {
+    "question": "Astaanta kiimikada ee birta (Iron) waa Fe.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay magaalada caanka ku ah ganacsiga ee ku taal Gobolka Togdheer?",
+    "options": ["Burco", "Sheikh", "Borama", "Ceynabo"],
+    "correct": "Burco"
+  },
+  {
+    "question": "Sanadkee ayay Jabuuti qaadatay xorriyadda?",
+    "options": ["1960", "1977", "1980", "1991"],
+    "correct": "1977"
+  },
+  {
+    "question": "Shinnidu waxay soo saartaa malabka.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay aaladda loo isticmaalo cabbirka heerka kulka (Temperature)?",
+    "options": ["Barometer", "Thermometer", "Speedometer", "Altimeter"],
+    "correct": "Thermometer"
+  },
+  {
+    "question": "Nabayga Muxammad (S.A.W) wuxuu ku dhashay magaalada Makkah.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay barafka marka uu tanis kuleyl noqdo?",
+    "options": ["Liiq", "Biya", "Uf", "Uf-baraf"],
+    "correct": "Biya"
+  },
+  {
+    "question": "Waa maxay luqadda ugu badan ee lagu hadlo dunida guud ahaan?",
+    "options": ["Ingiriis", "Carabi", "Mandarin (Shiinaha)", "Isbaanish"],
+    "correct": "Mandarin (Shiinaha)"
+  },
+  {
+    "question": "Soomaaliya waxay leedahay xeebta ugu dheer qaaradda Afrika.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay qiimaha Pi (π) ee xisaabta loogu isticmaalo ilaa 2 jajab oo tobanle?",
+    "options": ["2.14", "3.14", "4.14", "5.14"],
+    "correct": "3.14"
+  },
+  {
+    "question": "Waa maxay qaaradda ugu yar dunida marka la eego baaxadda dhulka?",
+    "options": ["Oshiyaaniya / Awstaraaliya", "Arooppa", "Ameerika Barafka (Antarctica)", "Aasiya"],
+    "correct": "Oshiyaaniya / Awstaraaliya"
+  },
+  {
+    "question": "Dhirtu waxay habeenkii soo saartaa Kaarboon Dayoksayd (CO2).",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay caasimadda dalka Faransiiska?",
+    "options": ["London", "Berlin", "Paris", "Madrid"],
+    "correct": "Paris"
+  },
+  {
+    "question": "Waa maxay nooca noolaha uu yahay Libaaxu?",
+    "options": ["Dhir-daaqe", "Cunaha Hเนื้อ/Carnivore", "Sami-daaqe", "Midna ma aha"],
+    "correct": "Cunaha Hเนื้อ/Carnivore"
+  },
+  {
+    "question": "Qur'aanka Kariimka ah wuxuu leeyahay 114 Suradood.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay aaladda loo isticmaalo qorista kombuyuutarka?",
+    "options": ["Mouse", "Monitor", "Keyboard", "Printer"],
+    "correct": "Keyboard"
+  },
+  {
+    "question": "Magaalada Garowe waa caasimadda maamul goboleedka Puntland.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay natiijada 12 x 12?",
+    "options": ["120", "144", "150", "164"],
+    "correct": "144"
+  },
+  {
+    "question": "Waa maxay xayawaanka loogu yeero 'Markabka Saxaraha'?",
+    "options": ["Faras", "Geel", "Eey", "Libaax"],
+    "correct": "Geel"
+  },
+  {
+    "question": "Software-ka Microsoft Word waxaa loo isticmaalaa maaraynta waraaqaha iyo qoraallada.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay caasimadda dalka Ingiriiska (UK)?",
+    "options": ["Manchester", "London", "Birmingham", "Liverpool"],
+    "correct": "London"
+  },
+  {
+    "question": "Tirada rakacooyinka Salaadda Subax waa 4 rakaco oo fard ah.",
+    "type": "tf",
+    "correct": false
+  },
+  {
+    "question": "Waa maxay guddiga maamula kubadda cagta dunida ee marka loo soo gaabiyo la yiraahdo FIFA?",
+    "options": ["FIFA", "NBA", "IOC", "UEFA"],
+    "correct": "FIFA"
+  },
+  {
+    "question": "Magaalada Hargeysa waa caasimadda Gobolka Maroodijeex.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay maaddada ugu badan ee ku jirta jawiga Dhulka (Atmosphere)?",
+    "options": ["Ogsijiin", "Naytrojiin", "Kaarboon Dayoksayd", "Hidorojiin"],
+    "correct": "Naytrojiin"
+  },
+  {
+    "question": "Soomaalidu waxay u taqaanaa Maahmaahda 'Aduunyo waa sheeko iyo...'",
+    "options": ["Shaqo", "Shaah", "Shaqo-joog", "Shaqo-la'aan"],
+    "correct": "Shaah"
+  },
+  {
+    "question": "Magaalada Marka waa caasimadda Gobolka Shabeellaha Hoose.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay aaladda lagaga hortago cudurrada ee la siiyo ubadka si xasaanad loogu buuxiyo?",
+    "options": ["Tallaal (Vaccine)", "Vitamins", "Kiniini", "Cirbad xanuun dhabar"],
+    "correct": "Tallaal (Vaccine)"
+  },
+  {
+    "question": "Tirada koowaad (Prime number) waa tiro loo qaybin karo oo keliya 1 iyo isu keeda.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay bisha laba iyo tobnaad ee kalandarka Hijriga?",
+    "options": ["Ramadaan", "Shawwaal", "Dhul-Qacda", "Dhul-Xijjah"],
+    "correct": "Dhul-Xijjah"
+  },
+  {
+    "question": "Aaladda 'Hard Drive' waxaa loo isticmaalaa kaydinta xogta muddo dheer.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay magaca xiddigta ugu dhow Dhulka?",
+    "options": ["Sirius", "Qorraxda", "Proxima Centauri", "North Star"],
+    "correct": "Qorraxda"
+  },
+  {
+    "question": "Astaanta kimikada ee Dahabka waa Au.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay caasimadda dalka Turkiga?",
+    "options": ["Istanbul", "Ankara", "Izmir", "Bursa"],
+    "correct": "Ankara"
+  },
+  {
+    "question": "Aaladda Bluetooth waxay ku shaqaysaa masaafo gaaban oo bilaa fiilo ah.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay tirada guud ee gobolladii hore ee Soomaaliya ka koobnayd?",
+    "options": ["12", "15", "18", "21"],
+    "correct": "18"
+  },
+  {
+    "question": "Awrku waa geela labka ah.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay cudurka uu keeno fayraska HIV?",
+    "options": ["Koleera", "Aids", "Tuberculosis", "Malaariya"],
+    "correct": "Aids"
+  },
+  {
+    "question": "Waddanka Shiinaha waa dalka ugu dadka badan qaaradda Aasiya.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay xaddiga xawaaraha iftiinka adduunka vacum-ka dhexdiisa?",
+    "options": ["300,000 km/s", "150,000 km/s", "500,000 km/s", "1,000,000 km/s"],
+    "correct": "300,000 km/s"
+  },
+  {
+    "question": "Waa maxay buurta ugu dheer dunida?",
+    "options": ["Mount Kilimanjaro", "Mount Everest", "Mount K2", "Mount Kenya"],
+    "correct": "Mount Everest"
+  },
+  {
+    "question": "Doollarka Mareykanka waa lacagta rasmiga ah ee dalka Jabuuti.",
+    "type": "tf",
+    "correct": false
+  },
+  {
+    "question": "Waa maxay unugga lagu cabbiro awoodda korontada?",
+    "options": ["Volt", "Ampere", "Watt", "Ohm"],
+    "correct": "Watt"
+  },
+  {
+    "question": "Qorraxdu waxay ka kooban tahay inta badan gaaska Hidorojiin iyo Hiliyamm.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay magaalada ugu weyn Gobolka Gedo?",
+    "options": ["Luuq", "Garbahaarey", "Baardheere", "BeledXaawo"],
+    "correct": "Garbahaarey"
+  },
+  {
+    "question": "Kumbuyuutarku wuxuu leeyahay hardware iyo software.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay maahmaahda dhameystirta: 'Talo walaal oo lagu diado...'",
+    "options": ["Waa laga bartaa", "Turunturo ayaa lagu dhashaa", "Sinta ayaa lagu jabshaa", "Waxba ma tarto"],
+    "correct": "Sinta ayaa lagu jabshaa"
+  },
+  {
+    "question": "Sayniska barta waxa ku saabsan nolosha noolaha waxaa la yiraahdaa Biology.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay magaalo-madaxda dalka Masar?",
+    "options": ["Alexandria", "Cairo (Qaahira)", "Giza", "Luxor"],
+    "correct": "Cairo (Qaahira)"
+  },
+  {
+    "question": "Wadnaha aadanaha wuxuu ka kooban yahay 4 qol (chambers).",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay nooca xoolaha ee ugu horreeya ee Soomaalida qiimaha ugu weyn u leh?",
+    "options": ["Lao", "Geel", "Adhi", "Faras"],
+    "correct": "Geel"
+  },
+  {
+    "question": "Okeyaanka Pacific waa okeyaanka ugu weyn dunida.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay maaddada cagaaran ee ku jirta dhirta ee u suurtogelisa Photosynthesis?",
+    "options": ["Chlorophyll", "Hemoglobin", "Carotene", "Xanthophyll"],
+    "correct": "Chlorophyll"
+  },
+  {
+    "question": "Kala-goynta 100 - 45 waxay bixisaa 55.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay magaalada ugu weyn Gobolka Hiiraan?",
+    "options": ["Buloburde", "Beledweyne", "Jalalaqsi", "Matabaan"],
+    "correct": "Beledweyne"
+  },
+  {
+    "question": "Malaariya waxaa gudbiya kaneecada Anopheles ee dheddigga ah.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay caasimadda dalka Jarmalka?",
+    "options": ["Munich", "Frankfurt", "Berlin", "Hamburg"],
+    "correct": "Berlin"
+  },
+  {
+    "question": "Nidaamka Operating System-ka ee Android waxaa iska leh shirkadda Apple.",
+    "type": "tf",
+    "correct": false
+  },
+  {
+    "question": "Waa maxay wadarta xagallaha laba-jibbaarane (Square)?",
+    "options": ["180 digrii", "270 digrii", "360 digrii", "400 digrii"],
+    "correct": "360 digrii"
+  },
+  {
+    "question": "Biyaha barafka noqda waxay leeyihiin cufnaan ka yar biyaha dareeraha ah.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay luqadda rasmiga ah ee dalka Braazil?",
+    "options": ["Isbaanish", "Bortuqiis", "Ingiriis", "Faransiis"],
+    "correct": "Bortuqiis"
+  },
+  {
+    "question": "Soomaaliya waxay xubindheeraad ka tahay Jaamacadda Carabta.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay caasimadda dalka Sacuudi Carabiya?",
+    "options": ["Jeddah", "Makkah", "Riyadh", "Madinah"],
+    "correct": "Riyadh"
+  },
+  {
+    "question": "Nabi Nuux (A.S) wuxuu dhisay doon si uu dadkiisa kaga badbaadiyo daadkii weynaa.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay nooca xiddigta ay tahay Qorraxdu?",
+    "options": ["Yellow Dwarf", "Red Giant", "White Dwarf", "Blue Giant"],
+    "correct": "Yellow Dwarf"
+  },
+  {
+    "question": "Tirada 0 waa tiro togan (Positive number).",
+    "type": "tf",
+    "correct": false
+  },
+  {
+    "question": "Waa maxay qaaradda ay ku taal magaalada Tokyo?",
+    "options": ["Aasiya", "Arooppa", "Ameerika", "Afrika"],
+    "correct": "Aasiya"
+  },
+  {
+    "question": "Shirkadda Google waxaa la fundeeyay sanadkii 1998.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay midabka dhiigga aadanaha ee ogsijiinta leh?",
+    "options": ["Abluu", "Madow", "Caddaan", "Casiir/Casaan"],
+    "correct": "Casiir/Casaan"
+  },
+  {
+    "question": "Xawayaanka Kangaroo wuxuu u dhashey dalka Australia.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay natiijada 9 sqaured (9^2)?",
+    "options": ["18", "27", "81", "99"],
+    "correct": "81"
+  },
+  {
+    "question": "Aaladda RAM waxay kaydisaa xogta si ku-temporal ah.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay caasimadda Gobolka Sool?",
+    "options": ["Taleex", "Laascanood", "Xudun", "Ainabo"],
+    "correct": "Laascanood"
+  },
+  {
+    "question": "Badda Cas waxay u dhexaysaa qaaradaha Afrika iyo Aasiya.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay cunsurka kiimikada ee leh astaanta 'Na'?",
+    "options": ["Nitrogen", "Sodium", "Nickel", "Neon"],
+    "correct": "Sodium"
+  },
+  {
+    "question": "Ciyaarta Basketball waxaa ku ciyaara hal koox 11 ciyaaryahan garoonka dhexdiisa.",
+    "type": "tf",
+    "correct": false
+  },
+  {
+    "question": "Waa maxay buurta ugu dheer qaaradda Afrika?",
+    "options": ["Mount Kenya", "Mount Kilimanjaro", "Atlas Mountains", "Mount Shimbiris"],
+    "correct": "Mount Kilimanjaro"
+  },
+  {
+    "question": "Bisha Rajab waa bisha 7-aad ee kalandarka Hijriga.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay caasimadda Gobolka Awdal?",
+    "options": ["Zeylac", "Borama", "Lughaya", "Baki"],
+    "correct": "Borama"
+  },
+  {
+    "question": "Aaladda GPU waxaa loo isticmaalaa maareynta muuqalka ama graphics-ka kombuyuutarka.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay unugga lagu cabbiro fogaanta xiddigaha astronomy-ga?",
+    "options": ["Kilometer", "Light Year (Sanad Iftiin)", "Mile", "Astronomical Unit"],
+    "correct": "Light Year (Sanad Iftiin)"
+  },
+  {
+    "question": "Wadarta xagallaha xagtiisa toosan ee afar-jibbaarane waa 360 digrii.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay shirkadda abuurtay nidaamka Windows?",
+    "options": ["Apple", "Google", "Microsoft", "IBM"],
+    "correct": "Microsoft"
+  },
+  {
+    "question": "Libaaxu wuxuu ka tirsan yahay qoyska Bisadaha (Felidae).",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay magaalada taariikhiga ah ee ku taal rogga Badda Cas ee Woqooyiga Soomaaliya?",
+    "options": ["Zeylac", "Hobyo", "Cadale", "Merca"],
+    "correct": "Zeylac"
+  },
+  {
+    "question": "Salaadda Jimcaha waxay beddeshaa Salaadda Duhur ee maalinta Jimcaha.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay maaddada ugu cufnaanta badan ee dabiiciga ah dhulka?",
+    "options": ["Gold", "Osmium", "Lead", "Uranium"],
+    "correct": "Osmium"
+  },
+  {
+    "question": "Dalka Kanada waa dalka labaad ee ugu dhulka weyn dunida.",
+    "type": "tf",
+    "correct": true
+  },
+  {
+    "question": "Waa maxay maahmaahda dhameystirta: 'Aroos dambeed...'",
+    "options": ["Waa lagu khasaraa", "Isqabqabsi ma leaha", "Uf ayaa laga yiraahdaa", "Aroos cusub ma aha"],
+    "correct": "Isqabqabsi ma leaha"
+  },
+  {
+    "question": "Soomaalida hidde ahaan waxay u isticmaali jireen Caano iyo Hilib cuntada ugu muhiimsan.",
+    "type": "tf",
+    "correct": true
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "question": "Sanadkee ayay Soomaaliya qaadatay xorriyadda?",
+    "options": [
+      "1950",
+      "1960",
+      "1970",
+      "1980"
+    ],
+    "correct": "1960"
+  },
+  {
+    "question": "Oksijiinta waa lagama maarmaan nolosha?",
+    "type": "tf",
+    "correct": true
+  }
+]

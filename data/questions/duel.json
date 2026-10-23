@@ -1,0 +1,17 @@
+[
+  {
+    "question": "Waa ku bamaad kee kii yiri: 'Haddaan dhoofay dalkaygii ahaa, mid u dhow ma arag'?",
+    "options": [
+      "Sayid Maxamed Cabdille Xasan",
+      "Hadraawi",
+      "Timacadde",
+      "Cali Cilmi"
+    ],
+    "correct": "Hadraawi"
+  },
+  {
+    "question": "Qorraxdu waxay ka soo baxdaa Bari?",
+    "type": "tf",
+    "correct": true
+  }
+]

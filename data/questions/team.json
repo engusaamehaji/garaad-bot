@@ -1,0 +1,17 @@
+[
+  {
+    "question": "Magaalada ugu dadka badan Soomaaliya waa?",
+    "options": [
+      "Mogadishu",
+      "Hargeisa",
+      "Bosaso",
+      "Kismayo"
+    ],
+    "correct": "Mogadishu"
+  },
+  {
+    "question": "Xayawaanka Cheetah waa kan ugu dheereeya dhulka?",
+    "type": "tf",
+    "correct": true
+  }
+]

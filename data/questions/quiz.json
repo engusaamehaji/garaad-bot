@@ -1,0 +1,17 @@
+[
+  {
+    "question": "Webiga ugu dheer adduunka waa?",
+    "options": [
+      "Amazon",
+      "Mississippi",
+      "Nile",
+      "Yangtze"
+    ],
+    "correct": "Nile"
+  },
+  {
+    "question": "Dhulku wuxuu ku wareegaa Qorraxda?",
+    "type": "tf",
+    "correct": true
+  }
+]
