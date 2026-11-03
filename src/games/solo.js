@@ -131,6 +131,7 @@ async function sendQuestion(messageOrInteraction, qNumber, currentMsg = null) {
             .setDescription(
                 `### 📊 Your results — <@${userId}>\n\n` +
                 `✅ Correct: **${correct}** | ❌ Incorrect: **${wrong}** | Questions: **${total}** (${pct}%)\n` +
+                `🎮 Solo games played: **${d.stats.soloPlayed || 0}**\n` +
                 `🔥 Best streak: **${streak}** correct oo isku xigta\n` +
                 `${gradeText}\n\n` +
                 `🧠 IQ now: **${d.iq || 0}** | Level **${getLevel(d.iq || 0)}**`
@@ -228,14 +229,13 @@ async function sendQuestion(messageOrInteraction, qNumber, currentMsg = null) {
         checkUser(userId);
         g.currentStreak = 0;
         userData[userId].stats.soloWrong++;
-        userData[userId].iq = Math.max(0, (userData[userId].iq || 0) - 1);
         saveData();
         // Advance before next question so guard works
         g.currentQ = qNumber + 1;
         persistSolo(userId);
 
         const timeoutEmbed = EmbedBuilder.from(embed)
-            .setFields({ name: 'Natiijo', value: '⏰ Wakhti finished — **−1 IQ** · Streak: 0' });
+            .setFields({ name: 'Natiijo', value: '⏰ Wakhti finished — no answer submitted · Streak: 0' });
         activeMsg.delete().catch(() => {});
         channel.send({ embeds: [timeoutEmbed], ...replyOpt })
             .then(nm => setTimeout(() => sendQuestion(messageOrInteraction, qNumber + 1, nm), 2000))
@@ -300,7 +300,7 @@ async function handleSoloAnswer(interaction) {
     saveEcon();
 
     if (result === 'true') {
-        // ── Correct: +1 IQ toos ah ──
+        // ── Correct: +2 IQ ──
         const pts      = calcTimedScore(Math.min(timeTaken, GLOBAL_WAIT_MS));
         const streak   = (game.currentStreak || 0) + 1;
         const bonus    = getStreakBonus(streak);
@@ -312,21 +312,16 @@ async function handleSoloAnswer(interaction) {
         game.correctCount  = (game.correctCount || 0) + 1;
 
         userData[ownerId].stats.soloCorrect++;
-        userData[ownerId].iq = (userData[ownerId].iq || 0) + 1;
-        msg = `✅ **correct!** +1 IQ\n⏱️ ${(timeTaken/1000).toFixed(1)}s | 💰 **+${COINS_PER_QUESTION} Coins**`;
+        userData[ownerId].iq = (userData[ownerId].iq || 0) + 2;
+        msg = `✅ **correct!** +2 IQ\n⏱️ ${(timeTaken/1000).toFixed(1)}s | 💰 **+${COINS_PER_QUESTION} Coins**`;
     } else {
-        // ── Incorrect: 2 qalad = -1 IQ ──
+        // ── Incorrect: -1 IQ ──
         game.currentStreak = 0;
         game.wrongCount    = (game.wrongCount || 0) + 1;
         userData[ownerId].stats.soloWrong++;
 
-        let iqMsg = '';
-        if (game.wrongCount % 2 === 0) {
-            userData[ownerId].iq = Math.max(0, (userData[ownerId].iq || 0) - 1);
-            iqMsg = '**−1 IQ**';
-        } else {
-            iqMsg = `_1/2 qalad — ${2 - (game.wrongCount % 2)} kale 1 IQ kaa jari doona_`;
-        }
+        userData[ownerId].iq = Math.max(0, (userData[ownerId].iq || 0) - 1);
+        const iqMsg = '**−1 IQ**';
         msg = `❌ **QALAD** — ${iqMsg} | 💰 **+${COINS_PER_QUESTION} Coins** (waqti awgeed)`;
     }
 

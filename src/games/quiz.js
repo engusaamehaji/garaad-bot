@@ -347,20 +347,15 @@ async function sendQuizQuestion(state) {
             correctMap[uid]   = { pts, timeTakenMs };
             const secs = (timeTakenMs / 1000).toFixed(1);
             checkUser(uid);
-            userData[uid].iq = (userData[uid].iq || 0) + 1;
+            userData[uid].iq = (userData[uid].iq || 0) + 2;
             userData[uid].wrongStreak = 0;
             saveData();
-            await interaction.reply({ content: `✅ **Correct!** +**${pts}** points · **+1 IQ** · ⏱️ ${secs}s`, flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: `✅ **Correct!** +**${pts}** points · **+2 IQ** · ⏱️ ${secs}s`, flags: MessageFlags.Ephemeral }).catch(() => {});
         } else {
             checkUser(uid);
             userData[uid].wrongStreak = (userData[uid].wrongStreak || 0) + 1;
-            let iqMsg = '';
-            if (userData[uid].wrongStreak % 2 === 0) {
-                userData[uid].iq = Math.max(0, (userData[uid].iq || 0) - 1);
-                iqMsg = '**−1 IQ**';
-            } else {
-                iqMsg = '_1/2 incorrect answers_';
-            }
+            userData[uid].iq = Math.max(0, (userData[uid].iq || 0) - 1);
+            const iqMsg = '**−1 IQ**';
             saveData();
             await interaction.reply({ content: `❌ **Incorrect.** That was not the right answer · ${iqMsg} · 0 points`, flags: MessageFlags.Ephemeral }).catch(() => {});
         }
@@ -372,10 +367,7 @@ async function sendQuizQuestion(state) {
         const timedOut = [...state.players].filter(id => !answeredBy.has(id));
         for (const id of timedOut) {
             checkUser(id);
-            userData[id].wrongStreak = (userData[id].wrongStreak || 0) + 1;
-            if (userData[id].wrongStreak % 2 === 0) {
-                userData[id].iq = Math.max(0, (userData[id].iq || 0) - 1);
-            }
+            // A timeout is not an incorrect submitted answer, so it does not change IQ.
         }
         if (timedOut.length > 0) saveData();
 
@@ -394,7 +386,7 @@ async function sendQuizQuestion(state) {
         }
 
         const timeoutLine = timedOut.length > 0
-            ? `\n⏰ **Timeout −1 IQ:** ${timedOut.map(id => `<@${id}>`).join(', ')}`
+            ? `\n⏰ **Timed out:** ${timedOut.map(id => `<@${id}>`).join(', ')}`
             : '';
 
         const leaderboard = Object.entries(state.scores)

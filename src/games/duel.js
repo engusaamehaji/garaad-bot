@@ -224,13 +224,18 @@ async function sendDuelQuestion(channel) {
         cur.answeredBy.add(interaction.user.id);
 
         const isCorrect = interaction.customId.endsWith('_t');
+        checkUser(interaction.user.id);
         if (isCorrect) {
             cur.scores[interaction.user.id]++;
+            userData[interaction.user.id].iq = (userData[interaction.user.id].iq || 0) + 2;
+            saveData();
             cur.correctAnswerer = interaction.user.id;
-            await interaction.reply({ content: `✅ <@${interaction.user.id}> earned a point!`, flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: `✅ Correct! +2 IQ · You earned a point.`, flags: MessageFlags.Ephemeral }).catch(() => {});
             collector.stop('correct');
         } else {
-            await interaction.reply({ content: '❌ Incorrect! Wait for the other player or the timer to end.', flags: MessageFlags.Ephemeral }).catch(() => {});
+            userData[interaction.user.id].iq = Math.max(0, (userData[interaction.user.id].iq || 0) - 1);
+            saveData();
+            await interaction.reply({ content: '❌ Incorrect! −1 IQ. Wait for the other player or the timer to end.', flags: MessageFlags.Ephemeral }).catch(() => {});
             if (cur.answeredBy.size >= 2) collector.stop('both_wrong');
         }
     });

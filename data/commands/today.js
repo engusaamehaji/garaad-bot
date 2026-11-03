@@ -4,7 +4,7 @@ const { checkUser }                         = require('../../src/utils/helpers')
 const { econData, checkEconUser, saveEcon, trackEarning } = require('../../src/economy/econStore');
 
 const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-const DAILY_COINS  = 1000;
+const DAILY_COINS  = 150;
 
 module.exports = async function todayCommand(message) {
     const userId = message.author.id;

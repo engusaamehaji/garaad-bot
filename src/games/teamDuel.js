@@ -7,6 +7,8 @@ const {
     EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags,
 } = require('discord.js');
 const { econData, saveEcon, checkEconUser, trackEarning } = require('../economy/econStore');
+const { userData, saveData } = require('../store');
+const { checkUser } = require('../utils/helpers');
 const { fmt, stripQuestionNumber } = require('../utils/helpers');
 const {
     pickQuestionsForGame,
@@ -373,13 +375,18 @@ async function sendTeamQuestion(channel, channelId) {
         answeredThisQ.add(interaction.user.id);
 
         const isCorrect = interaction.customId.endsWith('_t');
+        checkUser(interaction.user.id);
         if (isCorrect) {
             const pts  = calcTimedScore(Date.now() - questionStartMs);
             const secs = ((Date.now() - questionStartMs) / 1000).toFixed(1);
             state.scores[interaction.user.id] = (state.scores[interaction.user.id] || 0) + pts;
-            await interaction.reply({ content: `✅ Saxsanaan! +${pts} points · ⏱️ ${secs}s`, flags: MessageFlags.Ephemeral }).catch(() => {});
+            userData[interaction.user.id].iq = (userData[interaction.user.id].iq || 0) + 2;
+            saveData();
+            await interaction.reply({ content: `✅ Correct! +${pts} points · +2 IQ · ⏱️ ${secs}s`, flags: MessageFlags.Ephemeral }).catch(() => {});
         } else {
-            await interaction.reply({ content: '❌ Incorrect! 0 points', flags: MessageFlags.Ephemeral }).catch(() => {});
+            userData[interaction.user.id].iq = Math.max(0, (userData[interaction.user.id].iq || 0) - 1);
+            saveData();
+            await interaction.reply({ content: '❌ Incorrect! −1 IQ · 0 points', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
 
         if (answeredThisQ.size >= players.length) collector.stop('all_answered');
