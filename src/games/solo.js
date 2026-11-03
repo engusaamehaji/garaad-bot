@@ -110,6 +110,11 @@ async function sendQuestion(messageOrInteraction, qNumber, currentMsg = null) {
         markUserPlayed(userId);
 
         const d          = userData[userId];
+        if (game && qNumber > total && !game.gameCounted) {
+            game.gameCounted = true;
+            d.stats.soloPlayed = (d.stats.soloPlayed || 0) + 1;
+            saveData();
+        }
         const totalPts   = game ? (game.totalPoints || 0) : 0;
         const streak     = game ? (game.bestStreak  || 0) : 0;
         const correct    = game ? (game.correctCount || 0) : 0;
@@ -325,7 +330,6 @@ async function handleSoloAnswer(interaction) {
         msg = `❌ **QALAD** — ${iqMsg} | 💰 **+${COINS_PER_QUESTION} Coins** (waqti awgeed)`;
     }
 
-    userData[ownerId].stats.soloPlayed++;
     saveData();
 
     // Advance currentQ before next sendQuestion so the timeout guard works correctly

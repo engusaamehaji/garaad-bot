@@ -21,7 +21,10 @@ async function buildIqLines(top, client, guild) {
         const disp       = cleanTitle(getDisplayTitle(id));
         const titlePart  = disp ? ` ・ ${disp}` : '';
         const lvl        = getLevel(data.iq || 0);
-        const totalGames = (s.soloPlayed || 0) + (s.duelWins || 0) + (s.duelLosses || 0) + (s.duelDraws || 0);
+        const soloGames = s.soloPlayed || 0;
+        const quizGames = s.quizPlayed || 0;
+        const duelGames = (s.duelWins || 0) + (s.duelLosses || 0) + (s.duelDraws || 0);
+        const totalGames = soloGames + quizGames + duelGames;
         const medal      = i < 3 ? `${MEDALS[i]} ` : '';
 
         let name = await getDisplayName(client, guild, id);
@@ -30,9 +33,9 @@ async function buildIqLines(top, client, guild) {
             `${medal}${CIRCLES[i]} **${name}**${titlePart}\n` +
             `┆ 🧠 IQ: **${(data.iq || 0).toLocaleString()}**\n` +
             `┆ ⭐ Level: **${lvl}**\n` +
-            `┆ 🎮 Games: **${totalGames}**\n` +
+            `┆ 🎮 Games: **${totalGames}** (Solo ${soloGames} · Quiz ${quizGames} · Duel ${duelGames})\n` +
             `┆ ✅ Guulo: **${s.duelWins || 0}**\n` +
-            `┆ ❌ loss: **${s.duelLosses || 0}**`
+            `┆ ❌ Losses: **${s.duelLosses || 0}** · Draws: **${s.duelDraws || 0}**`
         );
     }));
     return lines.join('\n\n');
