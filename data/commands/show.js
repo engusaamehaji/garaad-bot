@@ -43,14 +43,14 @@ module.exports = async function showCommand(message) {
     const embed = new EmbedBuilder()
         .setTitle('⏱️ Cooldown Status')
         .setColor('#3498db')
-        .setDescription('Eeg halkan xaaladda cooldown ee amarrada muhiimka ah.')
+        .setDescription('View halkan status cooldown ee amarrada muhiimka ah.')
         .addFields(
             { name: '?today', value: dailyStatus, inline: true },
             { name: '?shaqo', value: workStatus, inline: true },
             { name: '?rob', value: robStatus, inline: true },
             { name: 'Rob Ticket', value: ticketStatus, inline: true },
         )
-        .setFooter({ text: 'Isticmaal cmd-kan si aad u aragto xaaladda cooldown-kaaga.' });
+        .setFooter({ text: 'Use cmd-kan si aad u aragto status cooldown-kaaga.' });
 
     return message.reply({ embeds: [embed] });
 };

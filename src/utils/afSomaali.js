@@ -60,7 +60,7 @@ function saxSomali(text) {
 }
 
 /**
- * Hubi haddii eraygu yahay mid saxan
+ * Hubi if eraygu yahay mid saxan
  * Returns { saxan: bool, talobixin: string|null }
  */
 function hubiBadal(eray) {

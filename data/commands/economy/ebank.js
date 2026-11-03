@@ -67,14 +67,14 @@ function bankTotalInterest() {
 // ── Embeds ────────────────────────────────────────────────────────
 
 function buildMainEmbed(d) {
-    const wallet   = fmt(d.btc || 0);
+    const wallet   = fmt(d.coins || 0);
     const garaad   = fmt(d.banks?.garaad || 0);
     const pubBanks = Object.values(require('../../../src/economy/bankStore').getAllPublicBanks());
     const myPub    = pubBanks.find(b => b.members?.[d.__id__ || ''] || b.deposits?.[d.__id__ || '']);
     const pubName  = myPub ? myPub.name : null;
     const pubBal   = myPub ? fmt(myPub.deposits?.[d.__id__ || ''] || 0) : '0';
-    const total    = fmt((d.btc || 0) + (d.banks?.garaad || 0) + (myPub ? (myPub.deposits?.[d.__id__ || ''] || 0) : 0));
-    const pubTotal = myPub ? fmt(myPub.balance || 0) : '₿0';
+    const total    = fmt((d.coins || 0) + (d.banks?.garaad || 0) + (myPub ? (myPub.deposits?.[d.__id__ || ''] || 0) : 0));
+    const pubTotal = myPub ? fmt(myPub.balance || 0) : '🪙0';
     const garaadTotal = fmt(bankTotalDeposits());
 
     const desc =
@@ -82,11 +82,11 @@ function buildMainEmbed(d) {
         `\n` +
         `💰 **𝐇𝐀𝐍𝐓𝐈𝐃𝐀𝐀𝐃𝐀**\n` +
         `\n` +
-        `💵 Wallet         ➜ ₿${wallet}\n` +
-        `🏦 Garaad Bank    ➜ ₿${garaad}\n` +
-        (pubName ? `🏛️ ${pubName}   ➜ ₿${pubBal}\n` : `🏛️ Kormaal Bank   ➜ ₿0\n`) +
+        `💵 Wallet         ➜ 🪙${wallet}\n` +
+        `🏦 Garaad Bank    ➜ 🪙${garaad}\n` +
+        (pubName ? `🏛️ ${pubName}   ➜ 🪙${pubBal}\n` : `🏛️ Kormaal Bank   ➜ 🪙0\n`) +
         `\n` +
-        `📊 Wadarta Guud   ➜ ₿${total}\n` +
+        `📊 Total Guud   ➜ 🪙${total}\n` +
         `\n` +
         `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
         `\n` +
@@ -94,15 +94,15 @@ function buildMainEmbed(d) {
         `\n` +
         `💎 Garaad Bank\n` +
         `└ 📈 Interest: 1% Maalinle\n` +
-        `└ 💰 Kaydka Bankiga: ₿${garaadTotal}\n` +
+        `└ 💰 Kaydka Bankiga: 🪙${garaadTotal}\n` +
         `\n` +
         (pubName
             ? `🌐 ${pubName}\n` +
-              `└ 💰 Kaydka Bankiga: ₿${pubTotal}\n` +
-              `└ 📥 Kaydkaaga: ₿${pubBal}\n`
+              `└ 💰 Kaydka Bankiga: 🪙${pubTotal}\n` +
+              `└ 📥 Kaydkaaga: 🪙${pubBal}\n`
             : `🌐 Kormaal Bank\n` +
-              `└ 💰 Kaydka Bankiga: ₿0\n` +
-              `└ 📥 Kaydkaaga: ₿0\n`
+              `└ 💰 Kaydka Bankiga: 🪙0\n` +
+              `└ 📥 Kaydkaaga: 🪙0\n`
         ) +
         `\n` +
         `━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
@@ -139,13 +139,13 @@ function buildBankEmbed(d) {
         .setTitle('🏦 Garaad Bank — Savings')
         .setColor('#2471a3')
         .addFields(
-            { name: '🏦 Bank Balance',    value: `**₿ ${fmt(d.banks.garaad)}**`,                inline: true },
-            { name: '💳 Wallet',          value: `**₿ ${fmt(d.btc || 0)}**`,                     inline: true },
-            { name: '📈 Interest Earned', value: `**+₿ ${fmt(d.interestEarned?.garaad || 0)}**`, inline: true },
+            { name: '🏦 Bank Balance',    value: `**🪙 ${fmt(d.banks.garaad)}**`,                inline: true },
+            { name: '💳 Wallet',          value: `**🪙 ${fmt(d.coins || 0)}**`,                     inline: true },
+            { name: '📈 Interest Earned', value: `**+🪙 ${fmt(d.interestEarned?.garaad || 0)}**`, inline: true },
             { name: '📊 Rate',            value: '**1% per day**',                                inline: true },
-            { name: '🏛️ Total Deposits',  value: `**₿ ${fmt(bankTotalDeposits())}**`,            inline: true },
+            { name: '🏛️ Total Deposits',  value: `**🪙 ${fmt(bankTotalDeposits())}**`,            inline: true },
         )
-        .setFooter({ text: 'Garaad Bank • Deposit to grow your BTC' });
+        .setFooter({ text: 'Garaad Bank • Deposit to grow your Coins' });
 }
 
 function buildTreasuryEmbed() {
@@ -154,9 +154,9 @@ function buildTreasuryEmbed() {
         .setTitle('🏛️ Treasury')
         .setColor('#8e44ad')
         .addFields(
-            { name: '🏛️ Balance',   value: `**₿ ${fmt(t.balance  || 0)}**`, inline: true },
-            { name: '📥 Total In',  value: `**₿ ${fmt(t.totalIn  || 0)}**`, inline: true },
-            { name: '📤 Total Out', value: `**₿ ${fmt(t.totalOut || 0)}**`, inline: true },
+            { name: '🏛️ Balance',   value: `**🪙 ${fmt(t.balance  || 0)}**`, inline: true },
+            { name: '📥 Total In',  value: `**🪙 ${fmt(t.totalIn  || 0)}**`, inline: true },
+            { name: '📤 Total Out', value: `**🪙 ${fmt(t.totalOut || 0)}**`, inline: true },
         )
         .setFooter({ text: 'Garaad Bank • Sources: shop, flips, tax' });
 }
@@ -217,7 +217,7 @@ module.exports.bankTotalInterest  = bankTotalInterest;
 module.exports.buildMainEmbed     = buildMainEmbed;
 module.exports.buildBankEmbed     = buildBankEmbed;
 module.exports.buildTreasuryEmbed = buildTreasuryEmbed;
-module.exports.buildKhaznadEmbed  = buildTreasuryEmbed;
+module.exports.buildTreasuryEmbed  = buildTreasuryEmbed;
 module.exports.bankFullRow        = bankFullRow;
 module.exports.ebCloseRow         = ebCloseRow;
 module.exports.actionRow          = actionRow;

@@ -2,7 +2,7 @@ const { econData, checkEconUser, saveEcon } = require('../../../src/economy/econ
 
 const WINDOW_MS   = 15 * 60 * 1000;  // 15-minute window
 const MAX_ROBS    = 2;               // max 2 robs per window
-const ROB_MIN_BTC            = 1_000;
+const ROB_MIN_Coins            = 1_000;
 const MAX_STEAL_FRACTION     = 0.25;
 const ROB_SUCCESS_RATE       = 0.50;
 
@@ -10,9 +10,9 @@ module.exports = async function robCmd(message) {
     const userId = message.author.id;
     const target = message.mentions.users.first();
 
-    if (!target) return message.reply('⚠️ Isticmaal: `?rob @user`');
-    if (target.id === userId) return message.reply('⚠️ Adigu adiga ma dhici kartid.');
-    if (target.bot) return message.reply('⚠️ Bot ma dhici kartid.');
+    if (!target) return message.reply('⚠️ Usage: `?rob @user`');
+    if (target.id === userId) return message.reply('⚠️ You cannot rob yourself.');
+    if (target.bot) return message.reply('⚠️ You cannot rob a bot.');
 
     checkEconUser(userId);
     checkEconUser(target.id);
@@ -31,53 +31,53 @@ module.exports = async function robCmd(message) {
 
     if (robber.robWindow.count >= MAX_ROBS) {
         const wait = Math.ceil((WINDOW_MS - (now - robber.robWindow.start)) / 60000);
-        return message.reply(`⏳ **2 rob** 15 daqiiqo gudahood isticmaashay. Sug **${wait} daqiiqo**!`);
+        return message.reply(`⏳ You have used both robbery attempts for this 15-minute window. Try again in **${wait} minute(s)**.`);
     }
 
     const targetCooldownLeft = WINDOW_MS - (now - (robber.lastRobTargets[target.id] || 0));
     if (targetCooldownLeft > 0)
-        return message.reply(`⏳ Sug **${Math.ceil(targetCooldownLeft / 60000)} daqiiqo** kadib **${target.username}** mar kale dhacdo.`);
+        return message.reply(`⏳ You can try robbing **${target.username}** again in **${Math.ceil(targetCooldownLeft / 60000)} minute(s)**.`);
 
-    if ((victim.btc || 0) < ROB_MIN_BTC)
-        return message.reply(`⚠️ **${target.username}** lacag ku filan ma hayo (ugu yaraan **₿${ROB_MIN_BTC.toLocaleString()}**).`);
+    if ((victim.coins || 0) < ROB_MIN_Coins)
+        return message.reply(`⚠️ **${target.username}** does not have enough Coins to rob. They need at least **🪙${ROB_MIN_Coins.toLocaleString()}**.`);
 
     if ((victim.inventory?.safetyExpiry || 0) > Date.now()) {
         const h = Math.ceil((victim.inventory.safetyExpiry - Date.now()) / 3600000);
-        return message.reply(`🛡️ **${target.username}** Safety Shield waxaa ilaaliya — ${h}h haray.`);
+        return message.reply(`🛡️ **${target.username}** is protected by a Safety Shield for another **${h} hour(s)**.`);
     }
 
     robber.lastRob = now;
     robber.lastRobTargets[target.id] = now;
     robber.robWindow.count++;
 
-    const richRobber = (robber.btc  || 0) > 5_000;
-    const richTarget = (victim.btc  || 0) >= 5_000;
+    const richRobber = (robber.coins  || 0) > 5_000;
+    const richTarget = (victim.coins  || 0) >= 5_000;
     const stealFrac  = richTarget ? 0.50 : MAX_STEAL_FRACTION;
     const success    = richRobber ? false : Math.random() < ROB_SUCCESS_RATE;
 
     if (success) {
-        const stolen = Math.floor((victim.btc || 0) * stealFrac);
-        victim.btc   = (victim.btc  || 0) - stolen;
-        robber.btc   = (robber.btc  || 0) + stolen;
+        const stolen = Math.floor((victim.coins || 0) * stealFrac);
+        victim.coins   = (victim.coins  || 0) - stolen;
+        robber.coins   = (robber.coins  || 0) + stolen;
         saveEcon();
         return message.reply(
-            `🔫 **DHAC GUULAYSATAY!**\n\n` +
-            `✅ Waxaad si guul leh u dhacday **${target.username}**!\n\n` +
-            `💰 **La xaday:** ₿${stolen.toLocaleString()}\n` +
-            `💳 **Wallet:** ₿${robber.btc.toLocaleString()}`
+            `🔫 **ROBBERY SUCCESSFUL!**\n\n` +
+            `✅ You successfully robbed **${target.username}**!\n\n` +
+            `💰 **Coins stolen:** 🪙${stolen.toLocaleString()}\n` +
+            `💳 **Wallet:** 🪙${robber.coins.toLocaleString()}`
         );
     } else {
         const penaltyFrac = richRobber ? 0.25 : (richTarget ? 0.50 : 0.20);
         const penaltyPct  = richRobber ? '25%' : (richTarget ? '50%' : '20%');
-        const penalty     = Math.floor((robber.btc || 0) * penaltyFrac);
-        robber.btc        = Math.max(0, (robber.btc || 0) - penalty);
+        const penalty     = Math.floor((robber.coins || 0) * penaltyFrac);
+        robber.coins        = Math.max(0, (robber.coins || 0) - penalty);
         saveEcon();
         return message.reply(
-            `🚔 **DHAC FASHILMAY!**\n\n` +
-            `❌ Kuma hergelin **${target.username}**.\n\n` +
-            `💸 **Loss:** ₿${penalty.toLocaleString()} · 💳 **Wallet:** ₿${robber.btc.toLocaleString()}\n` +
-            `⚠️ **Ciqaab: ${penaltyPct}**` +
-            (richRobber ? `\n💡 Lacagta badan tahay — ma dhici kartid.` : '')
+            `🚔 **ROBBERY FAILED!**\n\n` +
+            `❌ You failed to rob **${target.username}**.\n\n` +
+            `💸 **Loss:** 🪙${penalty.toLocaleString()} · 💳 **Wallet:** 🪙${robber.coins.toLocaleString()}\n` +
+            `⚠️ **Penalty: ${penaltyPct}**` +
+            (richRobber ? `\n💡 Players with more than 5,000 Coins cannot rob.` : '')
         );
     }
 };

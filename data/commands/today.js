@@ -4,8 +4,7 @@ const { checkUser }                         = require('../../src/utils/helpers')
 const { econData, checkEconUser, saveEcon, trackEarning } = require('../../src/economy/econStore');
 
 const COOLDOWN_MS = 24 * 60 * 60 * 1000;
-const DAILY_BTC   = 1000;
-const TOPGG_URL   = 'https://top.gg/bot/1495341089266073705';
+const DAILY_COINS  = 1000;
 
 module.exports = async function todayCommand(message) {
     const userId = message.author.id;
@@ -16,7 +15,6 @@ module.exports = async function todayCommand(message) {
     const remaining  = COOLDOWN_MS - (Date.now() - lastDaily);
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setURL(TOPGG_URL).setLabel('🗳️ Vote Garaad Bot').setStyle(ButtonStyle.Link),
         new ButtonBuilder().setCustomId(`close_today_${userId}`).setLabel('✖ Close').setStyle(ButtonStyle.Danger),
     );
 
@@ -44,8 +42,8 @@ module.exports = async function todayCommand(message) {
     const iqGain = 5;
     userData[userId].iq        = (userData[userId].iq || 0) + iqGain;
     userData[userId].lastDaily = Date.now();
-    econData[userId].btc       = (econData[userId].btc || 0) + DAILY_BTC;
-    trackEarning(userId, DAILY_BTC);
+    econData[userId].coins       = (econData[userId].coins || 0) + DAILY_COINS;
+    trackEarning(userId, DAILY_COINS);
     saveData();
     saveEcon();
 
@@ -55,7 +53,7 @@ module.exports = async function todayCommand(message) {
             .setDescription(
                 `✅ Today's rewards:\n\n` +
                 `🧠 **+${iqGain} IQ**\n` +
-                `₿ **+₿: ${DAILY_BTC}**\n\n` +
+                `🪙 **+${DAILY_COINS.toLocaleString()} Coins**\n\n` +
                 `Come back tomorrow!`
             )
             .setColor('#2ecc71')

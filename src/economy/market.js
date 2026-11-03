@@ -5,32 +5,33 @@ const MARKET_PATH = path.join(__dirname, '../../data/market.json');
 const TICK_MS     = 60 * 1000;
 const HISTORY_MAX = 10;
 
-// BTC price index — used for prediction display only
+// Price index used by the asset transfer interface.
 const BASE_PRICES = {
-    btc: 100,
+    coins: 100,
 };
 
 const VOLATILITY = {
-    btc: 0.03,
+    coins: 0.03,
 };
 
-const trends = { btc: 0 };
+const trends = { coins: 0 };
 
 let marketData = {
     prices:     { ...BASE_PRICES },
     previous:   { ...BASE_PRICES },
-    history:    { btc: [] },
+    history:    { coins: [] },
     lastUpdate: 0,
 };
 
 try {
     if (fs.existsSync(MARKET_PATH)) {
         const loaded = JSON.parse(fs.readFileSync(MARKET_PATH, 'utf8'));
-        if (loaded && loaded.prices && loaded.prices.btc) {
+        const coinsPrice = loaded?.prices?.coins;
+        if (coinsPrice) {
             marketData = {
-                prices:     { btc: loaded.prices.btc },
-                previous:   { btc: loaded.previous?.btc   || BASE_PRICES.btc },
-                history:    { btc: loaded.history?.btc     || [] },
+                prices:     { coins: coinsPrice },
+                previous:   { coins: loaded.previous?.coins ?? BASE_PRICES.coins },
+                history:    { coins: loaded.history?.coins ?? [] },
                 lastUpdate: loaded.lastUpdate || 0,
             };
         }
@@ -50,25 +51,25 @@ function saveMarket() {
 }
 
 function doOneTick() {
-    const prev   = marketData.prices.btc;
-    const vol    = VOLATILITY.btc;
-    const trend  = trends.btc || 0;
+    const prev   = marketData.prices.coins;
+    const vol    = VOLATILITY.coins;
+    const trend  = trends.coins || 0;
     const bias   = trend * vol * 0.35;
     const change = (Math.random() * 2 - 1) * vol + bias;
-    trends.btc   = change > 0 ? 1 : change < 0 ? -1 : 0;
+    trends.coins   = change > 0 ? 1 : change < 0 ? -1 : 0;
     const next   = Math.min(
-        Math.round(BASE_PRICES.btc * 3),
+        Math.round(BASE_PRICES.coins * 3),
         Math.max(
-            Math.round(BASE_PRICES.btc * 0.4),
+            Math.round(BASE_PRICES.coins * 0.4),
             Math.round(prev * (1 + change))
         )
     );
-    marketData.previous.btc = prev;
-    marketData.prices.btc   = next;
-    marketData.history.btc  ??= [];
-    marketData.history.btc.push(next);
-    if (marketData.history.btc.length > HISTORY_MAX) {
-        marketData.history.btc.shift();
+    marketData.previous.coins = prev;
+    marketData.prices.coins   = next;
+    marketData.history.coins  ??= [];
+    marketData.history.coins.push(next);
+    if (marketData.history.coins.length > HISTORY_MAX) {
+        marketData.history.coins.shift();
     }
 }
 

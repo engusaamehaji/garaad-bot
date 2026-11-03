@@ -2,11 +2,11 @@ const { isAdmin } = require('../../../src/utils/admin');
 
 module.exports = async function wipeCmd(message, args) {
     if (!isAdmin(message.author.id)) {
-        return message.reply('🚫 Admin kaliya ayaa amarkan isticmaali kara.');
+        return message.reply('🚫 Admins only can use this command.');
     }
 
     if (!message.guild) {
-        return message.reply('⚠️ Amarkan kaliya server-ka dhexdiisa ayaa lagu isticmaali karaa.');
+        return message.reply('⚠️ This command can only be used in a server.');
     }
 
     const channel = message.channel;
@@ -22,7 +22,7 @@ module.exports = async function wipeCmd(message, args) {
 
         // Confirm in the new channel
         await newChannel.send(
-            `✅ **Channel waa la nadiifiyay** — fariimihii hore oo dhan waa la tirtiray.\n` +
+            `✅ **Channel cleared** — all previous messages were deleted.\n` +
             `👤 Admin: **${message.author.username}**`
         );
 
@@ -31,8 +31,8 @@ module.exports = async function wipeCmd(message, args) {
 
     } catch (err) {
         return message.reply(
-            `⚠️ Wipe ma guulaysan.\n` +
-            `Bot-ka hubi inuu leeyahay **Manage Channels** permission.\n` +
+            `⚠️ Wipe failed.\n` +
+            `Make sure the bot has **Manage Channels** permission.\n` +
             `\`${err.message}\``
         );
     }

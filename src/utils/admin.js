@@ -7,7 +7,7 @@ const path = require('path');
 
 const ADMIN_FILE = path.join(__dirname, '..', '..', 'data', 'admin.json');
 
-let cache = { admins: [], bugs: [], djs: [] };
+let cache = { admins: [], bugs: [] };
 
 function load() {
     try {
@@ -16,10 +16,9 @@ function load() {
         }
         if (!cache.admins) cache.admins = [];
         if (!cache.bugs)   cache.bugs   = [];
-        if (!cache.djs)    cache.djs    = [];
     } catch (e) {
-        console.error('[Admin] Khalad akhrinta admin.json:', e.message);
-        cache = { admins: [], bugs: [], djs: [] };
+        console.error('[Admin] Incorrect akhrinta admin.json:', e.message);
+        cache = { admins: [], bugs: [] };
     }
 }
 
@@ -27,11 +26,11 @@ function save() {
     try {
         fs.writeFileSync(ADMIN_FILE, JSON.stringify(cache, null, 2));
     } catch (e) {
-        console.error('[Admin] Khalad keydinta admin.json:', e.message);
+        console.error('[Admin] Incorrect keydinta admin.json:', e.message);
     }
 }
 
-// ───── Bilow: file akhri ─────
+// ───── start: file akhri ─────
 load();
 
 // ───── Public API ─────
@@ -86,30 +85,7 @@ function clearBugs() {
     save();
 }
 
-function isDJ(userId) {
-    return cache.djs.includes(String(userId));
-}
-
-function addDJ(userId) {
-    const id = String(userId);
-    if (!cache.djs.includes(id)) { cache.djs.push(id); save(); return true; }
-    return false;
-}
-
-function removeDJ(userId) {
-    const id = String(userId);
-    const before = cache.djs.length;
-    cache.djs = cache.djs.filter(d => d !== id);
-    if (cache.djs.length !== before) { save(); return true; }
-    return false;
-}
-
-function canPlayMusic(userId) {
-    return isAdmin(String(userId)) || isDJ(String(userId));
-}
-
 module.exports = {
     isAdmin, addAdmin, removeAdmin, listAdmins,
-    isDJ, addDJ, removeDJ, canPlayMusic,
     logBug, getBugs, clearBugs,
 };

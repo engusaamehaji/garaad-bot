@@ -2,7 +2,7 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { econData, checkEconUser, saveEcon, trackEarning } = require('../../../src/economy/econStore');
 
 const WORK_COOLDOWN = 8 * 60 * 60 * 1000;
-const WORK_BTC      = 150;
+const WORK_COINS     = 150;
 
 const JOBS = [
     { title: 'Software Developer',  emoji: '💻', desc: 'Built and deployed a new app. Clean code, zero bugs.' },
@@ -34,9 +34,9 @@ module.exports = async function shaqoCmd(message) {
             .setFooter({ text: 'Garaad Economy • Every 8 hours' })] });
     }
 
-    d.btc      = (d.btc || 0) + WORK_BTC;
+    d.coins      = (d.coins || 0) + WORK_COINS;
     d.lastWork = Date.now();
-    trackEarning(userId, WORK_BTC);
+    trackEarning(userId, WORK_COINS);
     saveEcon();
 
     const job = JOBS[Math.floor(Math.random() * JOBS.length)];
@@ -46,8 +46,8 @@ module.exports = async function shaqoCmd(message) {
         .setColor('#2ecc71')
         .setDescription(job.desc)
         .addFields(
-            { name: '💰 Earned',      value: `**+₿ ${WORK_BTC.toLocaleString()}**`,  inline: true },
-            { name: '💳 Wallet',      value: `**₿ ${d.btc.toLocaleString()}**`,      inline: true },
+            { name: '💰 Earned',      value: `**+🪙 ${WORK_COINS.toLocaleString()} Coins**`, inline: true },
+            { name: '💳 Wallet',      value: `**🪙 ${d.coins.toLocaleString()}**`,      inline: true },
             { name: '⏳ Next Shift',  value: '**In 8 hours**',                        inline: true },
         )
         .setFooter({ text: 'Garaad Economy • Work every 8 hours' })],

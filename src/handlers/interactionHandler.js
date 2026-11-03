@@ -13,7 +13,7 @@ const { userData, activeQuiz, activeDuels, activeTournament, isUserBusy, tournam
 const { checkUser }         = require('../utils/helpers');
 const { isAdmin }           = require('../utils/admin');
 const { QUIZ_MIN_PLAYERS, QUIZ_MAX_PLAYERS, DUEL_STAKE_IQ, TOURNAMENT_MIN_PLAYERS, TOURNAMENT_R1_QUESTIONS, TOURNAMENT_R2_QUESTIONS, TOURNAMENT_FINAL_QUESTIONS } = require('../config');
-const { buildEduEmbed, buildEcoEmbed, buildShopEmbed: buildHelpShopEmbed, buildWwEmbed, helpRow } = require('../../data/commands/help');
+const { buildEduEmbed, buildEcoEmbed, buildShopEmbed: buildHelpShopEmbed, helpRow } = require('../../data/commands/help');
 
 function genCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -48,10 +48,11 @@ module.exports = function setupInteractionHandler(client) {
         if (interaction.isModalSubmit()) {
             const { saveData } = require('../utils/helpers');
 
-            // ── Treasury modals (owner only) ──
+            // ── Treasury modals (admins only) ──
             if (interaction.customId.startsWith('trs_m_')) {
-                if (interaction.user.id !== OWNER_ID)
-                    return interaction.reply({ content: '⛔ Owner kaliya.', flags: MessageFlags.Ephemeral });
+                const ownerId = interaction.customId.split('_').slice(3).join('_');
+                if (interaction.user.id !== ownerId || !isAdmin(ownerId))
+                    return interaction.reply({ content: '⛔ Admin only, and use your own treasury panel.', flags: MessageFlags.Ephemeral });
                 const { getTreasury, setTreasury, topUpTreasury, saveEcon } = require('../economy/econStore');
                 const { fmt } = require('../utils/helpers');
                 const { buildTreasuryEmbed, treasuryRow } = require('../../data/commands/economy/treasuryCmd');
@@ -61,30 +62,30 @@ module.exports = function setupInteractionHandler(client) {
 
                 if (interaction.customId.startsWith('trs_m_add_')) {
                     if (isNaN(amount) || amount <= 0)
-                        return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                     topUpTreasury(amount);
                     saveEcon();
-                    await interaction.update({ embeds: [buildTreasuryEmbed()], components: [treasuryRow(OWNER_ID)] });
+                    await interaction.update({ embeds: [buildTreasuryEmbed()], components: [treasuryRow(ownerId)] });
                     return;
                 }
 
                 if (interaction.customId.startsWith('trs_m_reduce_')) {
                     if (isNaN(amount) || amount <= 0)
-                        return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                     if (amount > t.balance)
-                        return interaction.reply({ content: `⚠️ Xaddadkaas ka weyn khaznadda. Hadda: **₿ ${fmt(t.balance)}**`, flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: `⚠️ Amountas ka weyn treasury. Current: **🪙 ${fmt(t.balance)}**`, flags: MessageFlags.Ephemeral });
                     t.balance -= amount;
                     saveEcon();
-                    await interaction.update({ embeds: [buildTreasuryEmbed()], components: [treasuryRow(OWNER_ID)] });
+                    await interaction.update({ embeds: [buildTreasuryEmbed()], components: [treasuryRow(ownerId)] });
                     return;
                 }
 
                 if (interaction.customId.startsWith('trs_m_set_')) {
                     if (isNaN(amount) || amount < 0)
-                        return interaction.reply({ content: '⚠️ Xaddad sax ah geli (0 ama ka weyn).', flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: '⚠️ Enter a valid amount (0 ama ka weyn).', flags: MessageFlags.Ephemeral });
                     setTreasury(amount);
                     saveEcon();
-                    await interaction.update({ embeds: [buildTreasuryEmbed()], components: [treasuryRow(OWNER_ID)] });
+                    await interaction.update({ embeds: [buildTreasuryEmbed()], components: [treasuryRow(ownerId)] });
                     return;
                 }
             }
@@ -102,46 +103,41 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
                 }
 
-                const amount = parseFloat(interaction.fields.getTextInputValue('eco_gv_amount'));
-                if (!amount || isNaN(amount) || amount <= 0) {
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 200).', flags: MessageFlags.Ephemeral });
+                const amount = Math.floor(Number(interaction.fields.getTextInputValue('eco_gv_amount')));
+                if (!Number.isSafeInteger(amount) || amount <= 0) {
+                    return interaction.reply({ content: '⚠️ Enter a valid amount (e.g.: 200).', flags: MessageFlags.Ephemeral });
+                }
+                if (asset !== 'coins') {
+                    return interaction.reply({ content: '⚠️ This transfer panel is outdated. Coins are the only supported currency.', flags: MessageFlags.Ephemeral });
                 }
 
-                const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
+                const { econData: eData, checkEconUser, saveEcon, recordDailyCoinTransfer, DAILY_COIN_TRANSFER_LIMIT } = require('../economy/econStore');
                 const { ASSET_LABELS, closeRow } = require('../../data/commands/economy/give');
-                const { getPrice: gpGive } = require('../economy/market');
                 checkEconUser(ownerId);
                 checkEconUser(targetId);
                 const sender = eData[ownerId];
                 const recv   = eData[targetId];
 
-                if (sender[asset] < amount) {
-                    return interaction.reply({ content: `⚠️ ${asset.toUpperCase()} kugu filna ma lihid. Haysataa: **${sender[asset]}**`, flags: MessageFlags.Ephemeral });
+                if ((sender.coins || 0) < amount) {
+                    return interaction.reply({ content: `⚠️ You do not have enough Coins. Wallet balance: **${sender.coins || 0}**.`, flags: MessageFlags.Ephemeral });
                 }
 
-                // Daily BTC give limit: 5,000 BTC/day
-                const GIVE_DAILY_LIMIT = 5_000;
-                const btcAmount = asset === 'btc' ? amount : Math.round(amount * (gpGive(asset) || 0));
-                const today = new Date().toISOString().slice(0, 10);
-                sender.dailyGiven ??= { date: '', usd: 0 };
-                if (sender.dailyGiven.date !== today) sender.dailyGiven = { date: today, usd: 0 };
-                if (sender.dailyGiven.usd + btcAmount > GIVE_DAILY_LIMIT) {
-                    const remaining = Math.max(0, GIVE_DAILY_LIMIT - sender.dailyGiven.usd);
-                    return interaction.reply({ content: `⚠️ **Maalineed ₿: ${GIVE_DAILY_LIMIT.toLocaleString()} xad** — hadhay: **₿: ${remaining.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                const transfer = recordDailyCoinTransfer(ownerId, amount);
+                if (!transfer.ok) {
+                    return interaction.reply({ content: `⚠️ Daily transfer limit: **${DAILY_COIN_TRANSFER_LIMIT.toLocaleString()} Coins**. Remaining today: **🪙${transfer.remaining.toLocaleString()}**.`, flags: MessageFlags.Ephemeral });
                 }
-                sender.dailyGiven.usd += btcAmount;
 
-                sender[asset] -= amount;
-                recv[asset]   += amount;
+                sender.coins -= amount;
+                recv.coins = (recv.coins || 0) + amount;
                 saveEcon();
 
                 return interaction.update({ embeds: [
                     new EmbedBuilder()
-                        .setTitle('💸 Lacag la Diray')
+                        .setTitle('💸 Coins Sent')
                         .setColor('#2ecc71')
                         .setDescription(
-                            `✅ **${amount} ${asset.toUpperCase()}** u diray <@${targetId}>!\n` +
-                            `${ASSET_LABELS[asset]}: **${sender[asset]}** (hadhay)`
+                            `✅ Sent **${amount} ${ASSET_LABELS[asset]}** to <@${targetId}>.\n` +
+                            `Your remaining balance: **${sender.coins} Coins**.`
                         )
                         .setFooter({ text: 'Garaad Economy' }),
                 ], components: [closeRow(ownerId)] });
@@ -161,7 +157,7 @@ module.exports = function setupInteractionHandler(client) {
 
                 const amount = parseInt(interaction.fields.getTextInputValue('eco_eb_amount'));
                 if (!amount || isNaN(amount) || amount <= 0) {
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 500).', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount (e.g.: 500).', flags: MessageFlags.Ephemeral });
                 }
 
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
@@ -171,38 +167,38 @@ module.exports = function setupInteractionHandler(client) {
                 const bankLabel = bank.charAt(0).toUpperCase() + bank.slice(1);
 
                 if (action === 'deposit') {
-                    if ((d.btc || 0) < amount) {
-                        return interaction.reply({ content: `⚠️ Not enough BTC. Wallet: **₿ ${(d.btc || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                    if ((d.coins || 0) < amount) {
+                        return interaction.reply({ content: `⚠️ Not enough Coins. Wallet: **🪙 ${(d.coins || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
                     }
-                    d.btc         = (d.btc || 0) - amount;
+                    d.coins         = (d.coins || 0) - amount;
                     d.banks[bank] += amount;
                     saveEcon();
                     return interaction.update({ embeds: [new EmbedBuilder()
                         .setTitle('🏦 Deposit — Success!')
                         .setColor('#27ae60')
                         .addFields(
-                            { name: '💰 Deposited',     value: `**+₿ ${amount.toLocaleString()}**`,          inline: true },
-                            { name: '🏦 Bank Balance',  value: `**₿ ${d.banks[bank].toLocaleString()}**`,    inline: true },
-                            { name: '💳 Wallet',        value: `**₿ ${(d.btc||0).toLocaleString()}**`,      inline: true },
+                            { name: '💰 Deposited',     value: `**+🪙 ${amount.toLocaleString()}**`,          inline: true },
+                            { name: '🏦 Bank Balance',  value: `**🪙 ${d.banks[bank].toLocaleString()}**`,    inline: true },
+                            { name: '💳 Wallet',        value: `**🪙 ${(d.coins||0).toLocaleString()}**`,      inline: true },
                         )
                         .setFooter({ text: 'Garaad Bank • 1% daily interest on deposits' }),
                     ], components: [closeRow(ownerId)] });
                 } else {
                     const bankBal = d.banks?.[bank] || 0;
                     if (bankBal < amount) {
-                        return interaction.reply({ content: `⚠️ Garaad Bank kugu filna ma lihid. Haysataa: **₿ ${bankBal.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: `⚠️ Garaad Bank enough for you do not have. You have: **🪙 ${bankBal.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
                     }
                     d.banks        = d.banks || {};
                     d.banks[bank] -= amount;
-                    d.btc          = (d.btc || 0) + amount;
+                    d.coins          = (d.coins || 0) + amount;
                     saveEcon();
                     return interaction.update({ embeds: [new EmbedBuilder()
                         .setTitle('🏦 Withdrawal — Success!')
                         .setColor('#2980b9')
                         .addFields(
-                            { name: '💰 Withdrawn',     value: `**-₿ ${amount.toLocaleString()}**`,          inline: true },
-                            { name: '🏦 Bank Balance',  value: `**₿ ${d.banks[bank].toLocaleString()}**`,    inline: true },
-                            { name: '💳 Wallet',        value: `**₿ ${(d.btc||0).toLocaleString()}**`,      inline: true },
+                            { name: '💰 Withdrawn',     value: `**-🪙 ${amount.toLocaleString()}**`,          inline: true },
+                            { name: '🏦 Bank Balance',  value: `**🪙 ${d.banks[bank].toLocaleString()}**`,    inline: true },
+                            { name: '💳 Wallet',        value: `**🪙 ${(d.coins||0).toLocaleString()}**`,      inline: true },
                         )
                         .setFooter({ text: 'Garaad Bank • Funds available instantly' }),
                     ], components: [closeRow(ownerId)] });
@@ -220,9 +216,9 @@ module.exports = function setupInteractionHandler(client) {
                 const amount      = parseInt(interaction.fields.getTextInputValue('eco_eb_amount'));
 
                 if (!amount || isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 500).', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount (e.g.: 500).', flags: MessageFlags.Ephemeral });
 
-                const { econData: eData, checkEconUser, saveEcon, addToTreasury } = require('../economy/econStore');
+                const { econData: eData, checkEconUser, saveEcon, addToTreasury, getSpendableCoins, spendCoins } = require('../economy/econStore');
                 const { addTx, getAllPublicBanks, saveBanks } = require('../economy/bankStore');
                 const { closeRow } = require('../../data/commands/economy/ebank');
                 checkEconUser(ownerId);
@@ -239,14 +235,14 @@ module.exports = function setupInteractionHandler(client) {
                     if (found) targetId = found[0];
                 }
                 if (!targetId)
-                    return interaction.reply({ content: `⚠️ **"${targetInput}"** — qof lama helin. Username ama ID saxan geli.`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `⚠️ **"${targetInput}"** — player not found. Username ama ID saxan geli.`, flags: MessageFlags.Ephemeral });
                 if (targetId === ownerId)
                     return interaction.reply({ content: '⚠️ Adiga nafta uma dirin kartid.', flags: MessageFlags.Ephemeral });
 
                 checkEconUser(targetId);
                 const sender = eData[ownerId];
                 if ((sender.banks?.garaad || 0) < amount)
-                    return interaction.reply({ content: `⚠️ Garaad Bank-kaagu ma filna. Haysataa: **₿${(sender.banks?.garaad || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `⚠️ Garaad Bank-kaagu is not enough. You have: **🪙${(sender.banks?.garaad || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
 
                 const TRANSFER_TAX = 0.05;
                 const tax      = Math.max(1, Math.floor(amount * TRANSFER_TAX));
@@ -280,9 +276,9 @@ module.exports = function setupInteractionHandler(client) {
                             (b.id   || '').toLowerCase() === bankInput
                         );
                         if (!pubBank)
-                            return interaction.reply({ content: `⚠️ **"${bankInput}"** — bank lama helin. "garaad", personal bank ama public bank magaciisa qor.`, flags: MessageFlags.Ephemeral });
+                            return interaction.reply({ content: `⚠️ **"${bankInput}"** — bank not found. "garaad", personal bank ama public bank magaciisa qor.`, flags: MessageFlags.Ephemeral });
                         if ((Date.now() - (pubBank.lastActivity || pubBank.createdAt)) >= PUB_EXP)
-                            return interaction.reply({ content: `⚠️ **${pubBank.name}** waa la xiray.`, flags: MessageFlags.Ephemeral });
+                            return interaction.reply({ content: `⚠️ **${pubBank.name}** was closed.`, flags: MessageFlags.Ephemeral });
                         pubBank.balance       = (pubBank.balance || 0) + received;
                         pubBank.totalDeposits = (pubBank.totalDeposits || 0) + received;
                         pubBank.lastActivity  = Date.now();
@@ -303,10 +299,10 @@ module.exports = function setupInteractionHandler(client) {
                     .setColor('#27ae60')
                     .setDescription(`**${interaction.user.username}** → **${receiverName}** (${destLabel})`)
                     .addFields(
-                        { name: '💰 La diray',   value: `**₿${amount.toLocaleString()}**`,                          inline: true },
-                        { name: '🏛️ Canshuur 5%', value: `**-₿${tax.toLocaleString()}**`,                           inline: true },
-                        { name: '✅ La helay',    value: `**₿${received.toLocaleString()}**`,                        inline: true },
-                        { name: '🏦 Bangigaaga',  value: `**₿${(sender.banks?.garaad || 0).toLocaleString()}**`,    inline: true },
+                        { name: '💰 La diray',   value: `**🪙${amount.toLocaleString()}**`,                          inline: true },
+                        { name: '🏛️ Canshuur 5%', value: `**-🪙${tax.toLocaleString()}**`,                           inline: true },
+                        { name: '✅ La helay',    value: `**🪙${received.toLocaleString()}**`,                        inline: true },
+                        { name: '🏦 Bankaga',  value: `**🪙${(sender.banks?.garaad || 0).toLocaleString()}**`,    inline: true },
                         { name: '📍 Galay',       value: `**${destLabel}**`,                                        inline: true },
                     )
                     .setFooter({ text: 'Garaad Bank • 5% canshuur' }),
@@ -324,114 +320,10 @@ module.exports = function setupInteractionHandler(client) {
                 }
             }
 
-            // ── Cashflip: amount modal submit ──
-            if (interaction.customId.startsWith('eco_cfmod_')) {
-                const rest    = interaction.customId.replace('eco_cfmod_', '');
-                const lastUnd = rest.lastIndexOf('_');
-                const asset   = rest.substring(0, lastUnd);
-                const ownerId = rest.substring(lastUnd + 1);
-
-                if (interaction.user.id !== ownerId) {
-                    return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-                }
-
-                const amountStr = interaction.fields.getTextInputValue('eco_cf_amount');
-                const amount    = parseFloat(amountStr);
-
-                if (!amount || isNaN(amount) || amount <= 0) {
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 100).', flags: MessageFlags.Ephemeral });
-                }
-
-                const { econData: eData, checkEconUser, saveEcon, addToTreasury, trackEarning } = require('../economy/econStore');
-                const { ASSET_LABELS, closeRow } = require('../../data/commands/economy/cashflip');
-                const { getPrice } = require('../economy/market');
-                checkEconUser(ownerId);
-                const d = eData[ownerId];
-
-                if (d[asset] < amount) {
-                    return interaction.reply({ content: `⚠️ ${asset.toUpperCase()} kugu filna ma lihid. Haysataa: **${d[asset]}**`, flags: MessageFlags.Ephemeral });
-                }
-
-                // Show flipping animation immediately
-                await interaction.update({ embeds: [
-                    new EmbedBuilder()
-                        .setTitle('🪙 Cashflip — La Raadinayaa...')
-                        .setColor('#f39c12')
-                        .setDescription(`🎰 **${amount} ${asset.toUpperCase()}** la ciyaarayaa...\n\n⏳ _Sugso xogtaada..._`)
-                        .setFooter({ text: '50/50 chance • Garaad Economy' }),
-                ], components: [] });
-
-                // Wait 1.2 seconds then reveal result
-                await new Promise(r => setTimeout(r, 1200));
-
-                const { WIN_MULTI } = require('../../data/commands/economy/cashflip');
-                const { fmt: cfFmt } = require('../utils/helpers');
-                const win = Math.random() < 0.50;
-                if (win) {
-                    const profit = Math.floor(amount * WIN_MULTI);
-                    d[asset] += profit;
-                    const fee    = amount - profit;
-                    const feeUsd = asset === 'usd' ? fee : Math.round(fee * (getPrice(asset) || 0));
-                    addToTreasury(feeUsd);
-                    trackEarning(ownerId, asset === 'usd' ? profit : Math.round(profit * (getPrice(asset) || 0)));
-                } else {
-                    d[asset] -= amount;
-                    const usdLoss = asset === 'usd' ? amount : Math.round(amount * (getPrice(asset) || 0));
-                    addToTreasury(usdLoss);
-                }
-                saveEcon();
-
-                const profitAmt = `${cfFmt(Math.floor(amount * WIN_MULTI))} ${asset.toUpperCase()}`;
-                const lossAmt   = `${cfFmt(amount)} ${asset.toUpperCase()}`;
-                const balLabel  = `${cfFmt(d[asset])} ${asset.toUpperCase()}`;
-
-                await interaction.editReply({ embeds: [
-                    new EmbedBuilder()
-                        .setTitle(win ? '✅ Ecoflip: Guul ✅' : '❌ Ecoflip: Guuldarro ❌')
-                        .setColor(win ? '#2ecc71' : '#e74c3c')
-                        .setDescription(
-                            win
-                                ? `Suuqa ayaa kuu shaqeeyay. 📈\n\n💸 **Faa'iido:** +${profitAmt}\n💰 **Balance Cusub:** ${balLabel}\n\n🔄 Isticmaal \`?trade\` si aad u tijaabiso mar kale.\n\n✨ **Garaad Economy**`
-                                : `Suuqa kuma taageerin. 📉\n\n💸 **Qasaaro:** -${lossAmt}\n💰 **Balance Cusub:** ${balLabel}\n\n🔄 Isticmaal \`?trade\` si aad u tijaabiso fursad kale.\n\n✨ **Garaad Economy**`
-                        ),
-                ], components: [closeRow(ownerId)] });
-            }
-
-            // ── Trade: amount modal submit ──
-            if (interaction.customId.startsWith('eco_tmod_')) {
-                const rest    = interaction.customId.replace('eco_tmod_', '');
-                const lastUnd = rest.lastIndexOf('_');
-                const asset   = rest.substring(0, lastUnd);
-                const ownerId = rest.substring(lastUnd + 1);
-
-                if (interaction.user.id !== ownerId) {
-                    return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-                }
-
-                const amountStr = interaction.fields.getTextInputValue('eco_trade_amount');
-                const amount    = parseFloat(amountStr);
-
-                if (!amount || isNaN(amount) || amount <= 0) {
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 2).', flags: MessageFlags.Ephemeral });
-                }
-
-                const { econData: eData, checkEconUser } = require('../economy/econStore');
-                const { getPrice }                        = require('../economy/market');
-                const { buildConfirmEmbed, confirmRow }   = require('../../data/commands/economy/trade');
-                checkEconUser(ownerId);
-                const d     = eData[ownerId];
-                const price = getPrice(asset);
-
-                return interaction.reply({
-                    embeds:     [buildConfirmEmbed(asset, amount, price, d)],
-                    components: [confirmRow(asset, amount, price, ownerId)],
-                });
-            }
-
             // ── Admin: Add/Remove Admin modal submit (owner only) ──
             if (interaction.customId.startsWith('admin_m_addadmin_')) {
                 if (interaction.user.id !== OWNER_ID)
-                    return interaction.reply({ content: '⛔ Owner kaliya.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⛔ Owner only.', flags: MessageFlags.Ephemeral });
                 const targetId = interaction.fields.getTextInputValue('target_id').trim();
                 const action   = (interaction.fields.getTextInputValue('action') || '').trim().toLowerCase();
                 const { addAdmin, removeAdmin, listAdmins } = require('../utils/admin');
@@ -440,7 +332,7 @@ module.exports = function setupInteractionHandler(client) {
                     await notifyAdmins(interaction.client, interaction.user, `Add Admin: <@${targetId}>`);
                     return interaction.reply({
                         content: added
-                            ? `✅ <@${targetId}> admin-yada lagu daray. Admins: **${listAdmins().length}**`
+                            ? `✅ <@${targetId}> admin-yada added to. Admins: **${listAdmins().length}**`
                             : `⚠️ <@${targetId}> horay u ahaa admin.`,
                         flags: MessageFlags.Ephemeral,
                     });
@@ -463,12 +355,12 @@ module.exports = function setupInteractionHandler(client) {
                 if (!require('../utils/admin').isAdmin(interaction.user.id))
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
                 const text = interaction.fields.getTextInputValue('msg').trim();
-                if (!text) return interaction.reply({ content: '⚠️ Fariin maxaad qortay?', flags: MessageFlags.Ephemeral });
+                if (!text) return interaction.reply({ content: '⚠️ Message maxaad qortay?', flags: MessageFlags.Ephemeral });
                 const { userData: uData } = require('../store');
                 const userIds = Object.keys(uData);
-                await interaction.reply({ content: `📢 Fariin loo dirayaa **${userIds.length}** user...`, flags: MessageFlags.Ephemeral });
+                await interaction.reply({ content: `📢 Message loo dirayaa **${userIds.length}** user...`, flags: MessageFlags.Ephemeral });
                 const broadEmbed = new EmbedBuilder()
-                    .setTitle('📢 Garaad Bot — Fariin Rasmi ah')
+                    .setTitle('📢 Garaad Bot — Message Rasmi ah')
                     .setDescription(text)
                     .setColor('#3498db')
                     .setFooter({ text: 'Garaad Bot' })
@@ -487,7 +379,7 @@ module.exports = function setupInteractionHandler(client) {
                 return interaction.editReply({ content: `✅ La gaadhsiiyay: **${success}** | ❌ Kuma gaadhsiin: **${failed}**` });
             }
 
-            // ── Admin: Give IQ or BTC (combined modal) ──
+            // ── Admin: Give IQ or Coins (combined modal) ──
             if (interaction.customId.startsWith('admin_m_give_')) {
                 if (!require('../utils/admin').isAdmin(interaction.user.id))
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
@@ -496,8 +388,8 @@ module.exports = function setupInteractionHandler(client) {
                 const parts     = raw.split(/\s+/);
                 const type      = parts[0];
                 const amount    = parseFloat(parts[1]);
-                if ((type !== 'iq' && type !== 'btc') || isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Qaabka: `iq 200`  ama  `btc 500`', flags: MessageFlags.Ephemeral });
+                if ((type !== 'iq' && type !== 'coins') || isNaN(amount) || amount <= 0)
+                    return interaction.reply({ content: '⚠️ Qaabka: `iq 200`  ama  `coins 500`', flags: MessageFlags.Ephemeral });
 
                 if (type === 'iq') {
                     const { userData: uData, saveData } = require('../store');
@@ -506,14 +398,14 @@ module.exports = function setupInteractionHandler(client) {
                     uData[targetId].iq = Math.max(0, (uData[targetId].iq || 0) + amount);
                     saveData();
                     await notifyAdmins(interaction.client, interaction.user, `Give IQ: **+${amount} IQ** → <@${targetId}>`);
-                    return interaction.reply({ content: `✅ <@${targetId}> **+${amount} IQ**. Hadda: **${uData[targetId].iq} IQ**`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `✅ <@${targetId}> **+${amount} IQ**. Current: **${uData[targetId].iq} IQ**`, flags: MessageFlags.Ephemeral });
                 } else {
                     const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                     checkEconUser(targetId);
-                    eData[targetId].btc = (eData[targetId].btc || 0) + amount;
+                    eData[targetId].coins = (eData[targetId].coins || 0) + amount;
                     saveEcon();
-                    await notifyAdmins(interaction.client, interaction.user, `Give BTC: **+₿: ${amount.toLocaleString()}** → <@${targetId}>`);
-                    return interaction.reply({ content: `✅ <@${targetId}> **+₿: ${amount.toLocaleString()}**. Hadda: **₿: ${eData[targetId].btc.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                    await notifyAdmins(interaction.client, interaction.user, `Give Coins: **+🪙: ${amount.toLocaleString()}** → <@${targetId}>`);
+                    return interaction.reply({ content: `✅ <@${targetId}> **+🪙: ${amount.toLocaleString()}**. Current: **🪙: ${eData[targetId].coins.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
                 }
             }
 
@@ -523,8 +415,8 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
                 const targetId = interaction.fields.getTextInputValue('target_id').trim();
                 const amount   = parseFloat(interaction.fields.getTextInputValue('amount').replace(/,/g, ''));
-                if (isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 5000).', flags: MessageFlags.Ephemeral });
+                if (!Number.isFinite(amount) || amount <= 0)
+                    return interaction.reply({ content: '⚠️ Enter a valid amount (e.g.: 5000).', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { fmt } = require('../utils/helpers');
                 checkEconUser(targetId);
@@ -532,8 +424,8 @@ module.exports = function setupInteractionHandler(client) {
                 eData[targetId].banks.garaad ??= 0;
                 eData[targetId].banks.garaad  += amount;
                 saveEcon();
-                await notifyAdmins(interaction.client, interaction.user, `Transfer → Bank: **+₿ ${fmt(amount)}** → <@${targetId}>`);
-                return interaction.reply({ content: `✅ <@${targetId}> bangiga **+₿ ${fmt(amount)}** lagu daray.\n🏦 Hadda: **₿ ${fmt(eData[targetId].banks.garaad)}**`, flags: MessageFlags.Ephemeral });
+                await notifyAdmins(interaction.client, interaction.user, `Transfer → Bank: **+🪙 ${fmt(amount)}** → <@${targetId}>`);
+                return interaction.reply({ content: `✅ <@${targetId}> bank **+🪙 ${fmt(amount)}** added to.\n🏦 Current: **🪙 ${fmt(eData[targetId].banks.garaad)}**`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin: Give All IQ modal submit ──
@@ -542,7 +434,7 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
                 const amount = parseInt(interaction.fields.getTextInputValue('amount'), 10);
                 if (isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 100).', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount (e.g.: 100).', flags: MessageFlags.Ephemeral });
                 const { userData: uData, saveData: sd } = require('../store');
                 const { checkUser: cu } = require('../utils/helpers');
                 const users = Object.keys(uData);
@@ -552,24 +444,24 @@ module.exports = function setupInteractionHandler(client) {
                 }
                 sd();
                 await notifyAdmins(interaction.client, interaction.user, `Give All IQ: **+${amount} IQ** × ${users.length} players`);
-                return interaction.reply({ content: `✅ **${users.length}** players qof walba wuxuu helay **+${amount} IQ**`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${users.length}** players each player wuxuu helay **+${amount} IQ**`, flags: MessageFlags.Ephemeral });
             }
 
-            if (interaction.customId.startsWith('admin_m_giveall_btc_')) {
+            if (interaction.customId.startsWith('admin_m_giveall_coins_')) {
                 if (!require('../utils/admin').isAdmin(interaction.user.id))
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
-                const amount = parseFloat(interaction.fields.getTextInputValue('amount').replace(/,/g, ''));
-                if (isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 5000).', flags: MessageFlags.Ephemeral });
+                const amount = Math.floor(parseFloat(interaction.fields.getTextInputValue('amount').replace(/,/g, '')));
+                if (!Number.isFinite(amount) || amount <= 0)
+                    return interaction.reply({ content: '⚠️ Enter a valid amount (e.g.: 5000).', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const users = Object.keys(eData).filter(k => /^\d{17,19}$/.test(k));
                 for (const uid of users) {
                     checkEconUser(uid);
-                    eData[uid].btc = (eData[uid].btc || 0) + amount;
+                    eData[uid].coins = (eData[uid].coins || 0) + amount;
                 }
                 saveEcon();
-                await notifyAdmins(interaction.client, interaction.user, `Give All BTC: **+₿ ${amount.toLocaleString()}** × ${users.length} players`);
-                return interaction.reply({ content: `✅ **${users.length}** players qof walba wuxuu helay **₿ ${amount.toLocaleString()}**. Wadarta: **₿ ${ (amount * users.length).toLocaleString() }**`, flags: MessageFlags.Ephemeral });
+                await notifyAdmins(interaction.client, interaction.user, `Give All Coins: **+🪙 ${amount.toLocaleString()}** × ${users.length} players`);
+                return interaction.reply({ content: `✅ Each of **${users.length}** players received **🪙${amount.toLocaleString()} Coins**. Total distributed: **🪙${(amount * users.length).toLocaleString()} Coins**.`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Aqoon modal: Give IQ ──
@@ -580,12 +472,12 @@ module.exports = function setupInteractionHandler(client) {
                 const { checkUser } = require('../utils/helpers');
                 const targetId = interaction.fields.getTextInputValue('target_id').trim();
                 const amount   = parseInt(interaction.fields.getTextInputValue('amount'), 10);
-                if (isNaN(amount) || amount === 0) return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                if (isNaN(amount) || amount === 0) return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 checkUser(targetId);
                 uData[targetId].iq = Math.max(0, (uData[targetId].iq || 0) + amount);
                 saveData();
                 await notifyAdmins(interaction.client, interaction.user, `Give IQ: **${amount > 0 ? '+' : ''}${amount} IQ** → <@${targetId}>`);
-                return interaction.reply({ content: `✅ <@${targetId}> wuxuu helay **${amount > 0 ? '+' : ''}${amount} IQ**. Hadda: **${uData[targetId].iq} IQ**`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ <@${targetId}> wuxuu helay **${amount > 0 ? '+' : ''}${amount} IQ**. Current: **${uData[targetId].iq} IQ**`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Aqoon modal: Reset All ──
@@ -611,7 +503,7 @@ module.exports = function setupInteractionHandler(client) {
                 }
                 sd();
                 await notifyAdmins(interaction.client, interaction.user, `Reset All Aqoon — IQ, darajo, stats eber (${users.length} users)`);
-                return interaction.reply({ content: `✅ **${users.length} qof** aqoon dib loo dejiyay — IQ, darajo, stats eber.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${users.length} player** aqoon reset — IQ, darajo, stats eber.`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Aqoon modal: Champion ──
@@ -637,7 +529,7 @@ module.exports = function setupInteractionHandler(client) {
             // ── Admin modal: Reset (combined IQ + Eco, owner only) ──
             if (interaction.customId.startsWith('admin_m_reset_')) {
                 if (interaction.user.id !== OWNER_ID)
-                    return interaction.reply({ content: '⛔ Owner kaliya.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⛔ Owner only.', flags: MessageFlags.Ephemeral });
                 const password  = interaction.fields.getTextInputValue('password').trim();
                 if (password !== OWNER_PASS)
                     return interaction.reply({ content: '⛔ Password qalad ah.', flags: MessageFlags.Ephemeral });
@@ -664,7 +556,7 @@ module.exports = function setupInteractionHandler(client) {
                     for (const uid of list) {
                         checkEconUser(uid);
                         const d = eData[uid];
-                        d.btc = 1000;
+                        d.coins = 1000;
                         d.banks = { garaad: 0 };
                         d.inventory = { safety: 0, robticket: 0 };
                         d.loan = null; d.lastLoanTaken = 0;
@@ -689,7 +581,7 @@ module.exports = function setupInteractionHandler(client) {
 
                 const scope = resetAll ? 'dhammaan players' : `<@${targetId}>`;
                 await notifyAdmins(interaction.client, interaction.user, `Reset **${resetType}** — ${scope}`);
-                return interaction.reply({ content: `✅ **${resetType}** dib loo dejiyay — ${scope}.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${resetType}** reset — ${scope}.`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Aqoon modal: Reset (legacy) ──
@@ -713,22 +605,22 @@ module.exports = function setupInteractionHandler(client) {
                 if (!user) return interaction.reply({ content: '⚠️ User la heli waayo.', flags: MessageFlags.Ephemeral });
                 await user.send(msg).catch(() => {});
                 await notifyAdmins(interaction.client, interaction.user, `DM sent → <@${targetId}>: "${msg.slice(0, 80)}${msg.length > 80 ? '…' : ''}"`);
-                return interaction.reply({ content: `✅ DM la diray <@${targetId}>.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ DM sent <@${targetId}>.`, flags: MessageFlags.Ephemeral });
             }
 
-            // ── Admin Econ modal: Give USD ──
-            if (interaction.customId.startsWith('admin_eco_m_giveusd_')) {
+            // ── Admin Econ modal: Give Coins ──
+            if (interaction.customId.startsWith('admin_eco_m_givecoins_') || interaction.customId.startsWith('admin_eco_m_giveusd_')) {
                 if (!require('../utils/admin').isAdmin(interaction.user.id))
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const targetId = interaction.fields.getTextInputValue('target_id').trim();
                 const amount   = parseFloat(interaction.fields.getTextInputValue('amount'));
-                if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 checkEconUser(targetId);
-                eData[targetId].btc = (eData[targetId].btc || 0) + amount;
+                eData[targetId].coins = (eData[targetId].coins || 0) + amount;
                 saveEcon();
-                await notifyAdmins(interaction.client, interaction.user, `Give BTC: **+₿: ${amount.toLocaleString()}** → <@${targetId}>`);
-                return interaction.reply({ content: `✅ **₿: ${amount.toLocaleString()}** waxaad u diray <@${targetId}>. Hadda: **₿: ${eData[targetId].btc.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                await notifyAdmins(interaction.client, interaction.user, `Give Coins: **+🪙: ${amount.toLocaleString()}** → <@${targetId}>`);
+                return interaction.reply({ content: `✅ **🪙: ${amount.toLocaleString()}** you sent <@${targetId}>. Current: **🪙: ${eData[targetId].coins.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Econ modal: Give Asset ──
@@ -739,13 +631,13 @@ module.exports = function setupInteractionHandler(client) {
                 const targetId = interaction.fields.getTextInputValue('target_id').trim();
                 const asset    = interaction.fields.getTextInputValue('asset').trim().toLowerCase();
                 const amount   = parseFloat(interaction.fields.getTextInputValue('amount'));
-                if (asset !== 'btc') return interaction.reply({ content: '⚠️ Asset: `btc` kaliya', flags: MessageFlags.Ephemeral });
-                if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                if (asset !== 'coins') return interaction.reply({ content: '⚠️ Asset: `coins` only', flags: MessageFlags.Ephemeral });
+                if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 checkEconUser(targetId);
-                eData[targetId].btc = (eData[targetId].btc || 0) + amount;
+                eData[targetId].coins = (eData[targetId].coins || 0) + amount;
                 saveEcon();
-                await notifyAdmins(interaction.client, interaction.user, `Give Asset (BTC): **+₿: ${amount.toLocaleString()}** → <@${targetId}>`);
-                return interaction.reply({ content: `✅ **₿: ${amount.toLocaleString()}** waxaad u diray <@${targetId}>. Hadda: **₿: ${eData[targetId].btc.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                await notifyAdmins(interaction.client, interaction.user, `Give Asset (Coins): **+🪙: ${amount.toLocaleString()}** → <@${targetId}>`);
+                return interaction.reply({ content: `✅ **🪙: ${amount.toLocaleString()}** you sent <@${targetId}>. Current: **🪙: ${eData[targetId].coins.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Econ modal: Give Bank ──
@@ -756,14 +648,14 @@ module.exports = function setupInteractionHandler(client) {
                 const targetId = interaction.fields.getTextInputValue('target_id').trim();
                 const bank     = interaction.fields.getTextInputValue('bank').trim().toLowerCase();
                 const amount   = parseFloat(interaction.fields.getTextInputValue('amount'));
-                if (bank !== 'garaad') return interaction.reply({ content: '⚠️ Bank: `garaad` kaliya', flags: MessageFlags.Ephemeral });
-                if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                if (bank !== 'garaad') return interaction.reply({ content: '⚠️ Bank: `garaad` only', flags: MessageFlags.Ephemeral });
+                if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 checkEconUser(targetId);
                 eData[targetId].banks[bank] = (eData[targetId].banks[bank] || 0) + amount;
                 saveEcon();
                 const bankLabel = bank.charAt(0).toUpperCase() + bank.slice(1);
-                await notifyAdmins(interaction.client, interaction.user, `Give Bank: **+₿: ${amount.toLocaleString()}** → <@${targetId}> (${bankLabel} Bank)`);
-                return interaction.reply({ content: `✅ **₿: ${amount.toLocaleString()}** waxaad u dejisay <@${targetId}> — 🏦 ${bankLabel} Bank. Hadda: **₿: ${eData[targetId].banks[bank].toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                await notifyAdmins(interaction.client, interaction.user, `Give Bank: **+🪙: ${amount.toLocaleString()}** → <@${targetId}> (${bankLabel} Bank)`);
+                return interaction.reply({ content: `✅ **🪙: ${amount.toLocaleString()}** you u dejisay <@${targetId}> — 🏦 ${bankLabel} Bank. Current: **🪙: ${eData[targetId].banks[bank].toLocaleString()}**`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Econ modal: Give Title ──
@@ -782,7 +674,7 @@ module.exports = function setupInteractionHandler(client) {
                 d.activeEconTitle = key;
                 saveEcon();
                 await notifyAdmins(interaction.client, interaction.user, `Give Title: **${info.label}** → <@${targetId}>`);
-                return interaction.reply({ content: `✅ <@${targetId}> waxaa la siiyay: **${info.label}** _(hadda firfircoon)_`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ <@${targetId}> waxaa given to: **${info.label}** _(now firfircoon)_`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Econ modal: Reset ──
@@ -797,19 +689,19 @@ module.exports = function setupInteractionHandler(client) {
                 const d = eData[targetId];
                 let msg = '';
                 if (resetWhat === 'wallet') {
-                    d.btc = 1000;
-                    msg = `💼 Wallet reset to **1,000 BTC**`;
+                    d.coins = 1000;
+                    msg = `💼 Wallet reset to **1,000 Coins**`;
                 } else if (resetWhat === 'bank') {
                     d.banks = { garaad: 0 };
                     d.loan = null;
-                    msg = `🏦 Bank reset to **0 BTC** (loan cleared)`;
+                    msg = `🏦 Bank reset to **0 Coins** (loan cleared)`;
                 } else {
-                    d.btc = 1000;
+                    d.coins = 1000;
                     d.banks = { garaad: 0 };
                     d.inventory = { safety: 0, robticket: 0 };
                     d.loan = null; d.lastLoanTaken = 0;
                     d.econTitles = []; d.activeEconTitle = null; d.customEconTitle = null;
-                    msg = `♻️ Full economy reset — wallet **1,000 BTC**, bank **0**, loan cleared`;
+                    msg = `♻️ Full economy reset — wallet **1,000 Coins**, bank **0**, loan cleared`;
                 }
                 saveEcon();
                 await notifyAdmins(interaction.client, interaction.user, `Reset User Economy: <@${targetId}> — ${msg}`);
@@ -822,7 +714,7 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
                 const password = interaction.fields.getTextInputValue('password').trim();
                 if (password !== OWNER_PASS)
-                    return interaction.reply({ content: '⛔ Password qalad ah. Awood ma lihid.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⛔ Password qalad ah. Awood do not have.', flags: MessageFlags.Ephemeral });
                 const action = interaction.fields.getTextInputValue('action').trim().toLowerCase();
                 const { econData: eData, checkEconUser, saveEcon, getTreasury, deductFromTreasury } = require('../economy/econStore');
                 const t = getTreasury();
@@ -835,32 +727,32 @@ module.exports = function setupInteractionHandler(client) {
                         return interaction.reply({ content: '⚠️ Xaddad geli ama "all" qor.', flags: MessageFlags.Ephemeral });
                     const perUser = Math.floor(amount / users.length);
                     if (perUser < 1)
-                        return interaction.reply({ content: '⚠️ Xaddadka aad yar — dadku aad baa u badan.', flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: '⚠️ Amount aad yar — dadku aad baa u badan.', flags: MessageFlags.Ephemeral });
                     if (!deductFromTreasury(amount))
-                        return interaction.reply({ content: `⚠️ Khaznadda ma filna. Hadda: **₿: ${fmt((t.balance || 0))}**`, flags: MessageFlags.Ephemeral });
-                    for (const uid of users) { checkEconUser(uid); eData[uid].btc = (eData[uid].btc || 0) + perUser; }
+                        return interaction.reply({ content: `⚠️ Treasury is not enough. Current: **🪙: ${fmt((t.balance || 0))}**`, flags: MessageFlags.Ephemeral });
+                    for (const uid of users) { checkEconUser(uid); eData[uid].coins = (eData[uid].coins || 0) + perUser; }
                     saveEcon();
-                    await notifyAdmins(interaction.client, interaction.user, `Distribute Treasury: **₿: ${perUser.toLocaleString()}** × ${users.length} players`);
-                    return interaction.reply({ content: `✅ **₿: ${perUser.toLocaleString()}** × **${users.length}** players.\n🏛️ Treasury remaining: **₿: ${fmt((t.balance || 0))}**`, flags: MessageFlags.Ephemeral });
+                    await notifyAdmins(interaction.client, interaction.user, `Distribute Treasury: **🪙: ${perUser.toLocaleString()}** × ${users.length} players`);
+                    return interaction.reply({ content: `✅ **🪙: ${perUser.toLocaleString()}** × **${users.length}** players.\n🏛️ Treasury remaining: **🪙: ${fmt((t.balance || 0))}**`, flags: MessageFlags.Ephemeral });
                 }
 
                 if (action === 'give' || action === 'sii') {
                     const targetId = interaction.fields.getTextInputValue('amount').trim().split(/\s+/)[0];
                     const amount   = parseFloat(interaction.fields.getTextInputValue('amount').trim().split(/\s+/)[1]);
                     if (!targetId || isNaN(amount) || amount <= 0)
-                        return interaction.reply({ content: '⚠️ `give @userID xad` qaab isticmaal.', flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: '⚠️ `give @userID xad` qaab use.', flags: MessageFlags.Ephemeral });
                     if (!deductFromTreasury(amount))
-                        return interaction.reply({ content: `⚠️ Khaznadda ma filna. Hadda: **₿: ${fmt((t.balance || 0))}**`, flags: MessageFlags.Ephemeral });
+                        return interaction.reply({ content: `⚠️ Treasury is not enough. Current: **🪙: ${fmt((t.balance || 0))}**`, flags: MessageFlags.Ephemeral });
                     checkEconUser(targetId);
-                    eData[targetId].btc = (eData[targetId].btc || 0) + amount;
+                    eData[targetId].coins = (eData[targetId].coins || 0) + amount;
                     saveEcon();
-                    await notifyAdmins(interaction.client, interaction.user, `Treasury Give: **₿: ${amount.toLocaleString()}** → <@${targetId}>`);
-                    return interaction.reply({ content: `✅ Khaznadda **₿: ${amount.toLocaleString()}** waxaa laga siiyay <@${targetId}>.\n🏛️ Khaznad hadhay: **₿: ${fmt((t.balance || 0))}**`, flags: MessageFlags.Ephemeral });
+                    await notifyAdmins(interaction.client, interaction.user, `Treasury Give: **🪙: ${amount.toLocaleString()}** → <@${targetId}>`);
+                    return interaction.reply({ content: `✅ Treasury **🪙: ${amount.toLocaleString()}** waxaa laga siiyay <@${targetId}>.\n🏛️ Treasury hadhay: **🪙: ${fmt((t.balance || 0))}**`, flags: MessageFlags.Ephemeral });
                 }
 
                 // view
                 return interaction.reply({
-                    content: `🏛️ **Khaznadda:**\n💰 Hadda: **₿: ${fmt((t.balance || 0))}**\n📥 Wadarta soo gashay: **₿: ${fmt((t.totalIn || 0))}**\n📤 La qaybiyay: **₿: ${fmt(((t.totalIn || 0) - (t.balance || 0)))}**`,
+                    content: `🏛️ **Treasury:**\n💰 Current balance: **🪙 ${fmt(t.balance || 0)}**\n📥 Total in: **🪙 ${fmt(t.totalIn || 0)}**\n📤 Total out: **🪙 ${fmt(t.totalOut || 0)}**`,
                     flags: MessageFlags.Ephemeral,
                 });
             }
@@ -871,17 +763,17 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
                 const password = interaction.fields.getTextInputValue('password').trim();
                 if (password !== OWNER_PASS)
-                    return interaction.reply({ content: '⛔ Password qalad ah. Awood ma lihid.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⛔ Password qalad ah. Awood do not have.', flags: MessageFlags.Ephemeral });
                 const amount = parseFloat(interaction.fields.getTextInputValue('amount'));
                 if (isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { topUpTreasury, getTreasury, saveEcon } = require('../economy/econStore');
                 const { fmt } = require('../utils/helpers');
                 topUpTreasury(amount);
                 saveEcon();
                 const t = getTreasury();
-                await notifyAdmins(interaction.client, interaction.user, `Top-up Treasury: **+₿: ${amount.toLocaleString()}** — balance now **₿: ${t.balance.toLocaleString()}**`);
-                return interaction.reply({ content: `✅ **₿: ${amount.toLocaleString()}** khaznadda lagu daray.\n🏛️ Hadda: **₿: ${t.balance.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                await notifyAdmins(interaction.client, interaction.user, `Top-up Treasury: **+🪙: ${amount.toLocaleString()}** — balance now **🪙: ${t.balance.toLocaleString()}**`);
+                return interaction.reply({ content: `✅ **🪙: ${amount.toLocaleString()}** treasury added to.\n🏛️ Current: **🪙: ${t.balance.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Econ modal: Tax ──
@@ -890,10 +782,10 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
                 const password = interaction.fields.getTextInputValue('password').trim();
                 if (password !== OWNER_PASS)
-                    return interaction.reply({ content: '⛔ Password qalad ah. Awood ma lihid.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⛔ Password qalad ah. Awood do not have.', flags: MessageFlags.Ephemeral });
                 const amount = parseFloat(interaction.fields.getTextInputValue('amount'));
                 if (isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon, addToTreasury } = require('../economy/econStore');
                 const { fmt } = require('../utils/helpers');
                 const users = Object.entries(eData).filter(([k]) => /^[0-9]{17,19}$/.test(k));
@@ -901,15 +793,15 @@ module.exports = function setupInteractionHandler(client) {
                 for (const [uid] of users) {
                     checkEconUser(uid);
                     const d = eData[uid];
-                    const deduct = Math.min(amount, d.btc || 0);
-                    d.btc = (d.btc || 0) - deduct;
+                    const deduct = Math.min(amount, d.coins || 0);
+                    d.coins = (d.coins || 0) - deduct;
                     collected += deduct;
                 }
                 if (collected > 0) addToTreasury(collected);
                 saveEcon();
-                await notifyAdmins(interaction.client, interaction.user, `Tax: **₿: ${fmt(amount)}** × ${users.length} players → Treasury **+₿: ${fmt(collected)}**`);
+                await notifyAdmins(interaction.client, interaction.user, `Tax: **🪙: ${fmt(amount)}** × ${users.length} players → Treasury **+🪙: ${fmt(collected)}**`);
                 return interaction.reply({
-                    content: `💸 **Tax Collected**\n**₿: ${fmt(amount)}** ka baxday qof walba (${users.length} players)\n🏛️ Treasury helay: **₿: ${fmt(collected)}**`,
+                    content: `💸 **Tax Collected**\n**🪙: ${fmt(amount)}** ka baxday each player (${users.length} players)\n🏛️ Treasury helay: **🪙: ${fmt(collected)}**`,
                     flags: MessageFlags.Ephemeral,
                 });
             }
@@ -920,7 +812,7 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
                 const password = interaction.fields.getTextInputValue('password').trim();
                 if (password !== OWNER_PASS)
-                    return interaction.reply({ content: '⛔ Password qalad ah. Awood ma lihid.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⛔ Password qalad ah. Awood do not have.', flags: MessageFlags.Ephemeral });
                 const confirm = interaction.fields.getTextInputValue('confirm').trim().toUpperCase();
                 if (confirm !== 'RESET')
                     return interaction.reply({ content: '⚠️ "RESET" ayaad qori lahayd. La joojiyay.', flags: MessageFlags.Ephemeral });
@@ -929,10 +821,11 @@ module.exports = function setupInteractionHandler(client) {
                 const users = Object.keys(eData).filter(k => /^[0-9]{17,19}$/.test(k));
                 for (const uid of users) {
                     const d = eData[uid];
-                    d.banks = { mandeeq: 0, garaad: 0 };
+                    d.banks = { garaad: 0 };
                     d.inventory = { safety: 0, robticket: 0 };
                     d.loan = null; d.lastLoanTaken = 0; d.lastWork = 0; d.lastDaily = 0; d.lastInterest = 0;
-                    d.todayEarned = { date: '', usd: 0 }; d.dailyGiven = { date: '', usd: 0 };
+                    delete d.todayEarned;
+                    d.dailyGiven = { date: '', coins: 0 };
                     d.robsToday = { date: '', count: 0 };
                     d.serviceChargesPaid = { mandeeq: 0, garaad: 0 };
                     d.interestEarned = { mandeeq: 0, garaad: 0 };
@@ -940,16 +833,16 @@ module.exports = function setupInteractionHandler(client) {
                 }
                 saveEcon();
                 await notifyAdmins(interaction.client, interaction.user, `Reset All Economy — ${users.length} players`);
-                return interaction.reply({ content: `✅ **${users.length} qof** economy dib loo dejiyay.\n₿ Qof walba: **₿: ${(5000).toLocaleString()}** | Deyn, bank, assets — eber.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ Reset economy bank and item data for **${users.length} players**. Wallet balances were not changed.`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Admin Econ modal: Reset Any (single user or all) ──
             if (interaction.customId.startsWith('admin_eco_m_resetany_')) {
                 if (interaction.user.id !== OWNER_ID)
-                    return interaction.reply({ content: '⛔ Owner kaliya.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⛔ Owner only.', flags: MessageFlags.Ephemeral });
                 const password  = interaction.fields.getTextInputValue('password').trim();
                 if (password !== OWNER_PASS)
-                    return interaction.reply({ content: '⛔ Password qalad ah. Awood ma lihid.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⛔ Password qalad ah. Awood do not have.', flags: MessageFlags.Ephemeral });
                 const rawTarget = interaction.fields.getTextInputValue('target_id').trim().toLowerCase();
                 const resetAll  = !rawTarget || rawTarget === 'all';
                 const targetId  = resetAll ? null : rawTarget;
@@ -962,12 +855,12 @@ module.exports = function setupInteractionHandler(client) {
 
                 function applyReset(d, what) {
                     if (what === 'wallet') {
-                        d.btc = 1000;
+                        d.coins = 1000;
                     } else if (what === 'bank') {
                         d.banks = { garaad: 0 };
                         d.loan = null; d.lastLoanTaken = 0;
                     } else {
-                        d.btc = 1000;
+                        d.coins = 1000;
                         d.banks = { garaad: 0 };
                         d.inventory = { safety: 0, robticket: 0 };
                         d.loan = null; d.lastLoanTaken = 0;
@@ -980,13 +873,13 @@ module.exports = function setupInteractionHandler(client) {
                     for (const uid of users) { checkEconUser(uid); applyReset(eData[uid], resetWhat); }
                     saveEcon();
                     await notifyAdmins(interaction.client, interaction.user, `Reset ALL Economy (${resetWhat}) — ${users.length} players`);
-                    return interaction.reply({ content: `✅ **${users.length} qof** dhammaan economy dib loo dejiyay (**${resetWhat}**).`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `✅ **${users.length} player** dhammaan economy reset (**${resetWhat}**).`, flags: MessageFlags.Ephemeral });
                 } else {
                     checkEconUser(targetId);
                     applyReset(eData[targetId], resetWhat);
                     saveEcon();
                     await notifyAdmins(interaction.client, interaction.user, `Reset Economy (${resetWhat}): <@${targetId}>`);
-                    return interaction.reply({ content: `✅ <@${targetId}> economy dib loo dejiyay (**${resetWhat}**).`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `✅ <@${targetId}> economy reset (**${resetWhat}**).`, flags: MessageFlags.Ephemeral });
                 }
             }
 
@@ -999,17 +892,17 @@ module.exports = function setupInteractionHandler(client) {
                 if (interaction.user.id !== userId)
                     return interaction.reply({ content: '⚠️ Adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('wd_amount')));
-                if (!amount || amount <= 0) return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                if (!amount || amount <= 0) return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { getAllPublicBanks, saveBanks } = require('../economy/bankStore');
                 const { buildPubBankPanel } = require('../../data/commands/economy/personalBank');
                 checkEconUser(userId);
                 const ec   = eData[userId];
                 const bank = Object.values(getAllPublicBanks()).find(b => b.id === bankId || b.id === bankId.toUpperCase());
-                if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin.', flags: MessageFlags.Ephemeral });
+                if (!bank) return interaction.reply({ content: '⚠️ Bank not found.', flags: MessageFlags.Ephemeral });
                 const myRec = bank.customers?.[userId];
-                if (!myRec || (myRec.balance || 0) <= 0) return interaction.reply({ content: `⚠️ **${bank.name}** lacag kuma dhigin.`, flags: MessageFlags.Ephemeral });
-                if (amount > myRec.balance) return interaction.reply({ content: `⚠️ Haysataa: ₿${myRec.balance.toLocaleString()} kaliya.`, flags: MessageFlags.Ephemeral });
+                if (!myRec || (myRec.balance || 0) <= 0) return interaction.reply({ content: `⚠️ **${bank.name}** Coins kuma dhigin.`, flags: MessageFlags.Ephemeral });
+                if (amount > myRec.balance) return interaction.reply({ content: `⚠️ You have: 🪙${myRec.balance.toLocaleString()} only.`, flags: MessageFlags.Ephemeral });
                 const wdFee      = Math.floor(amount * 0.01);
                 const wdReceived = amount - wdFee;
                 if (wdFee > 0) {
@@ -1017,11 +910,11 @@ module.exports = function setupInteractionHandler(client) {
                 }
                 myRec.balance      -= amount;
                 bank.balance        = Math.max(0, (bank.balance || 0) - amount);
-                ec.btc              = (ec.btc || 0) + wdReceived;
+                ec.coins              = (ec.coins || 0) + wdReceived;
                 saveBanks(); saveEcon();
                 const { embed, components } = buildPubBankPanel(bank, userId);
                 return interaction.update({ embeds: [embed], components,
-                    content: `📤 **₿${wdReceived.toLocaleString()}** ← 🏛️ **${bank.name}** (1% fee: ₿${wdFee.toLocaleString()})` });
+                    content: `📤 **🪙${wdReceived.toLocaleString()}** ← 🏛️ **${bank.name}** (1% fee: 🪙${wdFee.toLocaleString()})` });
             }
 
             // ── Withdraw: Personal Bank modal ──
@@ -1033,24 +926,24 @@ module.exports = function setupInteractionHandler(client) {
                 if (interaction.user.id !== userId)
                     return interaction.reply({ content: '⚠️ Adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('wd_amount')));
-                if (!amount || amount <= 0) return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                if (!amount || amount <= 0) return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { addTx } = require('../economy/bankStore');
                 const { buildPersBankPanel } = require('../../data/commands/economy/personalBank');
                 checkEconUser(userId);
                 const ec    = eData[userId];
                 const bank  = eData[ownerId]?.personalBank;
-                if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin.', flags: MessageFlags.Ephemeral });
+                if (!bank) return interaction.reply({ content: '⚠️ Bank not found.', flags: MessageFlags.Ephemeral });
                 const myRec = bank.customers?.[userId];
-                if (!myRec || (myRec.balance || 0) <= 0) return interaction.reply({ content: `⚠️ **${bank.owner}**'s bank lacag kuma dhigin.`, flags: MessageFlags.Ephemeral });
-                if (amount > myRec.balance) return interaction.reply({ content: `⚠️ Haysataa: ₿${myRec.balance.toLocaleString()} kaliya.`, flags: MessageFlags.Ephemeral });
+                if (!myRec || (myRec.balance || 0) <= 0) return interaction.reply({ content: `⚠️ **${bank.owner}**'s bank Coins kuma dhigin.`, flags: MessageFlags.Ephemeral });
+                if (amount > myRec.balance) return interaction.reply({ content: `⚠️ You have: 🪙${myRec.balance.toLocaleString()} only.`, flags: MessageFlags.Ephemeral });
                 myRec.balance -= amount;
-                ec.btc         = (ec.btc || 0) + amount;
+                ec.coins         = (ec.coins || 0) + amount;
                 addTx(bank, 'customer_withdraw', amount, `→ ${interaction.user.username}`);
                 saveEcon();
                 const { embed, components } = buildPersBankPanel(bank, ownerId, userId);
                 return interaction.update({ embeds: [embed], components,
-                    content: `📤 **₿${amount.toLocaleString()}** ← 🏦 **${bank.owner}**'s Bank` });
+                    content: `📤 **🪙${amount.toLocaleString()}** ← 🏦 **${bank.owner}**'s Bank` });
             }
 
             // ── Deposit: Garaad Bank modal ──
@@ -1060,17 +953,17 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⚠️ Adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('dep_amount')));
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 checkEconUser(userId);
                 const d = eData[userId];
-                if ((d.btc || 0) < amount)
-                    return interaction.reply({ content: `⚠️ Jeebkaagu ma filna. Haysataa: ₿${Math.floor(d.btc || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                d.btc           = (d.btc || 0) - amount;
+                if ((d.coins || 0) < amount)
+                    return interaction.reply({ content: `⚠️ Your wallet has insufficient Coins. You have: 🪙${Math.floor(d.coins || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                d.coins           = (d.coins || 0) - amount;
                 d.banks         = d.banks || { garaad: 0 };
                 d.banks.garaad  = (d.banks.garaad || 0) + amount;
                 saveEcon();
-                return interaction.reply({ content: `📥 **₿${amount.toLocaleString()}** → 🏦 **Garaad Bank**\n💰 Bank: **₿${d.banks.garaad.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `📥 **🪙${amount.toLocaleString()}** → 🏦 **Garaad Bank**\n💰 Bank: **🪙${d.banks.garaad.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Withdraw: Garaad Bank modal ──
@@ -1080,17 +973,17 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⚠️ Adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('wd_amount')));
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 checkEconUser(userId);
                 const d = eData[userId];
                 const garaadBal = d.banks?.garaad || 0;
                 if (garaadBal < amount)
-                    return interaction.reply({ content: `⚠️ Garaad Bank kugu filna ma lihid. Haysataa: ₿${garaadBal.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `⚠️ Garaad Bank enough for you do not have. You have: 🪙${garaadBal.toLocaleString()}`, flags: MessageFlags.Ephemeral });
                 d.banks.garaad -= amount;
-                d.btc = (d.btc || 0) + amount;
+                d.coins = (d.coins || 0) + amount;
                 saveEcon();
-                return interaction.reply({ content: `📤 **₿${amount.toLocaleString()}** ← 🏦 **Garaad Bank**\n💰 Bank hadhay: **₿${d.banks.garaad.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `📤 **🪙${amount.toLocaleString()}** ← 🏦 **Garaad Bank**\n💰 Remaining bank balance: **🪙${d.banks.garaad.toLocaleString()}**`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Deposit: Public Bank modal ──
@@ -1103,16 +996,16 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⚠️ Adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('dep_amount')));
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { getAllPublicBanks, saveBanks } = require('../economy/bankStore');
                 checkEconUser(userId);
                 const ec      = eData[userId];
                 const pubBank = getAllPublicBanks()[bankId.toUpperCase()] || getAllPublicBanks()[bankId];
-                if (!pubBank) return interaction.reply({ content: `⚠️ Bank \`${bankId}\` lama helin.`, flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < amount) return interaction.reply({ content: `⚠️ Jeebkaagu ma filna. Haysataa: ₿${Math.floor(ec.btc || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                if (!pubBank) return interaction.reply({ content: `⚠️ Bank \`${bankId}\` not found.`, flags: MessageFlags.Ephemeral });
+                if ((ec.coins || 0) < amount) return interaction.reply({ content: `⚠️ Your wallet has insufficient Coins. You have: 🪙${Math.floor(ec.coins || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
                 const isOwnerDep = pubBank.ownerId === userId;
-                ec.btc = (ec.btc || 0) - amount;
+                ec.coins = (ec.coins || 0) - amount;
                 pubBank.balance       = (pubBank.balance || 0) + amount;
                 pubBank.totalDeposits = (pubBank.totalDeposits || 0) + amount;
                 pubBank.lastActivity  = Date.now();
@@ -1123,14 +1016,14 @@ module.exports = function setupInteractionHandler(client) {
                     const depFee = Math.floor(amount * 0.02);
                     if (depFee > 0) {
                         pubBank.ownerProfit = (pubBank.ownerProfit || 0) + depFee;
-                        depFeeNote = `\n💸 Faa'iido owner: ₿${depFee.toLocaleString()} (claim: ?bankfund)`;
+                        depFeeNote = `\n💸 Profit owner: 🪙${depFee.toLocaleString()} (claim: ?bankfund)`;
                     }
                     pubBank.customers = pubBank.customers || {};
                     pubBank.customers[userId] ??= { balance: 0, username: interaction.user.username, joinedAt: Date.now() };
                     pubBank.customers[userId].balance += amount;
                 }
                 saveBanks(); saveEcon();
-                return interaction.reply({ content: `📥 **₿${amount.toLocaleString()}** → 🏛️ **${pubBank.name}**\n💼 Haysataa: ₿${(pubBank.customers?.[userId]?.balance || 0).toLocaleString()}${depFeeNote}`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `📥 **🪙${amount.toLocaleString()}** → 🏛️ **${pubBank.name}**\n💼 You have: 🪙${(pubBank.customers?.[userId]?.balance || 0).toLocaleString()}${depFeeNote}`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Fund Public Bank modal submit ──
@@ -1143,25 +1036,25 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⚠️ Adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('fund_amount')));
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { getAllPublicBanks, saveBanks } = require('../economy/bankStore');
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { buildOwnerPanel } = require('../../data/commands/economy/publicBank');
                 checkEconUser(userId);
                 const ec   = eData[userId];
                 const bank = Object.values(getAllPublicBanks()).find(b => b.id === bankId || b.id === bankId.toUpperCase());
-                if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin.', flags: MessageFlags.Ephemeral });
-                if (bank.ownerId !== userId) return interaction.reply({ content: '⚠️ Owner kaliya.', flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < amount)
-                    return interaction.reply({ content: `⚠️ Jeebkaagu ma filna. Haysataa: ₿${Math.floor(ec.btc || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                ec.btc            -= amount;
+                if (!bank) return interaction.reply({ content: '⚠️ Bank not found.', flags: MessageFlags.Ephemeral });
+                if (bank.ownerId !== userId) return interaction.reply({ content: '⚠️ Owner only.', flags: MessageFlags.Ephemeral });
+                if ((ec.coins || 0) < amount)
+                    return interaction.reply({ content: `⚠️ Your wallet has insufficient Coins. You have: 🪙${Math.floor(ec.coins || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                ec.coins            -= amount;
                 bank.balance      += amount;
                 bank.ownerFund     = (bank.ownerFund || 0) + amount;
                 bank.lastActivity  = Date.now();
                 saveBanks(); saveEcon();
                 const { embed, components } = buildOwnerPanel(bank, userId);
                 return interaction.update({
-                    content: `✅ **₿${amount.toLocaleString()}** bangiga capital u daray!`,
+                    content: `✅ **🪙${amount.toLocaleString()}** bank capital u daray!`,
                     embeds: [embed], components,
                 });
             }
@@ -1176,31 +1069,31 @@ module.exports = function setupInteractionHandler(client) {
                     return interaction.reply({ content: '⚠️ Adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('dep_amount')));
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { addTx } = require('../economy/bankStore');
                 checkEconUser(userId);
                 const ec = eData[userId];
                 const tBank = eData[ownerId]?.personalBank;
-                if (!tBank) return interaction.reply({ content: '⚠️ Bank lama helin.', flags: MessageFlags.Ephemeral });
+                if (!tBank) return interaction.reply({ content: '⚠️ Bank not found.', flags: MessageFlags.Ephemeral });
                 if (ownerId === userId) return interaction.reply({ content: '⚠️ Bank-kaaga laftiis: `?bv` fur.', flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < amount) return interaction.reply({ content: `⚠️ Jeebkaagu ma filna. Haysataa: ₿${Math.floor(ec.btc || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                if ((ec.coins || 0) < amount) return interaction.reply({ content: `⚠️ Your wallet has insufficient Coins. You have: 🪙${Math.floor(ec.coins || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
                 const nowTs = Date.now();
                 tBank.lastProfitAt ??= nowTs;
                 const profDays = Math.floor((nowTs - tBank.lastProfitAt) / 86400000);
                 if (profDays > 0) {
                     const ct = Object.values(tBank.customers || {}).reduce((s, c) => s + (c.balance || 0), 0);
                     const profit = Math.floor(ct * 0.02 * profDays);
-                    if (profit > 0) { tBank.balance += profit; tBank.profitEarned = (tBank.profitEarned || 0) + profit; addTx(tBank, 'profit', profit, `Faa'iido (${profDays}d)`); }
+                    if (profit > 0) { tBank.balance += profit; tBank.profitEarned = (tBank.profitEarned || 0) + profit; addTx(tBank, 'profit', profit, `Profit (${profDays}d)`); }
                     tBank.lastProfitAt = nowTs;
                 }
-                ec.btc = (ec.btc || 0) - amount;
+                ec.coins = (ec.coins || 0) - amount;
                 tBank.customers = tBank.customers || {};
                 tBank.customers[userId] ??= { username: interaction.user.username, balance: 0, depositedAt: Date.now() };
                 tBank.customers[userId].balance += amount;
                 addTx(tBank, 'customer_deposit', amount, `← ${interaction.user.username}`);
                 saveEcon();
-                return interaction.reply({ content: `📥 **₿${amount.toLocaleString()}** → 🏦 **${tBank.owner}**'s Bank\n💼 Haysataa: ₿${tBank.customers[userId].balance.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `📥 **🪙${amount.toLocaleString()}** → 🏦 **${tBank.owner}**'s Bank\n💼 You have: 🪙${tBank.customers[userId].balance.toLocaleString()}`, flags: MessageFlags.Ephemeral });
             }
 
             // ── ?bank Deposit modal ──
@@ -1209,7 +1102,7 @@ module.exports = function setupInteractionHandler(client) {
                 const bankRef  = interaction.fields.getTextInputValue('ball_bank').trim();
                 const amount   = Math.floor(Number(interaction.fields.getTextInputValue('ball_amount')));
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const fakeMsg = { author: interaction.user, mentions: { users: { first: () => null } }, reply: (c) => interaction.reply({ ...(typeof c === 'string' ? { content: c } : c), flags: MessageFlags.Ephemeral }) };
                 const { depositAnyCmd } = require('../../data/commands/economy/personalBank');
                 return depositAnyCmd({ ...fakeMsg, author: interaction.user }, [bankRef, String(amount)]);
@@ -1221,7 +1114,7 @@ module.exports = function setupInteractionHandler(client) {
                 const bankRef  = interaction.fields.getTextInputValue('ball_bank').trim();
                 const amount   = Math.floor(Number(interaction.fields.getTextInputValue('ball_amount')));
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
                 const { withdrawAnyCmd } = require('../../data/commands/economy/personalBank');
                 const fakeMsg = { author: interaction.user, reply: (c) => interaction.reply({ ...(typeof c === 'string' ? { content: c } : c), flags: MessageFlags.Ephemeral }) };
                 return withdrawAnyCmd(fakeMsg, [bankRef, String(amount)]);
@@ -1232,7 +1125,7 @@ module.exports = function setupInteractionHandler(client) {
                 const userId = interaction.user.id;
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('pbank_own_amount')));
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
 
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { addTx } = require('../economy/bankStore');
@@ -1240,17 +1133,17 @@ module.exports = function setupInteractionHandler(client) {
                 checkEconUser(userId);
                 const ec   = eData[userId];
                 const bank = ec.personalBank;
-                if (!bank) return interaction.reply({ content: '⚠️ Bank account ma lihid. `?bc` isticmaal.', flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < amount)
-                    return interaction.reply({ content: `⚠️ Jeebkaagu ma filna. Haysataa: ₿${Math.floor(ec.btc || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                if (!bank) return interaction.reply({ content: '⚠️ Bank account not found. `?bc` use.', flags: MessageFlags.Ephemeral });
+                if ((ec.coins || 0) < amount)
+                    return interaction.reply({ content: `⚠️ Your wallet has insufficient Coins. You have: 🪙${Math.floor(ec.coins || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
 
-                ec.btc          = (ec.btc || 0) - amount;
+                ec.coins          = (ec.coins || 0) - amount;
                 bank.balance   += amount;
                 bank.deposits   = (bank.deposits || 0) + amount;
                 addTx(bank, 'deposit', amount, 'jeeb → bangi');
                 saveEcon();
                 return interaction.reply({
-                    content: `📥 **₿${amount.toLocaleString()}** jeebka → bangiga\n💰 **Bangi hadda:** ₿${bank.balance.toLocaleString()}`,
+                    content: `📥 **🪙${amount.toLocaleString()}** wallet → bank\n💰 **Bangi now:** 🪙${bank.balance.toLocaleString()}`,
                     flags: MessageFlags.Ephemeral,
                 });
             }
@@ -1261,27 +1154,27 @@ module.exports = function setupInteractionHandler(client) {
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('pbank_wd_amount')));
                 const pw     = (interaction.fields.getTextInputValue('pbank_wd_pw') || '').trim();
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
 
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { addTx } = require('../economy/bankStore');
                 checkEconUser(userId);
                 const ec   = eData[userId];
                 const bank = ec.personalBank;
-                if (!bank) return interaction.reply({ content: '⚠️ Bank account ma lihid.', flags: MessageFlags.Ephemeral });
+                if (!bank) return interaction.reply({ content: '⚠️ Bank account not found.', flags: MessageFlags.Ephemeral });
 
                 if (ec.accountPassword && ec.accountPassword !== pw)
-                    return interaction.reply({ content: '❌ Password-ka waa khalad.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '❌ Incorrect password.', flags: MessageFlags.Ephemeral });
                 if (amount > bank.balance)
-                    return interaction.reply({ content: `⚠️ Bangiga lacag ku filan kuma jirto. Haraagga: ₿${bank.balance.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `⚠️ Insufficient bank Coins. Balance: 🪙${bank.balance.toLocaleString()}`, flags: MessageFlags.Ephemeral });
 
                 bank.balance     -= amount;
                 bank.withdrawals  = (bank.withdrawals || 0) + amount;
-                ec.btc            = (ec.btc || 0) + amount;
+                ec.coins            = (ec.coins || 0) + amount;
                 addTx(bank, 'withdraw', amount, 'bangi → jeeb');
                 saveEcon();
                 return interaction.reply({
-                    content: `📤 **₿${amount.toLocaleString()}** bangiga → jeebka\n💳 **Jeebka hadda:** ₿${ec.btc.toLocaleString()}`,
+                    content: `📤 **🪙${amount.toLocaleString()}** bank → wallet\n💳 **Wallet now:** 🪙${ec.coins.toLocaleString()}`,
                     flags: MessageFlags.Ephemeral,
                 });
             }
@@ -1293,15 +1186,15 @@ module.exports = function setupInteractionHandler(client) {
                 const amount = Math.floor(Number(interaction.fields.getTextInputValue('pbank_amount')));
 
                 if (!amount || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 1000).', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Enter a valid amount (e.g.: 1000).', flags: MessageFlags.Ephemeral });
 
                 const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
                 const { addTx, getAllPublicBanks, saveBanks } = require('../economy/bankStore');
                 checkEconUser(userId);
                 const ec = eData[userId];
 
-                if ((ec.btc || 0) < amount)
-                    return interaction.reply({ content: `⚠️ Jeebkaagu ma filna. Haysataa: ₿${Math.floor(ec.btc || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                if ((ec.coins || 0) < amount)
+                    return interaction.reply({ content: `⚠️ Your wallet has insufficient Coins. You have: 🪙${Math.floor(ec.coins || 0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
 
                 // ── 1. Search personal banks ──
                 const foundPers = Object.entries(eData).find(([uid, d]) => {
@@ -1327,12 +1220,12 @@ module.exports = function setupInteractionHandler(client) {
                             if (profit > 0) {
                                 targetBank.balance     += profit;
                                 targetBank.profitEarned = (targetBank.profitEarned || 0) + profit;
-                                addTx(targetBank, 'profit', profit, `Faa'iido macaamiisha (${profDays} maalin)`);
+                                addTx(targetBank, 'profit', profit, `Profit macaamiisha (${profDays} maalin)`);
                             }
                         }
                         targetBank.lastProfitAt = nowTs;
                     }
-                    ec.btc = (ec.btc || 0) - amount;
+                    ec.coins = (ec.coins || 0) - amount;
                     targetBank.customers = targetBank.customers || {};
                     if (!targetBank.customers[userId])
                         targetBank.customers[userId] = { username: interaction.user.username, balance: 0, depositedAt: Date.now() };
@@ -1341,8 +1234,8 @@ module.exports = function setupInteractionHandler(client) {
                     saveEcon();
                     return interaction.reply({
                         content:
-                            `📥 **₿${amount.toLocaleString()}** → 🏦 **${targetBank.owner}**'s Bank\n` +
-                            `💼 Bangigaas adigu haysataa: **₿${targetBank.customers[userId].balance.toLocaleString()}**`,
+                            `📥 **🪙${amount.toLocaleString()}** → 🏦 **${targetBank.owner}**'s Bank\n` +
+                            `💼 Bankas adigu you have: **🪙${targetBank.customers[userId].balance.toLocaleString()}**`,
                         flags: MessageFlags.Ephemeral,
                     });
                 }
@@ -1356,12 +1249,12 @@ module.exports = function setupInteractionHandler(client) {
                 );
 
                 if (!pubBank)
-                    return interaction.reply({ content: `⚠️ **"${input}"** — bank lama helin. Magaca ama ID-ga si sax ah u qor.`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `⚠️ **"${input}"** — bank not found. Magaca ama ID-ga si correct u qor.`, flags: MessageFlags.Ephemeral });
 
                 if ((Date.now() - (pubBank.lastActivity || pubBank.createdAt)) >= PUB_EXPIRY)
-                    return interaction.reply({ content: `⚠️ **${pubBank.name}** waa la xiray (2 toddobaad shaqo la'aan).`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `⚠️ **${pubBank.name}** was closed (2 toddobaad shaqo la'aan).`, flags: MessageFlags.Ephemeral });
 
-                ec.btc = (ec.btc || 0) - amount;
+                ec.coins = (ec.coins || 0) - amount;
                 pubBank.balance       = (pubBank.balance || 0) + amount;
                 pubBank.totalDeposits = (pubBank.totalDeposits || 0) + amount;
                 pubBank.reputation    = Math.floor((pubBank.reputation || 0) + amount / 10000);
@@ -1373,9 +1266,9 @@ module.exports = function setupInteractionHandler(client) {
                 saveEcon();
                 return interaction.reply({
                     content:
-                        `📥 **₿${amount.toLocaleString()}** → 🏛️ **${pubBank.name}**\n` +
-                        `💰 Bangiga haraagga: ₿${pubBank.balance.toLocaleString()}\n` +
-                        `💼 Adiga haysataa: ₿${pubBank.customers[userId].balance.toLocaleString()}`,
+                        `📥 **🪙${amount.toLocaleString()}** → 🏛️ **${pubBank.name}**\n` +
+                        `💰 Bank balance: 🪙${pubBank.balance.toLocaleString()}\n` +
+                        `💼 Adiga you have: 🪙${pubBank.customers[userId].balance.toLocaleString()}`,
                     flags: MessageFlags.Ephemeral,
                 });
             }
@@ -1396,173 +1289,20 @@ module.exports = function setupInteractionHandler(client) {
                 const name = interaction.fields.getTextInputValue('custom_title_name').trim();
 
                 if (!name || name.length < 2)
-                    return interaction.reply({ content: '⚠️ Magaca aad gaaban yahay — ugu yaraan 2 xaraf.', flags: MessageFlags.Ephemeral });
-                if ((d.btc || 0) < item.price)
-                    return interaction.reply({ content: `⚠️ BTC kugu filna ma lihid. Qiimaha: **₿: ${item.price.toLocaleString()}** | Haysataa: **₿: ${(d.btc || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '⚠️ Magaca aad gaaban yahay — at least 2 xaraf.', flags: MessageFlags.Ephemeral });
+                if (getSpendableCoins(ownerId) < item.price)
+                    return interaction.reply({ content: `⚠️ You do not have enough Coins. Qiimaha: **🪙: ${item.price.toLocaleString()}** | You have: **🪙: ${getSpendableCoins(ownerId).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
 
-                d.btc = (d.btc || 0) - item.price;
+                spendCoins(ownerId, item.price);
                 d.customEconTitle ??= null;
                 d.customEconTitle  = name;
                 if (!d.econTitles.includes('custom')) d.econTitles.push('custom');
                 d.activeEconTitle = 'custom';
                 addToTreasury(item.price);
                 saveEcon();
-                return interaction.reply({ content: `✅ Custom title la sameeay: **${name}** ✍️\nTitle-kaagu hadda wuu firfircoon yahay! **₿: ${item.price.toLocaleString()}** la bixiyay.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ Custom title la sameeay: **${name}** ✍️\nTitle-kaagu now wuu firfircoon yahay! **🪙: ${item.price.toLocaleString()}** la bixiyay.`, flags: MessageFlags.Ephemeral });
             }
 
-            // ── Prediction: USD amount modal ──
-            if (interaction.customId.startsWith('pred_amt_usd_')) {
-                const ownerId = interaction.customId.replace('pred_amt_usd_', '');
-                if (interaction.user.id !== ownerId)
-                    return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-
-                const { setPending }                     = require('../economy/prediction');
-                const { buildPickEmbed, pickRow }         = require('../../data/commands/economy/trade');
-                const { econData: eData, checkEconUser } = require('../economy/econStore');
-
-                const raw    = interaction.fields.getTextInputValue('pred_amount');
-                const amount = parseFloat(raw);
-                if (!amount || isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 500).', flags: MessageFlags.Ephemeral });
-
-                checkEconUser(ownerId);
-                if ((eData[ownerId].btc || 0) < amount)
-                    return interaction.reply({ content: `⚠️ BTC kugu filna ma lihid. Haysataa: **₿ ${(eData[ownerId].btc || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
-
-                setPending(ownerId, { asset: 'btc', stakeType: 'btc', stakeAmount: amount, stakeUsd: amount });
-                return interaction.update({
-                    embeds:     [buildPickEmbed(amount)],
-                    components: [pickRow(ownerId)],
-                });
-            }
-
-            // ── Prediction: Asset amount modal ──
-            if (interaction.customId.startsWith('pred_amt_ast_')) {
-                const ownerId = interaction.customId.replace('pred_amt_ast_', '');
-                if (interaction.user.id !== ownerId)
-                    return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-
-                const { setPending, getPending } = require('../economy/prediction');
-                const {
-                    buildTimeEmbed, timeRow, backRow,
-                } = require('../../data/commands/economy/trade');
-                const { getPrice }                     = require('../economy/market');
-                const { econData: eData, checkEconUser } = require('../economy/econStore');
-
-                const raw    = interaction.fields.getTextInputValue('pred_amount');
-                const amount = parseFloat(raw);
-                if (!amount || isNaN(amount) || amount <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli (tusaale: 1).', flags: MessageFlags.Ephemeral });
-
-                const pend = getPending(ownerId);
-                if (!pend || !pend.asset)
-                    return interaction.reply({ content: '⚠️ Xog la waayay — bilow marlabaad.', flags: MessageFlags.Ephemeral });
-
-                const { asset } = pend;
-                checkEconUser(ownerId);
-                if ((eData[ownerId][asset] || 0) < amount)
-                    return interaction.reply({ content: `⚠️ ${asset.toUpperCase()} kugu filna ma lihid. Haysataa: **${eData[ownerId][asset] || 0}**`, flags: MessageFlags.Ephemeral });
-
-                const stakeUsd = Math.round(amount * (getPrice(asset) || 0));
-                setPending(ownerId, { stakeType: 'asset', stakeAmount: amount, stakeUsd });
-                return interaction.update({
-                    embeds:     [buildTimeEmbed(asset, 'asset', amount, stakeUsd)],
-                    components: [timeRow(ownerId), backRow(ownerId)],
-                });
-            }
-
-            // ── Trade: sell asset modal submit ──
-            if (interaction.customId.startsWith('trade_sellmod_')) {
-                const rest    = interaction.customId.replace('trade_sellmod_', '');
-                const lastUnd = rest.lastIndexOf('_');
-                const asset   = rest.substring(0, lastUnd);
-                const ownerId = rest.substring(lastUnd + 1);
-                if (interaction.user.id !== ownerId)
-                    return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-
-                const { econData: eData, checkEconUser, saveEcon, trackEarning } = require('../economy/econStore');
-                const { getPrice: gpSell } = require('../economy/market');
-                const { ASSET_LABEL: AL } = require('../economy/prediction');
-                const { fmt: sfmt }        = require('../utils/helpers');
-                checkEconUser(ownerId);
-                const d = eData[ownerId];
-
-                const sellAmt = parseFloat(interaction.fields.getTextInputValue('sell_amount'));
-                if (!sellAmt || isNaN(sellAmt) || sellAmt <= 0)
-                    return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
-                if ((d[asset] || 0) < sellAmt)
-                    return interaction.reply({ content: `⚠️ ${asset.toUpperCase()} kugu filna ma lihid. Haysataa: **${d[asset] || 0}**`, flags: MessageFlags.Ephemeral });
-
-                const price   = gpSell(asset);
-                const btcGain = Math.floor(sellAmt * price);
-                d[asset] -= sellAmt;
-                d.btc     = (d.btc || 0) + btcGain;
-                saveEcon();
-
-                return interaction.reply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setTitle(`✅ Iibso — ${AL[asset]}`)
-                            .setColor('#e67e22')
-                            .setDescription(
-                                `**${sellAmt} ${AL[asset]}** la iibiyay\n` +
-                                `₿ Lacag heshay: **+₿: ${sfmt(btcGain)}** (@ ₿: ${sfmt(price)})\n` +
-                                `₿ BTC-kaaga hadda: **₿: ${sfmt(d.btc)}**\n` +
-                                `${AL[asset]} hadhay: **${d[asset]}**`
-                            )
-                            .setFooter({ text: 'Garaad Economy' }),
-                    ],
-                    flags: MessageFlags.Ephemeral,
-                });
-            }
-
-            // ── Trade Shop: buy modal submit ──
-            if (interaction.customId.startsWith('trade_buymod_')) {
-                const rest    = interaction.customId.replace('trade_buymod_', '');
-                const lastUnd = rest.lastIndexOf('_');
-                const asset   = rest.substring(0, lastUnd);
-                const ownerId = rest.substring(lastUnd + 1);
-                if (interaction.user.id !== ownerId)
-                    return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-
-                const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
-                const { getPrice }                                  = require('../economy/market');
-                const { ASSET_LABEL }                               = require('../economy/prediction');
-                const { buildShopEmbed, shopRow, shopBackRow }      = require('../../data/commands/economy/trade');
-                checkEconUser(ownerId);
-                const d = eData[ownerId];
-
-                const units = parseInt(interaction.fields.getTextInputValue('buy_amount'));
-                if (!units || isNaN(units) || units < 1)
-                    return interaction.reply({ content: '⚠️ Tirada sax ah geli (tusaale: 1).', flags: MessageFlags.Ephemeral });
-
-                const price = getPrice(asset);
-                if (!price || price <= 0)
-                    return interaction.reply({ content: '⚠️ Qiimaha ma heli karo.', flags: MessageFlags.Ephemeral });
-
-                const actualCost = units * price;
-                if ((d.btc || 0) < actualCost)
-                    return interaction.reply({ content: `⚠️ BTC kugu filna ma lihid.\n💸 Kharash: **₿: ${actualCost.toLocaleString()}** | Haysataa: **₿: ${(d.btc || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
-                d.btc    = (d.btc || 0) - actualCost;
-                d[asset]  = (d[asset] || 0) + units;
-                saveEcon();
-
-                return interaction.reply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setTitle(`✅ Iibsi Guul — ${ASSET_LABEL[asset]}`)
-                            .setColor('#27ae60')
-                            .setDescription(
-                                `**${units} ${ASSET_LABEL[asset]}** la iibsaday\n` +
-                                `💸 Kharash: **₿: ${actualCost.toLocaleString()}**\n` +
-                                `₿ BTC-kaaga hadda: **₿: ${(d.btc || 0).toLocaleString()}**\n` +
-                                `${ASSET_LABEL[asset]} haysataa: **${d[asset]}**`
-                            )
-                            .setFooter({ text: 'Garaad Economy' }),
-                    ],
-                    flags: MessageFlags.Ephemeral,
-                });
-            }
 
             return;
         }
@@ -1598,74 +1338,6 @@ module.exports = function setupInteractionHandler(client) {
         if (!interaction.isButton()) return;
 
         const id = interaction.customId;
-
-        // ── Hagbad: Pay button ──
-        if (id.startsWith('hag_pay_')) {
-            const rest      = id.replace('hag_pay_', '');
-            const firstUnd  = rest.indexOf('_');
-            const userId    = rest.substring(0, firstUnd);
-            const groupName = rest.substring(firstUnd + 1);
-            if (interaction.user.id !== userId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { hagbadData, saveHagbad } = require('../economy/hagbadStore');
-            const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
-            const { _doPay } = require('../../data/commands/economy/hagbad');
-            const group = hagbadData[groupName];
-            if (!group) return interaction.reply({ content: `⚠️ Koox **${groupName}** lama helin.`, flags: MessageFlags.Ephemeral });
-            return _doPay(interaction, userId, groupName, group);
-        }
-
-        // ── Hagbad: Leave button ──
-        if (id.startsWith('hag_leave_')) {
-            const rest      = id.replace('hag_leave_', '');
-            const firstUnd  = rest.indexOf('_');
-            const userId    = rest.substring(0, firstUnd);
-            const groupName = rest.substring(firstUnd + 1);
-            if (interaction.user.id !== userId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { hagbadData, saveHagbad } = require('../economy/hagbadStore');
-            const { buildGroupPanel } = require('../../data/commands/economy/hagbad');
-            const group = hagbadData[groupName];
-            if (!group) return interaction.reply({ content: `⚠️ Koox lama helin.`, flags: MessageFlags.Ephemeral });
-            if (!group.members.includes(userId)) return interaction.reply({ content: `⚠️ Kooxdan kuma jirtid.`, flags: MessageFlags.Ephemeral });
-            if (group.creator === userId && group.members.length > 1)
-                return interaction.reply({ content: '⚠️ Abuure ma baxo hadii xubnaha kale jiraan.', flags: MessageFlags.Ephemeral });
-            group.members      = group.members.filter(mid => mid !== userId);
-            group.payoutQueue  = group.payoutQueue.filter(mid => mid !== userId);
-            if (group.currentTurn >= group.payoutQueue.length) group.currentTurn = 0;
-            if (group.members.length === 0) {
-                delete hagbadData[groupName];
-                saveHagbad();
-                return interaction.update({ content: `🗑️ Koox **${groupName}** la tirtiray (xubno la'aan).`, embeds: [], components: [] });
-            }
-            saveHagbad();
-            const { embed, row } = buildGroupPanel(groupName, group, userId);
-            return interaction.update({ content: `✅ Koox **${groupName}** ka baxday.`, embeds: [embed], components: [row] });
-        }
-
-        // ── Hagbad: Refresh button ──
-        if (id.startsWith('hag_refresh_')) {
-            const rest      = id.replace('hag_refresh_', '');
-            const firstUnd  = rest.indexOf('_');
-            const userId    = rest.substring(0, firstUnd);
-            const groupName = rest.substring(firstUnd + 1);
-            if (interaction.user.id !== userId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { hagbadData } = require('../economy/hagbadStore');
-            const { buildGroupPanel } = require('../../data/commands/economy/hagbad');
-            const group = hagbadData[groupName];
-            if (!group) return interaction.update({ content: `⚠️ Koox **${groupName}** lama helin.`, embeds: [], components: [] });
-            const { embed, row } = buildGroupPanel(groupName, group, userId);
-            return interaction.update({ embeds: [embed], components: [row] });
-        }
-
-        // ── Hagbad: Close button ──
-        if (id.startsWith('close_hag_')) {
-            const userId = id.replace('close_hag_', '');
-            if (interaction.user.id !== userId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            return interaction.update({ content: '✅ La xiray.', embeds: [], components: [] });
-        }
 
         function buildPlayersPageRow(page, totalPages, ownerId) {
             return new ActionRowBuilder().addComponents(
@@ -1707,12 +1379,6 @@ module.exports = function setupInteractionHandler(client) {
             if (interaction.user.id !== ownerId) return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
             return interaction.update({ embeds: [buildHelpShopEmbed()], components: [helpRow(ownerId, 'shop')] });
         }
-        if (id.startsWith('help_ww_')) {
-            const ownerId = id.replace('help_ww_', '');
-            if (interaction.user.id !== ownerId) return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            return interaction.update({ embeds: [buildWwEmbed()], components: [helpRow(ownerId, 'ww')] });
-        }
-
         if (id.startsWith('solo_replaycount_')) {
             return handleSoloReplayCount(interaction);
         }
@@ -1745,9 +1411,9 @@ module.exports = function setupInteractionHandler(client) {
                 });
                 if (!options.length) return interaction.reply({ content: '⚠️ Ma lihid frames.', flags: MessageFlags.Ephemeral });
                 const menu = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder().setCustomId(`inv_sel_frame_${ownerId}`).setPlaceholder('Frame dooro...').addOptions(options)
+                    new StringSelectMenuBuilder().setCustomId(`inv_sel_frame_${ownerId}`).setPlaceholder('Frame Choose...').addOptions(options)
                 );
-                return interaction.reply({ content: '🖼️ **Frame dooro:**', components: [menu], flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: '🖼️ **Frame Choose:**', components: [menu], flags: MessageFlags.Ephemeral });
             } else {
                 const allTitles = [...new Set([...(d.ownedTitles || []), ...(ec.econTitles || [])])];
                 const options = allTitles.map(k => {
@@ -1757,49 +1423,9 @@ module.exports = function setupInteractionHandler(client) {
                 });
                 if (!options.length) return interaction.reply({ content: '⚠️ Ma lihid titles.', flags: MessageFlags.Ephemeral });
                 const menu = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder().setCustomId(`inv_sel_title_${ownerId}`).setPlaceholder('Title dooro...').addOptions(options)
+                    new StringSelectMenuBuilder().setCustomId(`inv_sel_title_${ownerId}`).setPlaceholder('Title Choose...').addOptions(options)
                 );
-                return interaction.reply({ content: '🏷️ **Title dooro:**', components: [menu], flags: MessageFlags.Ephemeral });
-            }
-        }
-
-        // ── Music buttons ──
-        if (id.startsWith('music_')) {
-            let music;
-            try { music = require('../../data/commands/music'); }
-            catch { return interaction.reply({ content: '⚠️ Music install ma ahan.', flags: MessageFlags.Ephemeral }); }
-
-            const action  = id.split('_')[1];
-            const guildId = interaction.guild.id;
-
-            if (action === 'pause') {
-                const result = music.pauseById(guildId);
-                return interaction.reply({ content: result === 'paused' ? '⏸ La joojiyay.' : result === 'resumed' ? '▶️ Sii waday.' : '⚠️ Wax ma ciyaarayo.', flags: MessageFlags.Ephemeral });
-            }
-            if (action === 'skip')  { music.skipById(guildId);  return interaction.reply({ content: '⏭️ La gudbay.',   flags: MessageFlags.Ephemeral }); }
-            if (action === 'stop')  { music.stopById(guildId);  return interaction.reply({ content: '⏹️ La joojiyay.', flags: MessageFlags.Ephemeral }); }
-            if (action === 'leave') { music.leaveById(guildId); return interaction.reply({ content: '👋 VC ka baxay.', flags: MessageFlags.Ephemeral }); }
-            if (action === 'queue') {
-                const q = music.getQueueObj(guildId);
-                if (!q?.current && !q?.queue?.length) return interaction.reply({ content: '📭 Queue maran tahay.', flags: MessageFlags.Ephemeral });
-                const lines = [];
-                if (q.current) lines.push(`🎵 **Hadda:** ${q.current.title} — ${q.current.duration}`);
-                q.queue.slice(0, 9).forEach((s, i) => lines.push(`**${i+1}.** ${s.title} — ${s.duration}`));
-                return interaction.reply({ embeds: [new EmbedBuilder().setTitle('🎶 Queue').setColor('#1db954').setDescription(lines.join('\n'))], flags: MessageFlags.Ephemeral });
-            }
-            if (action === 'loop1') {
-                const q = music.getQueueObj(guildId);
-                const cur = q?.loop || 'off';
-                const next = cur === 'one' ? 'off' : 'one';
-                music.loopById(guildId, next);
-                return interaction.reply({ content: next === 'one' ? '🔂 Loop Song — ON' : '🔂 Loop Song — OFF', flags: MessageFlags.Ephemeral });
-            }
-            if (action === 'loopall') {
-                const q = music.getQueueObj(guildId);
-                const cur = q?.loop || 'off';
-                const next = cur === 'all' ? 'off' : 'all';
-                music.loopById(guildId, next);
-                return interaction.reply({ content: next === 'all' ? '🔁 Loop All — ON' : '🔁 Loop All — OFF', flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: '🏷️ **Title Choose:**', components: [menu], flags: MessageFlags.Ephemeral });
             }
         }
 
@@ -1814,17 +1440,17 @@ module.exports = function setupInteractionHandler(client) {
             return interaction.update({ embeds: [buildAdminEmbed(ownerId)], components: getRows(ownerId) });
         }
 
-        // ── Admin: Give (IQ or BTC) button → modal ──
+        // ── Admin: Give (IQ or Coins) button → modal ──
         if (id.startsWith('admin_give_')) {
             const ownerId = id.replace('admin_give_', '');
             if (interaction.user.id !== ownerId)
                 return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
             if (!require('../utils/admin').isAdmin(ownerId))
                 return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
-            const modal = new ModalBuilder().setCustomId(`admin_m_give_${ownerId}`).setTitle('🎁 Give IQ or BTC');
+            const modal = new ModalBuilder().setCustomId(`admin_m_give_${ownerId}`).setTitle('🎁 Give IQ or Coins');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('target_id').setLabel('User ID').setStyle(TextInputStyle.Short).setPlaceholder('123456789012345678').setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('give_input').setLabel('iq 200  or  btc 500').setStyle(TextInputStyle.Short).setPlaceholder('iq 200   /   btc 500').setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('give_input').setLabel('iq 200  or  coins 500').setStyle(TextInputStyle.Short).setPlaceholder('iq 200   /   coins 500').setRequired(true)),
             );
             return interaction.showModal(modal);
         }
@@ -1839,24 +1465,24 @@ module.exports = function setupInteractionHandler(client) {
             const modal = new ModalBuilder().setCustomId(`admin_m_giveall_iq_${ownerId}`).setTitle('🧠 Give IQ — All Players');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('amount').setLabel('IQ xaddadka (qof walba)').setStyle(TextInputStyle.Short)
-                        .setPlaceholder('Tusaale: 100').setRequired(true)
+                    new TextInputBuilder().setCustomId('amount').setLabel('IQ amount (each player)').setStyle(TextInputStyle.Short)
+                        .setPlaceholder('Example: 100').setRequired(true)
                 ),
             );
             return interaction.showModal(modal);
         }
 
-        if (id.startsWith('admin_giveall_btc_')) {
-            const ownerId = id.replace('admin_giveall_btc_', '');
+        if (id.startsWith('admin_giveall_coins_')) {
+            const ownerId = id.replace(/^admin_giveall_coins_/, '');
             if (interaction.user.id !== ownerId)
                 return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
             if (!require('../utils/admin').isAdmin(ownerId))
                 return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
-            const modal = new ModalBuilder().setCustomId(`admin_m_giveall_btc_${ownerId}`).setTitle('₿ Give BTC — All Players');
+            const modal = new ModalBuilder().setCustomId(`admin_m_giveall_coins_${ownerId}`).setTitle('🪙 Give Coins — All Players');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('amount').setLabel('BTC xaddadka (qof walba)').setStyle(TextInputStyle.Short)
-                        .setPlaceholder('Tusaale: 5000').setRequired(true)
+                    new TextInputBuilder().setCustomId('amount').setLabel('Coins amount (each player)').setStyle(TextInputStyle.Short)
+                        .setPlaceholder('Example: 5000').setRequired(true)
                 ),
             );
             return interaction.showModal(modal);
@@ -1872,7 +1498,7 @@ module.exports = function setupInteractionHandler(client) {
             const modal = new ModalBuilder().setCustomId(`admin_m_transfer_${ownerId}`).setTitle('💸 Transfer → Bank');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('target_id').setLabel('User ID').setStyle(TextInputStyle.Short).setPlaceholder('123456789012345678').setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('BTC xaddadka').setStyle(TextInputStyle.Short).setPlaceholder('Tusaale: 5000').setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Coins amount').setStyle(TextInputStyle.Short).setPlaceholder('Example: 5000').setRequired(true)),
             );
             return interaction.showModal(modal);
         }
@@ -1883,7 +1509,7 @@ module.exports = function setupInteractionHandler(client) {
             if (interaction.user.id !== ownerId)
                 return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
             if (interaction.user.id !== OWNER_ID)
-                return interaction.reply({ content: '⛔ Owner kaliya.', flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: '⛔ Owner only.', flags: MessageFlags.Ephemeral });
             const modal = new ModalBuilder().setCustomId(`admin_m_addadmin_${ownerId}`).setTitle('👥 Admin — Add / Remove');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
@@ -1908,8 +1534,8 @@ module.exports = function setupInteractionHandler(client) {
             const modal = new ModalBuilder().setCustomId(`admin_m_broadcast_${ownerId}`).setTitle('📢 Broadcast — DM All Players');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('msg').setLabel('Fariinta (DM dhammaan players)').setStyle(TextInputStyle.Paragraph)
-                        .setPlaceholder('Tusaale: Quiz cusub berri 8 PM!').setRequired(true)
+                    new TextInputBuilder().setCustomId('msg').setLabel('Messageta (DM dhammaan players)').setStyle(TextInputStyle.Paragraph)
+                        .setPlaceholder('Example: Quiz cusub tomorrow 8 PM!').setRequired(true)
                 ),
             );
             return interaction.showModal(modal);
@@ -1945,7 +1571,7 @@ module.exports = function setupInteractionHandler(client) {
             const modal = new ModalBuilder().setCustomId(`admin_aq_m_giveiq_${ownerId}`).setTitle('🧠 Give IQ');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('target_id').setLabel('User ID').setStyle(TextInputStyle.Short).setPlaceholder('123456789012345678').setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Xaddadka IQ').setStyle(TextInputStyle.Short).setPlaceholder('Tusaale: 100').setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Amount IQ').setStyle(TextInputStyle.Short).setPlaceholder('Example: 100').setRequired(true)),
             );
             return interaction.showModal(modal);
         }
@@ -1985,7 +1611,7 @@ module.exports = function setupInteractionHandler(client) {
             if (interaction.user.id !== ownerId)
                 return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
             if (interaction.user.id !== OWNER_ID)
-                return interaction.reply({ content: '⛔ Owner kaliya.', flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: '⛔ Owner only.', flags: MessageFlags.Ephemeral });
             const modal = new ModalBuilder().setCustomId(`admin_m_reset_${ownerId}`).setTitle('♻️ Reset User');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
@@ -2012,7 +1638,7 @@ module.exports = function setupInteractionHandler(client) {
             const modal = new ModalBuilder().setCustomId(`admin_aq_m_dm_${ownerId}`).setTitle('💬 DM User');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('target_id').setLabel('User ID').setStyle(TextInputStyle.Short).setPlaceholder('123456789012345678').setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('msg').setLabel('Fariinta').setStyle(TextInputStyle.Paragraph).setPlaceholder('Farriinta u dir qofka...').setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('msg').setLabel('Messageta').setStyle(TextInputStyle.Paragraph).setPlaceholder('Farriinta u dir the player...').setRequired(true)),
             );
             return interaction.showModal(modal);
         }
@@ -2059,8 +1685,8 @@ module.exports = function setupInteractionHandler(client) {
             const modal = new ModalBuilder().setCustomId(`admin_eco_m_topup_${ownerId}`).setTitle('🏛️ Treasury Top-up');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('amount').setLabel('Xaddad ku dar khaznadda (BTC)').setStyle(TextInputStyle.Short)
-                        .setPlaceholder(`Hadda: ₿: ${fmt((t.balance || 0))}`).setRequired(true)
+                    new TextInputBuilder().setCustomId('amount').setLabel('Xaddad ku dar treasury (Coins)').setStyle(TextInputStyle.Short)
+                        .setPlaceholder(`Current: 🪙: ${fmt((t.balance || 0))}`).setRequired(true)
                 ),
                 new ActionRowBuilder().addComponents(
                     new TextInputBuilder().setCustomId('password').setLabel('🔐 Owner Password').setStyle(TextInputStyle.Short)
@@ -2080,8 +1706,8 @@ module.exports = function setupInteractionHandler(client) {
             const modal = new ModalBuilder().setCustomId(`admin_eco_m_tax_${ownerId}`).setTitle('💸 Tax Players');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('amount').setLabel('Tax per player (BTC)').setStyle(TextInputStyle.Short)
-                        .setPlaceholder('Tusaale: 5').setRequired(true)
+                    new TextInputBuilder().setCustomId('amount').setLabel('Tax per player (Coins)').setStyle(TextInputStyle.Short)
+                        .setPlaceholder('Example: 5').setRequired(true)
                 ),
                 new ActionRowBuilder().addComponents(
                     new TextInputBuilder().setCustomId('password').setLabel('🔐 Owner Password').setStyle(TextInputStyle.Short)
@@ -2097,7 +1723,7 @@ module.exports = function setupInteractionHandler(client) {
             if (interaction.user.id !== ownerId)
                 return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
             if (interaction.user.id !== OWNER_ID)
-                return interaction.reply({ content: '⛔ Owner kaliya.', flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: '⛔ Owner only.', flags: MessageFlags.Ephemeral });
             const modal = new ModalBuilder().setCustomId(`admin_eco_m_resetany_${ownerId}`).setTitle('♻️ Reset Economy');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
@@ -2136,14 +1762,14 @@ module.exports = function setupInteractionHandler(client) {
         }
 
         // ── Admin Econ: Give USD button → modal ──
-        if (id.startsWith('admin_eco_giveusd_')) {
-            const ownerId = id.replace('admin_eco_giveusd_', '');
+        if (id.startsWith('admin_eco_givecoins_') || id.startsWith('admin_eco_giveusd_')) {
+            const ownerId = id.replace(/^admin_eco_give(?:coins|usd)_/, '');
             if (interaction.user.id !== ownerId)
                 return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const modal = new ModalBuilder().setCustomId(`admin_eco_m_giveusd_${ownerId}`).setTitle('₿ Give BTC');
+            const modal = new ModalBuilder().setCustomId(`admin_eco_m_givecoins_${ownerId}`).setTitle('🪙 Give Coins');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('target_id').setLabel('User ID').setStyle(TextInputStyle.Short).setPlaceholder('123456789012345678').setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Xaddadka BTC').setStyle(TextInputStyle.Short).setPlaceholder('Tusaale: 5000').setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Amount Coins').setStyle(TextInputStyle.Short).setPlaceholder('Example: 5000').setRequired(true)),
             );
             return interaction.showModal(modal);
         }
@@ -2156,8 +1782,8 @@ module.exports = function setupInteractionHandler(client) {
             const modal = new ModalBuilder().setCustomId(`admin_eco_m_giveasset_${ownerId}`).setTitle('🪙 Give Asset');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('target_id').setLabel('User ID').setStyle(TextInputStyle.Short).setPlaceholder('123456789012345678').setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('asset').setLabel('Asset (btc)').setStyle(TextInputStyle.Short).setPlaceholder('btc').setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Xaddadka').setStyle(TextInputStyle.Short).setPlaceholder('Tusaale: 1').setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('asset').setLabel('Asset (coins)').setStyle(TextInputStyle.Short).setPlaceholder('coins').setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Amount').setStyle(TextInputStyle.Short).setPlaceholder('Example: 1').setRequired(true)),
             );
             return interaction.showModal(modal);
         }
@@ -2171,7 +1797,7 @@ module.exports = function setupInteractionHandler(client) {
             modal.addComponents(
                 new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('target_id').setLabel('User ID').setStyle(TextInputStyle.Short).setPlaceholder('123456789012345678').setRequired(true)),
                 new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('bank').setLabel('Bank (garaad)').setStyle(TextInputStyle.Short).setPlaceholder('garaad').setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Xaddadka BTC').setStyle(TextInputStyle.Short).setPlaceholder('Tusaale: 10000').setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('amount').setLabel('Amount Coins').setStyle(TextInputStyle.Short).setPlaceholder('Example: 10000').setRequired(true)),
             );
             return interaction.showModal(modal);
         }
@@ -2215,7 +1841,7 @@ module.exports = function setupInteractionHandler(client) {
                     new TextInputBuilder().setCustomId('action').setLabel('Ficil: view | distribute | give').setStyle(TextInputStyle.Short).setPlaceholder('view  /  distribute  /  give').setRequired(true)
                 ),
                 new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('amount').setLabel('Xaddad (distribute) ama "UserID xad" (give)').setStyle(TextInputStyle.Short).setPlaceholder(`Khaznad hadda: ₿: ${fmt((t.balance || 0))}`).setRequired(false)
+                    new TextInputBuilder().setCustomId('amount').setLabel('Xaddad (distribute) ama "UserID xad" (give)').setStyle(TextInputStyle.Short).setPlaceholder(`Treasury now: 🪙: ${fmt((t.balance || 0))}`).setRequired(false)
                 ),
                 new ActionRowBuilder().addComponents(
                     new TextInputBuilder().setCustomId('password').setLabel('🔐 Owner Password').setStyle(TextInputStyle.Short).setPlaceholder('Owner password').setRequired(true)
@@ -2238,7 +1864,7 @@ module.exports = function setupInteractionHandler(client) {
                     .setCustomId('iq_amount')
                     .setLabel('Immisa IQ baad dhigan?')
                     .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 50')
+                    .setPlaceholder('Example: 50')
                     .setRequired(true),
             ));
             return interaction.showModal(modal);
@@ -2266,7 +1892,7 @@ module.exports = function setupInteractionHandler(client) {
             return interaction.showModal(modal);
         }
 
-        // ── Bank: Bax (qaado dhammaan) ──
+        // ── Bank: Bax (claim dhammaan) ──
         if (id.startsWith('bank_bax_')) {
             const ownerId = id.replace('bank_bax_', '');
             if (interaction.user.id !== ownerId) {
@@ -2301,7 +1927,7 @@ module.exports = function setupInteractionHandler(client) {
                         .setDisabled(true),
                     new ButtonBuilder()
                         .setCustomId(`close_bank_${ownerId}`)
-                        .setLabel('Iska xir')
+                        .setLabel('Iska close')
                         .setStyle(ButtonStyle.Danger),
                 )],
             });
@@ -2360,47 +1986,6 @@ module.exports = function setupInteractionHandler(client) {
             return; // handled by collector
         }
 
-        // ── Vote: Claim BTC or Gold ──
-        if (id.startsWith('vote_claim_')) {
-            const parts  = id.split('_');
-            const asset  = parts[2]; // btc or gold
-            const userId = parts[3];
-            if (interaction.user.id !== userId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-
-            const { recordClaim, hasClaimedRecently } = require('../economy/voteStore');
-            const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
-            const { userData: uData, saveData }  = require('../store');
-            const { checkUser, fmt }             = require('../utils/helpers');
-
-            if (hasClaimedRecently(userId))
-                return interaction.reply({ content: '⚠️ Horay ayaad u claiméysay — 24 saacadood sug.', flags: MessageFlags.Ephemeral });
-
-            checkUser(userId);
-            checkEconUser(userId);
-            recordClaim(userId);
-
-            const IQ_GAIN  = 12;
-            const AMT      = 250;
-            uData[userId].iq  = (uData[userId].iq  || 0) + IQ_GAIN;
-            eData[userId].btc = (eData[userId].btc || 0) + AMT;
-            saveData();
-            saveEcon();
-
-            return interaction.update({
-                embeds: [new EmbedBuilder()
-                    .setTitle('✅ Vote Reward — Claimed!')
-                    .setColor('#2ecc71')
-                    .setDescription(
-                        `🧠 **+${IQ_GAIN} IQ**\n` +
-                        `₿ **+₿: ${fmt(AMT)}**\n\n` +
-                        `Vote again in 24 hours!`
-                    )
-                    .setFooter({ text: 'Garaad Bot — Thank you for voting!' })],
-                components: [],
-            });
-        }
-
         // ── Admin: Eid greeting — channel only ──
         if (id.startsWith('admin_eid_')) {
             const ownerId = id.replace('admin_eid_', '');
@@ -2410,7 +1995,7 @@ module.exports = function setupInteractionHandler(client) {
                 return interaction.reply({ content: '⛔ Admin maahan.', flags: MessageFlags.Ephemeral });
 
             // Reply FIRST — instant, no hang
-            await interaction.reply({ content: '✅ Ciid fariin la diray!', flags: MessageFlags.Ephemeral });
+            await interaction.reply({ content: '✅ Ciid message sent!', flags: MessageFlags.Ephemeral });
 
             // Send to channel in background — no await blocking interaction
             const EID_CHANNEL_ID = '1499085787361316915';
@@ -2435,88 +2020,90 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('shop_buy_')) {
             const parts  = id.replace('shop_buy_', '').split('_');
             const type   = parts[0];
-            const key    = parts.slice(1).join('_');
+            const requestedKey = parts.slice(1).join('_');
+            const key = requestedKey;
             const userId = interaction.user.id;
 
             const { checkUser } = require('../utils/helpers');
             const { userData, saveData } = require('../store');
-            const { econData, saveEcon } = require('../economy/econStore');
+            const { econData, checkEconUser, saveEcon, getSpendableCoins, spendCoins } = require('../economy/econStore');
             const { FRAMES, BOOSTERS, LOOT_BOXES } = require('../../src/utils/itemDefs');
             const { ECON_TITLES } = require('../../data/commands/economy/econShop');
             checkUser(userId);
+            checkEconUser(userId);
 
             const d  = userData[userId];
             const ec = econData[userId];
-            if (!ec) return interaction.reply({ content: '⚠️ Economy account ma jiro. `?jeeb`', flags: MessageFlags.Ephemeral });
+            if (!ec) return interaction.reply({ content: '⚠️ Economy account was not found. `?jeeb`', flags: MessageFlags.Ephemeral });
 
             if (type === 'frame') {
                 const frame = FRAMES[key];
-                if (!frame || frame.lootOnly) return interaction.reply({ content: '⚠️ Frame loot box kaliya.', flags: MessageFlags.Ephemeral });
+                if (!frame || frame.lootOnly) return interaction.reply({ content: '⚠️ Frame loot box only.', flags: MessageFlags.Ephemeral });
                 if ((d.ownedFrames || []).includes(key)) return interaction.reply({ content: '✅ Horay ayaad u lahayd.', flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < frame.price) return interaction.reply({ content: `⚠️ BTC kuu ma filna. U baahan: ₿${frame.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                ec.btc -= frame.price;
+                if (getSpendableCoins(userId) < frame.price) return interaction.reply({ content: `⚠️ You do not have enough Coins. U baahan: 🪙${frame.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                spendCoins(userId, frame.price);
                 d.ownedFrames.push(key);
                 d.activeFrame = key; // auto-equip
                 saveData(); saveEcon();
-                return interaction.reply({ content: `✅ **${frame.emoji} ${frame.name}** la iibsaday & la xidhay! (-₿${frame.price.toLocaleString()})\n\`?profile\` ku eeg.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${frame.emoji} ${frame.name}** purchased & equipped! (-🪙${frame.price.toLocaleString()})\n\`?profile\` ku eeg.`, flags: MessageFlags.Ephemeral });
             }
 
             if (type === 'booster') {
                 const boost = BOOSTERS[key];
-                if (!boost) return interaction.reply({ content: '⚠️ Booster ma jiro.', flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < boost.price) return interaction.reply({ content: `⚠️ BTC kuu ma filna. U baahan: ₿${boost.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                ec.btc -= boost.price;
+                if (!boost) return interaction.reply({ content: '⚠️ Booster was not found.', flags: MessageFlags.Ephemeral });
+                if (getSpendableCoins(userId) < boost.price) return interaction.reply({ content: `⚠️ You do not have enough Coins. U baahan: 🪙${boost.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                spendCoins(userId, boost.price);
                 if (key === 'iq_shield')  d.boosters.iqShields = (d.boosters.iqShields || 0) + 1;
                 else if (key === 'double_iq')  d.boosters.doubleIq  = Date.now() + boost.duration;
                 else if (key === 'double_xp')  d.boosters.doubleXp  = Date.now() + boost.duration;
-                else if (key === 'double_btc') d.boosters.doubleBtc = Date.now() + boost.duration;
+                else if (key === 'double_coins') d.boosters.doubleCoins = Date.now() + boost.duration;
                 saveData(); saveEcon();
-                return interaction.reply({ content: `✅ **${boost.emoji} ${boost.name}** la iibsaday!`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${boost.emoji} ${boost.name}** purchased!`, flags: MessageFlags.Ephemeral });
             }
 
             if (type === 'loot') {
                 const box = LOOT_BOXES[key];
-                if (!box) return interaction.reply({ content: '⚠️ Loot box ma jiro.', flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < box.price) return interaction.reply({ content: `⚠️ BTC kuu ma filna. U baahan: ₿${box.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                ec.btc -= box.price;
+                if (!box) return interaction.reply({ content: '⚠️ Loot box was not found.', flags: MessageFlags.Ephemeral });
+                if (getSpendableCoins(userId) < box.price) return interaction.reply({ content: `⚠️ You do not have enough Coins. U baahan: 🪙${box.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                spendCoins(userId, box.price);
                 d.lootBoxes       ??= {};
                 d.lootBoxes[key]   = (d.lootBoxes[key] || 0) + 1;
                 saveData(); saveEcon();
-                return interaction.reply({ content: `✅ **${box.emoji} ${box.name}** la iibsaday! Fur: \`?open ${key}\``, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${box.emoji} ${box.name}** purchased! Fur: \`?open ${key}\``, flags: MessageFlags.Ephemeral });
             }
 
             if (type === 'title') {
                 const title = ECON_TITLES[key];
-                if (!title) return interaction.reply({ content: '⚠️ Title ma jiro.', flags: MessageFlags.Ephemeral });
+                if (!title) return interaction.reply({ content: '⚠️ Title was not found.', flags: MessageFlags.Ephemeral });
                 if ((ec.econTitles || []).includes(key)) return interaction.reply({ content: '✅ Horay ayaad u lahayd.', flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < title.price) return interaction.reply({ content: `⚠️ BTC kuu ma filna. U baahan: ₿${title.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                ec.btc -= title.price;
+                if (getSpendableCoins(userId) < title.price) return interaction.reply({ content: `⚠️ You do not have enough Coins. U baahan: 🪙${title.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                spendCoins(userId, title.price);
                 ec.econTitles = ec.econTitles || [];
                 ec.econTitles.push(key);
                 saveEcon();
-                return interaction.reply({ content: `✅ **${title.label}** la iibsaday! \`?equip title ${key}\` si aad u xidho.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${title.label}** purchased! \`?equip title ${key}\` si aad u xidho.`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Rob Ticket ──
             if (id === 'shop_buy_rob_ticket') {
                 const PRICE = 500;
-                if ((ec.btc || 0) < PRICE) return interaction.reply({ content: `⚠️ BTC kuu ma filna. U baahan: ₿${PRICE.toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                ec.btc -= PRICE;
+                if (getSpendableCoins(userId) < PRICE) return interaction.reply({ content: `⚠️ You do not have enough Coins. U baahan: 🪙${PRICE.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                spendCoins(userId, PRICE);
                 ec.inventory ??= {};
                 ec.inventory.robticketExpiry = Date.now() + 24 * 60 * 60 * 1000;
                 saveEcon();
-                return interaction.reply({ content: `✅ **🔫 Rob Ticket** la iibsaday! 24 saac active. \`?rob @user\` isticmaal.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **🔫 Rob Ticket** purchased! 24 saac active. \`?rob @user\` use.`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Safety Shield ──
             if (id === 'shop_buy_safety_shield') {
                 const PRICE = 300;
-                if ((ec.btc || 0) < PRICE) return interaction.reply({ content: `⚠️ BTC kuu ma filna. U baahan: ₿${PRICE.toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                ec.btc -= PRICE;
+                if (getSpendableCoins(userId) < PRICE) return interaction.reply({ content: `⚠️ You do not have enough Coins. U baahan: 🪙${PRICE.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                spendCoins(userId, PRICE);
                 ec.inventory ??= {};
                 ec.inventory.safetyExpiry = Date.now() + 24 * 60 * 60 * 1000;
                 saveEcon();
-                return interaction.reply({ content: `✅ **🛡️ Safety Shield** la iibsaday! 24h active. Rob kaa kari maysid.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **🛡️ Safety Shield** purchased! 24h active. Rob kaa kari maysid.`, flags: MessageFlags.Ephemeral });
             }
 
             // ── Ring purchases ──
@@ -2526,33 +2113,34 @@ module.exports = function setupInteractionHandler(client) {
                 const { userData, saveData } = require('../store');
                 const type = id.replace('shop_buy_ring_', '');
                 const ring = RINGS[type];
-                if (!ring) return interaction.reply({ content: '⚠️ Ring nooc ah ma jiro.', flags: MessageFlags.Ephemeral });
-                if ((ec.btc || 0) < ring.price) return interaction.reply({ content: `⚠️ BTC kuu ma filna. U baahan: ₿${ring.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
-                ec.btc -= ring.price;
+                if (!ring) return interaction.reply({ content: '⚠️ Ring nooc ah was not found.', flags: MessageFlags.Ephemeral });
+                if (getSpendableCoins(userId) < ring.price) return interaction.reply({ content: `⚠️ You do not have enough Coins. U baahan: 🪙${ring.price.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+                spendCoins(userId, ring.price);
                 checkUser(interaction.user.id);
                 ensureRel(interaction.user.id);
                 userData[interaction.user.id].ownedRings ??= { silver: 0, diamond: 0, royal: 0, somali: 0 };
                 userData[interaction.user.id].ownedRings[type] = (userData[interaction.user.id].ownedRings[type] || 0) + 1;
                 saveData(); saveEcon();
-                return interaction.reply({ content: `✅ **${ring.emoji} ${ring.name}** la iibsaday! (-₿${ring.price.toLocaleString()})\nIsticmaal: \`?propose @user\``, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${ring.emoji} ${ring.name}** purchased! (-🪙${ring.price.toLocaleString()})\nUsage: \`?propose @user\``, flags: MessageFlags.Ephemeral });
             }
 
             return interaction.reply({ content: '⚠️ Unknown purchase type.', flags: MessageFlags.Ephemeral });
         }
 
-        // ── Treasury buttons (owner only) ──
+        // ── Treasury buttons (admins only) ──
         if (id.startsWith('trs_add_') || id.startsWith('trs_reduce_') || id.startsWith('trs_set_')) {
-            if (interaction.user.id !== OWNER_ID)
-                return interaction.reply({ content: '⛔ Owner kaliya.', flags: MessageFlags.Ephemeral });
+            const ownerId = id.split('_').slice(2).join('_');
+            if (interaction.user.id !== ownerId || !isAdmin(ownerId))
+                return interaction.reply({ content: '⛔ Admin only, and use your own treasury panel.', flags: MessageFlags.Ephemeral });
             const { getTreasury } = require('../economy/econStore');
             const { fmt } = require('../utils/helpers');
             const t = getTreasury();
             let kind, label, placeholder;
-            if (id.startsWith('trs_add_'))    { kind = 'add';    label = '📥 Ku dar BTC';     placeholder = 'Tusaale: 1000000'; }
-            if (id.startsWith('trs_reduce_')) { kind = 'reduce'; label = '📤 Ka jar BTC';     placeholder = `Max: ${fmt(t.balance)}`; }
-            if (id.startsWith('trs_set_'))    { kind = 'set';    label = '🎯 Xaddad cusub set'; placeholder = `Hadda: ${fmt(t.balance)}`; }
+            if (id.startsWith('trs_add_'))    { kind = 'add';    label = '📥 Ku dar Coins';     placeholder = 'Example: 1000000'; }
+            if (id.startsWith('trs_reduce_')) { kind = 'reduce'; label = '📤 Ka jar Coins';     placeholder = `Max: ${fmt(t.balance)}`; }
+            if (id.startsWith('trs_set_'))    { kind = 'set';    label = '🎯 Xaddad cusub set'; placeholder = `Current: ${fmt(t.balance)}`; }
             const modal = new ModalBuilder()
-                .setCustomId(`trs_m_${kind}_${OWNER_ID}`)
+                .setCustomId(`trs_m_${kind}_${ownerId}`)
                 .setTitle(`🏛️ Treasury — ${label}`);
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
@@ -2581,7 +2169,7 @@ module.exports = function setupInteractionHandler(client) {
             if (id.startsWith('rel_view_friends_')) {
                 const friendIds = d.friends || [];
                 if (!friendIds.length)
-                    return interaction.reply({ content: '📭 Saaxiib ma lihid weli.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '📭 Saaxiib do not have weli.', flags: MessageFlags.Ephemeral });
                 const names = await Promise.all(friendIds.map(async fid => {
                     try { const u = await client.users.fetch(fid); return `👤 **${u.username}**`; }
                     catch { return `👤 <@${fid}>`; }
@@ -2592,7 +2180,7 @@ module.exports = function setupInteractionHandler(client) {
             if (id.startsWith('rel_view_partner_')) {
                 const rel = d.relationship || {};
                 if (!rel.partnerId)
-                    return interaction.reply({ content: '💔 Partner ma lihid.', flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: '💔 You do not have a partner.', flags: MessageFlags.Ephemeral });
                 let pName = rel.partnerUsername || `<@${rel.partnerId}>`;
                 try { const u = await client.users.fetch(rel.partnerId); pName = u.username; } catch {}
                 const days = rel.since ? Math.floor((Date.now() - rel.since) / 86400000) : 0;
@@ -2712,7 +2300,7 @@ module.exports = function setupInteractionHandler(client) {
             ];
             const rows = [];
             for (let i = 0; i < Math.min(btns.length, 10); i += 5) rows.push(new ActionRowBuilder().addComponents(btns.slice(i, i + 5)));
-            return interaction.reply({ content: '**📥 Xoolo geli — bank dooro:**', components: rows, flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: '**📥 Xoolo geli — bank Choose:**', components: rows, flags: MessageFlags.Ephemeral });
         }
 
         // ── ?bank Withdraw button → bank selection panel ──
@@ -2731,10 +2319,10 @@ module.exports = function setupInteractionHandler(client) {
             btns.push(...pubB.map(b => new ButtonBuilder().setCustomId(`wd_pub_${b.id}_${userId}`).setLabel(`🏛 ${b.name.slice(0, 20)}`).setStyle(ButtonStyle.Secondary)));
             btns.push(...persB.map(e => new ButtonBuilder().setCustomId(`wd_pers_${e.uid}_${userId}`).setLabel(`🏦 ${e.bank.owner.slice(0, 20)}`).setStyle(ButtonStyle.Secondary)));
             if (!btns.length)
-                return interaction.reply({ content: '⚠️ Wax bank ah lacag kuma dhigna.', flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: '⚠️ Wax bank ah Coins kuma dhigna.', flags: MessageFlags.Ephemeral });
             const rows = [];
             for (let i = 0; i < Math.min(btns.length, 10); i += 5) rows.push(new ActionRowBuilder().addComponents(btns.slice(i, i + 5)));
-            return interaction.reply({ content: '**📤 Lacag ka qaad — bank dooro:**', components: rows, flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: '**📤 Coins ka qaad — bank Choose:**', components: rows, flags: MessageFlags.Ephemeral });
         }
 
         // ── Back to ebank main panel ──
@@ -2764,7 +2352,7 @@ module.exports = function setupInteractionHandler(client) {
             const { getAllPublicBanks } = require('../economy/bankStore');
             const { buildPubBankPanel } = require('../../data/commands/economy/personalBank');
             const bank = Object.values(getAllPublicBanks()).find(b => b.id === bankId || b.id === bankId.toUpperCase());
-            if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin.', flags: MessageFlags.Ephemeral });
+            if (!bank) return interaction.reply({ content: '⚠️ Bank not found.', flags: MessageFlags.Ephemeral });
             const { embed, components } = buildPubBankPanel(bank, userId);
             return interaction.update({ embeds: [embed], components });
         }
@@ -2780,7 +2368,7 @@ module.exports = function setupInteractionHandler(client) {
             const { econData: eData } = require('../economy/econStore');
             const { buildPersBankPanel } = require('../../data/commands/economy/personalBank');
             const bank = eData[ownerId]?.personalBank;
-            if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin.', flags: MessageFlags.Ephemeral });
+            if (!bank) return interaction.reply({ content: '⚠️ Bank not found.', flags: MessageFlags.Ephemeral });
             const { embed, components } = buildPersBankPanel(bank, ownerId, userId);
             return interaction.update({ embeds: [embed], components });
         }
@@ -2801,8 +2389,8 @@ module.exports = function setupInteractionHandler(client) {
                 .setTitle(`⬆️ Withdraw — ${bank?.name || bankId}`);
             modal.addComponents(new ActionRowBuilder().addComponents(
                 new TextInputBuilder().setCustomId('wd_amount')
-                    .setLabel(`Xaddadka (max: ₿${myBal.toLocaleString()})`)
-                    .setPlaceholder('Tusaale: 2000')
+                    .setLabel(`Amount (max: 🪙${myBal.toLocaleString()})`)
+                    .setPlaceholder('Example: 2000')
                     .setStyle(TextInputStyle.Short).setRequired(true)
             ));
             return interaction.showModal(modal);
@@ -2824,8 +2412,8 @@ module.exports = function setupInteractionHandler(client) {
                 .setTitle(`⬆️ Withdraw — ${bank?.owner || 'Bank'}`);
             modal.addComponents(new ActionRowBuilder().addComponents(
                 new TextInputBuilder().setCustomId('wd_amount')
-                    .setLabel(`Xaddadka (max: ₿${myBal.toLocaleString()})`)
-                    .setPlaceholder('Tusaale: 1000')
+                    .setLabel(`Amount (max: 🪙${myBal.toLocaleString()})`)
+                    .setPlaceholder('Example: 1000')
                     .setStyle(TextInputStyle.Short).setRequired(true)
             ));
             return interaction.showModal(modal);
@@ -2864,7 +2452,7 @@ module.exports = function setupInteractionHandler(client) {
                 .setCustomId(`dep_garaad_modal_${userId}`)
                 .setTitle('🏦 Garaad Bank — Deposit');
             modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('dep_amount').setLabel('Xaddadka BTC').setPlaceholder('Tusaale: 5000').setStyle(TextInputStyle.Short).setRequired(true)
+                new TextInputBuilder().setCustomId('dep_amount').setLabel('Amount Coins').setPlaceholder('Example: 5000').setStyle(TextInputStyle.Short).setRequired(true)
             ));
             return interaction.showModal(modal);
         }
@@ -2880,7 +2468,7 @@ module.exports = function setupInteractionHandler(client) {
                 .setCustomId(`wd_garaad_modal_${userId}`)
                 .setTitle('🏦 Garaad Bank — Withdraw');
             modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('wd_amount').setLabel(`Xaddadka BTC (Max: ₿${bal.toLocaleString()})`).setPlaceholder('Tusaale: 5000').setStyle(TextInputStyle.Short).setRequired(true)
+                new TextInputBuilder().setCustomId('wd_amount').setLabel(`Amount Coins (Max: 🪙${bal.toLocaleString()})`).setPlaceholder('Example: 5000').setStyle(TextInputStyle.Short).setRequired(true)
             ));
             return interaction.showModal(modal);
         }
@@ -2897,7 +2485,7 @@ module.exports = function setupInteractionHandler(client) {
                 .setCustomId(`dep_pub_modal_${bankId}_${userId}`)
                 .setTitle(`🏛️ ${bankId} — Deposit`);
             modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('dep_amount').setLabel('Xaddadka BTC').setPlaceholder('Tusaale: 5000').setStyle(TextInputStyle.Short).setRequired(true)
+                new TextInputBuilder().setCustomId('dep_amount').setLabel('Amount Coins').setPlaceholder('Example: 5000').setStyle(TextInputStyle.Short).setRequired(true)
             ));
             return interaction.showModal(modal);
         }
@@ -2914,17 +2502,17 @@ module.exports = function setupInteractionHandler(client) {
             const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
             const { buildOwnerPanel } = require('../../data/commands/economy/publicBank');
             const bank = Object.values(getAllPublicBanks()).find(b => b.id === bankId || b.id === bankId.toUpperCase());
-            if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin.', flags: MessageFlags.Ephemeral });
-            if (bank.ownerId !== userId) return interaction.reply({ content: '⚠️ Owner kaliya.', flags: MessageFlags.Ephemeral });
+            if (!bank) return interaction.reply({ content: '⚠️ Bank not found.', flags: MessageFlags.Ephemeral });
+            if (bank.ownerId !== userId) return interaction.reply({ content: '⚠️ Owner only.', flags: MessageFlags.Ephemeral });
             const profit = bank.ownerProfit || 0;
-            if (profit <= 0) return interaction.reply({ content: '⚠️ Faa\'iido la\'aan hadda.', flags: MessageFlags.Ephemeral });
+            if (profit <= 0) return interaction.reply({ content: '⚠️ Faa\'iido la\'aan now.', flags: MessageFlags.Ephemeral });
             checkEconUser(userId);
-            eData[userId].btc  = (eData[userId].btc || 0) + profit;
+            eData[userId].coins  = (eData[userId].coins || 0) + profit;
             bank.ownerProfit   = 0;
             saveBanks(); saveEcon();
             const { embed, components } = buildOwnerPanel(bank, userId);
             return interaction.update({
-                content: `✅ **₿${Math.floor(profit).toLocaleString()}** faa'iido jeebkaaga la geeyay!`,
+                content: `✅ **🪙${Math.floor(profit).toLocaleString()}** profit your wallet la geeyay!`,
                 embeds: [embed], components,
             });
         }
@@ -2945,8 +2533,8 @@ module.exports = function setupInteractionHandler(client) {
             modal.addComponents(new ActionRowBuilder().addComponents(
                 new TextInputBuilder()
                     .setCustomId('fund_amount')
-                    .setLabel('Xaddadka BTC ee bangiga ku dari')
-                    .setPlaceholder('Tusaale: 10000')
+                    .setLabel('Amount Coins ee bank ku dari')
+                    .setPlaceholder('Example: 10000')
                     .setStyle(TextInputStyle.Short)
                     .setRequired(true)
             ));
@@ -2964,8 +2552,8 @@ module.exports = function setupInteractionHandler(client) {
             const { getAllPublicBanks } = require('../economy/bankStore');
             const { buildCloseConfirmPanel } = require('../../data/commands/economy/publicBank');
             const bank = Object.values(getAllPublicBanks()).find(b => b.id === bankId);
-            if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin.', flags: MessageFlags.Ephemeral });
-            if (bank.ownerId !== userId) return interaction.reply({ content: '⚠️ Owner kaliya ayaa tirtiri kara.', flags: MessageFlags.Ephemeral });
+            if (!bank) return interaction.reply({ content: '⚠️ Bank not found.', flags: MessageFlags.Ephemeral });
+            if (bank.ownerId !== userId) return interaction.reply({ content: '⚠️ Owner only ayaa tirtiri kara.', flags: MessageFlags.Ephemeral });
             const { embed, components } = buildCloseConfirmPanel(bank, userId);
             return interaction.update({ embeds: [embed], components });
         }
@@ -2982,8 +2570,8 @@ module.exports = function setupInteractionHandler(client) {
             const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
             const allBanks = getAllPublicBanks();
             const bank = Object.values(allBanks).find(b => b.id === bankId);
-            if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin ama horaan la xiray.', flags: MessageFlags.Ephemeral });
-            if (bank.ownerId !== userId) return interaction.reply({ content: '⚠️ Owner kaliya ayaa tirtiri kara.', flags: MessageFlags.Ephemeral });
+            if (!bank) return interaction.reply({ content: '⚠️ Bank lama helin ama horaan la closeay.', flags: MessageFlags.Ephemeral });
+            if (bank.ownerId !== userId) return interaction.reply({ content: '⚠️ Owner only ayaa tirtiri kara.', flags: MessageFlags.Ephemeral });
 
             const bankName = bank.name;
             let refunded = 0;
@@ -2991,14 +2579,14 @@ module.exports = function setupInteractionHandler(client) {
             for (const [custId, cust] of Object.entries(bank.customers || {})) {
                 if (!cust.balance || cust.balance <= 0) continue;
                 checkEconUser(custId);
-                eData[custId].btc = (eData[custId].btc || 0) + cust.balance;
+                eData[custId].coins = (eData[custId].coins || 0) + cust.balance;
                 refunded += cust.balance;
             }
             // Give owner their pending profit
             const profit = bank.ownerProfit || 0;
             if (profit > 0) {
                 checkEconUser(userId);
-                eData[userId].btc = (eData[userId].btc || 0) + profit;
+                eData[userId].coins = (eData[userId].coins || 0) + profit;
             }
             // Delete bank
             delete allBanks[bankId];
@@ -3007,13 +2595,13 @@ module.exports = function setupInteractionHandler(client) {
 
             return interaction.update({
                 embeds: [new EmbedBuilder()
-                    .setTitle('🗑️ Bank La Xiray')
+                    .setTitle('🗑️ Bank La Closeay')
                     .setColor('#e74c3c')
                     .setDescription(
-                        `✅ **${bankName}** si guul leh ayaa la xiray.\n\n` +
-                        `💰 Macaamiil waxaa loo celiyay: **₿${Math.floor(refunded).toLocaleString()}**\n` +
-                        (profit > 0 ? `💸 Faa'iidadaadii: **₿${Math.floor(profit).toLocaleString()}** ayaa jeebkaaga u galay.\n` : '') +
-                        `\n_Mahadsanid isticmaalka Garaad Economy._`
+                        `✅ **${bankName}** closed successfully.\n\n` +
+                        `💰 Macaamiil waxaa loo celiyay: **🪙${Math.floor(refunded).toLocaleString()}**\n` +
+                        (profit > 0 ? `💸 Faa'iidadaadii: **🪙${Math.floor(profit).toLocaleString()}** ayaa your wallet u galay.\n` : '') +
+                        `\n_Mahadsanid useka Garaad Economy._`
                     )
                 ],
                 components: [],
@@ -3034,7 +2622,7 @@ module.exports = function setupInteractionHandler(client) {
                 .setCustomId(`dep_pers_modal_${ownerId}_${userId}`)
                 .setTitle(`🏦 ${ownerName}'s Bank — Deposit`);
             modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder().setCustomId('dep_amount').setLabel('Xaddadka BTC').setPlaceholder('Tusaale: 5000').setStyle(TextInputStyle.Short).setRequired(true)
+                new TextInputBuilder().setCustomId('dep_amount').setLabel('Amount Coins').setPlaceholder('Example: 5000').setStyle(TextInputStyle.Short).setRequired(true)
             ));
             return interaction.showModal(modal);
         }
@@ -3043,13 +2631,13 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('pbank_own_dep_')) {
             const modal = new ModalBuilder()
                 .setCustomId(`pbank_own_dep_modal_${interaction.user.id}`)
-                .setTitle('📥 Bangigaaga — Lacag Geli');
+                .setTitle('📥 Bankaga — Coins Geli');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
                     new TextInputBuilder()
                         .setCustomId('pbank_own_amount')
-                        .setLabel('Xaddadka lacagta (BTC)')
-                        .setPlaceholder('Tusaale: 5000')
+                        .setLabel('Amount Coins (Coins)')
+                        .setPlaceholder('Example: 5000')
                         .setStyle(TextInputStyle.Short)
                         .setRequired(true)
                 ),
@@ -3061,21 +2649,21 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('pbank_own_wd_')) {
             const modal = new ModalBuilder()
                 .setCustomId(`pbank_own_wd_modal_${interaction.user.id}`)
-                .setTitle('📤 Bangigaaga — Lacag Ka Qaad');
+                .setTitle('📤 Bankaga — Coins Ka Qaad');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
                     new TextInputBuilder()
                         .setCustomId('pbank_wd_amount')
-                        .setLabel('Xaddadka lacagta (BTC)')
-                        .setPlaceholder('Tusaale: 2000')
+                        .setLabel('Amount Coins (Coins)')
+                        .setPlaceholder('Example: 2000')
                         .setStyle(TextInputStyle.Short)
                         .setRequired(true)
                 ),
                 new ActionRowBuilder().addComponents(
                     new TextInputBuilder()
                         .setCustomId('pbank_wd_pw')
-                        .setLabel('Password (haddaad dhigtay)')
-                        .setPlaceholder('Password-kaaga geli, haddaanay jirin — bannaanka ka daa')
+                        .setLabel('Password (if you dhigtay)')
+                        .setPlaceholder('Enter your password, nowanay jirin — leave blank')
                         .setStyle(TextInputStyle.Short)
                         .setRequired(false)
                 ),
@@ -3087,21 +2675,21 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('pbank_dep_btn_')) {
             const modal = new ModalBuilder()
                 .setCustomId(`pbank_dep_modal_${interaction.user.id}`)
-                .setTitle('💰 Bank — Lacag Geli');
+                .setTitle('💰 Bank — Coins Geli');
             modal.addComponents(
                 new ActionRowBuilder().addComponents(
                     new TextInputBuilder()
                         .setCustomId('pbank_bank_name')
                         .setLabel('Bank owner-ka magaciisa ama Bank ID')
-                        .setPlaceholder('Tusaale: Ahmed  ama  GB-12345')
+                        .setPlaceholder('Example: Ahmed  ama  GB-12345')
                         .setStyle(TextInputStyle.Short)
                         .setRequired(true)
                 ),
                 new ActionRowBuilder().addComponents(
                     new TextInputBuilder()
                         .setCustomId('pbank_amount')
-                        .setLabel('Xaddadka lacagta (BTC)')
-                        .setPlaceholder('Tusaale: 5000')
+                        .setLabel('Amount Coins (Coins)')
+                        .setPlaceholder('Example: 5000')
                         .setStyle(TextInputStyle.Short)
                         .setRequired(true)
                 ),
@@ -3109,7 +2697,7 @@ module.exports = function setupInteractionHandler(client) {
             return interaction.showModal(modal);
         }
 
-        // ── Xir (Close) ──
+        // ── Close (Close) ──
         if (id.startsWith('close_')) {
             const parts   = id.split('_');
             const ownerId = parts[parts.length - 1];
@@ -3117,275 +2705,6 @@ module.exports = function setupInteractionHandler(client) {
                 return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
             }
             return interaction.message.delete().catch(() => {});
-        }
-
-        // ── Trade: Accept disclaimer → open market ──
-        // ── Prediction: Refresh market ──
-        if (id.startsWith('pred_refresh_')) {
-            const ownerId = id.replace('pred_refresh_', '');
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { getActivePrediction }            = require('../economy/prediction');
-            const { buildMarketEmbed, buildActiveEmbed, mainRow, controlRow } = require('../../data/commands/economy/trade');
-            checkEconUser(ownerId);
-            const active = getActivePrediction(ownerId);
-            if (active) {
-                return interaction.update({ embeds: [buildActiveEmbed(active)], components: [controlRow(ownerId)] });
-            }
-            return interaction.update({
-                embeds:     [buildMarketEmbed(eData[ownerId])],
-                components: [mainRow(ownerId)],
-            });
-        }
-
-        // ── Prediction: Back / Cancel → market ──
-        if (id.startsWith('pred_back_') || id.startsWith('pred_cancel_')) {
-            const ownerId = id.startsWith('pred_back_')
-                ? id.replace('pred_back_', '')
-                : id.replace('pred_cancel_', '');
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { clearPending }                   = require('../economy/prediction');
-            const { buildMarketEmbed, mainRow }       = require('../../data/commands/economy/trade');
-            checkEconUser(ownerId);
-            clearPending(ownerId);
-            return interaction.update({
-                embeds:     [buildMarketEmbed(eData[ownerId])],
-                components: [mainRow(ownerId)],
-            });
-        }
-
-        // ── Prediction: Asset selected → skip stake type, go straight to modal ──
-        if (id.startsWith('pred_a_')) {
-            const rest    = id.replace('pred_a_', '');
-            const lastUnd = rest.lastIndexOf('_');
-            const asset   = rest.substring(0, lastUnd);
-            const ownerId = rest.substring(lastUnd + 1);
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { setPending, ASSET_LABEL }        = require('../economy/prediction');
-            checkEconUser(ownerId);
-
-            // BTC button → directly show BTC amount modal (predict on BTC by default)
-            if (asset === 'btc') {
-                setPending(ownerId, { asset: 'btc', stakeType: 'btc' });
-                const modal = new ModalBuilder()
-                    .setCustomId(`pred_amt_usd_${ownerId}`)
-                    .setTitle('₿ Immisa BTC baad dhigaysaa?');
-                modal.addComponents(new ActionRowBuilder().addComponents(
-                    new TextInputBuilder()
-                        .setCustomId('pred_amount')
-                        .setLabel(`BTC (Haysataa: ${(eData[ownerId].btc || 0).toLocaleString()})`)
-                        .setStyle(TextInputStyle.Short)
-                        .setPlaceholder('Tusaale: 500')
-                        .setRequired(true),
-                ));
-                return interaction.showModal(modal);
-            }
-
-            // Asset button → stakeType = asset, show asset amount modal directly
-            setPending(ownerId, { asset, stakeType: 'asset' });
-            const bal = eData[ownerId][asset] || 0;
-            const modal = new ModalBuilder()
-                .setCustomId(`pred_amt_ast_${ownerId}`)
-                .setTitle(`${ASSET_LABEL[asset] || asset.toUpperCase()} Immisa baad dhigaysaa?`);
-            modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder()
-                    .setCustomId('pred_amount')
-                    .setLabel(`${asset.toUpperCase()} (Haysataa: ${bal})`)
-                    .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 1')
-                    .setRequired(true),
-            ));
-            return interaction.showModal(modal);
-        }
-
-        // ── Prediction: USD + asset selected → USD amount modal ──
-        if (id.startsWith('pred_ua_')) {
-            const rest    = id.replace('pred_ua_', '');
-            const lastUnd = rest.lastIndexOf('_');
-            const asset   = rest.substring(0, lastUnd);
-            const ownerId = rest.substring(lastUnd + 1);
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { setPending }                     = require('../economy/prediction');
-            checkEconUser(ownerId);
-            setPending(ownerId, { asset, stakeType: 'btc' });
-            const modal = new ModalBuilder()
-                .setCustomId(`pred_amt_usd_${ownerId}`)
-                .setTitle('₿ Immisa BTC baad dhigaysaa?');
-            modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder()
-                    .setCustomId('pred_amount')
-                    .setLabel(`BTC (Haysataa: ${(eData[ownerId].btc || 0).toLocaleString()})`)
-                    .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 500')
-                    .setRequired(true),
-            ));
-            return interaction.showModal(modal);
-        }
-
-        // ── Prediction: Stake with BTC → amount modal ──
-        if (id.startsWith('pred_st_usd_')) {
-            const ownerId = id.replace('pred_st_usd_', '');
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            checkEconUser(ownerId);
-            const modal = new ModalBuilder()
-                .setCustomId(`pred_amt_usd_${ownerId}`)
-                .setTitle('₿ Immisa BTC baad dhigaysaa?');
-            modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder()
-                    .setCustomId('pred_amount')
-                    .setLabel(`BTC (Haysataa: ${(eData[ownerId].btc || 0).toLocaleString()})`)
-                    .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 500')
-                    .setRequired(true),
-            ));
-            return interaction.showModal(modal);
-        }
-
-        // ── Prediction: Stake with Asset → amount modal ──
-        if (id.startsWith('pred_st_ast_')) {
-            const ownerId = id.replace('pred_st_ast_', '');
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { getPending, ASSET_LABEL }        = require('../economy/prediction');
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            checkEconUser(ownerId);
-            const pend = getPending(ownerId);
-            if (!pend || !pend.asset)
-                return interaction.reply({ content: '⚠️ Xog la waayay — bilow marlabaad.', flags: MessageFlags.Ephemeral });
-            const { asset } = pend;
-            const bal = eData[ownerId][asset] || 0;
-            const modal = new ModalBuilder()
-                .setCustomId(`pred_amt_ast_${ownerId}`)
-                .setTitle(`${ASSET_LABEL[asset] || asset.toUpperCase()} Immisa baad dhigaysaa?`);
-            modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder()
-                    .setCustomId('pred_amount')
-                    .setLabel(`${asset.toUpperCase()} (Haysataa: ${bal})`)
-                    .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 1')
-                    .setRequired(true),
-            ));
-            return interaction.showModal(modal);
-        }
-
-        // ── Prediction: Direction + time combined → auto-lock ──
-        if (id.startsWith('pred_go_up_') || id.startsWith('pred_go_down_')) {
-            const isUp    = id.startsWith('pred_go_up_');
-            const rest    = id.replace(isUp ? 'pred_go_up_' : 'pred_go_down_', '');
-            const parts   = rest.split('_');
-            const minutes = parseInt(parts[0]);
-            const ownerId = parts.slice(1).join('_');
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { setPending, lockPrediction, getActivePrediction } = require('../economy/prediction');
-            const { buildActiveEmbed, controlRow }                    = require('../../data/commands/economy/trade');
-            setPending(ownerId, {
-                direction: isUp ? 'up' : 'down',
-                minutes,
-                channelId: interaction.channelId,
-                messageId: interaction.message.id,
-            });
-            const result = await lockPrediction(ownerId, interaction.client);
-            if (!result.ok)
-                return interaction.reply({ content: result.msg, flags: MessageFlags.Ephemeral });
-            const active = getActivePrediction(ownerId);
-            return interaction.update({
-                embeds:     [buildActiveEmbed(active)],
-                components: [controlRow(ownerId)],
-            });
-        }
-
-        // ── Trade: open sell panel ──
-        if (id.startsWith('trade_sell_') && !id.startsWith('trade_sellasset_') && !id.startsWith('trade_sellmod_')) {
-            const ownerId = id.replace('trade_sell_', '');
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { buildSellEmbed, sellRow } = require('../../data/commands/economy/trade');
-            checkEconUser(ownerId);
-            return interaction.update({
-                embeds:     [buildSellEmbed(eData[ownerId])],
-                components: [sellRow(ownerId)],
-            });
-        }
-
-        // ── Trade: select asset to sell → amount modal ──
-        if (id.startsWith('trade_sellasset_')) {
-            const rest    = id.replace('trade_sellasset_', '');
-            const lastUnd = rest.lastIndexOf('_');
-            const asset   = rest.substring(0, lastUnd);
-            const ownerId = rest.substring(lastUnd + 1);
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { ASSET_LABEL } = require('../economy/prediction');
-            const { getPrice }    = require('../economy/market');
-            checkEconUser(ownerId);
-            const price = getPrice(asset);
-            const bal   = eData[ownerId][asset] || 0;
-            const modal = new ModalBuilder()
-                .setCustomId(`trade_sellmod_${asset}_${ownerId}`)
-                .setTitle(`💰 Iibso ${ASSET_LABEL[asset] || asset.toUpperCase()}`);
-            modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder()
-                    .setCustomId('sell_amount')
-                    .setLabel(`Xaddad (Qiimaha: ₿: ${price?.toLocaleString()} | Haysataa: ${bal})`)
-                    .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 1')
-                    .setRequired(true),
-            ));
-            return interaction.showModal(modal);
-        }
-
-        // ── Trade Shop: open asset shop ──
-        if (id.startsWith('trade_shop_')) {
-            const ownerId = id.replace('trade_shop_', '');
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { buildShopEmbed, shopRow } = require('../../data/commands/economy/trade');
-            checkEconUser(ownerId);
-            return interaction.update({
-                embeds:     [buildShopEmbed(eData[ownerId])],
-                components: [shopRow(ownerId)],
-            });
-        }
-
-        // ── Trade Shop: buy asset → amount modal ──
-        if (id.startsWith('trade_buy_')) {
-            const rest    = id.replace('trade_buy_', '');
-            const lastUnd = rest.lastIndexOf('_');
-            const asset   = rest.substring(0, lastUnd);
-            const ownerId = rest.substring(lastUnd + 1);
-            if (interaction.user.id !== ownerId)
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { ASSET_LABEL }                    = require('../economy/prediction');
-            const { getPrice }                       = require('../economy/market');
-            checkEconUser(ownerId);
-            const price   = getPrice(asset);
-            const maxUnits = price > 0 ? Math.floor((eData[ownerId].btc || 0) / price) : 0;
-            const modal = new ModalBuilder()
-                .setCustomId(`trade_buymod_${asset}_${ownerId}`)
-                .setTitle(`🛒 Iibso ${ASSET_LABEL[asset] || asset.toUpperCase()}`);
-            modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder()
-                    .setCustomId('buy_amount')
-                    .setLabel(`Tirada (Qiimaha: ₿: ${price?.toLocaleString()}/unit | Max: ${maxUnits})`)
-                    .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 1')
-                    .setRequired(true),
-            ));
-            return interaction.showModal(modal);
         }
 
         // ── Give: Asset button → amount modal ──
@@ -3406,13 +2725,13 @@ module.exports = function setupInteractionHandler(client) {
 
             const modal = new ModalBuilder()
                 .setCustomId(`eco_gvmod_${asset}_${targetId}_${userId}`)
-                .setTitle(`Lacag u dir — ${ASSET_LABELS[asset] || asset.toUpperCase()}`);
+                .setTitle(`Coins u dir — ${ASSET_LABELS[asset] || asset.toUpperCase()}`);
             modal.addComponents(new ActionRowBuilder().addComponents(
                 new TextInputBuilder()
                     .setCustomId('eco_gv_amount')
-                    .setLabel(`Xaddadka (Haysataa: ${balance} ${asset.toUpperCase()})`)
+                    .setLabel(`Amount (You have: ${balance} ${asset.toUpperCase()})`)
                     .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 200')
+                    .setPlaceholder('Example: 200')
                     .setRequired(true),
             ));
             return interaction.showModal(modal);
@@ -3422,7 +2741,7 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('eco_eb_') && !id.startsWith('eco_eba_')) {
             const parts   = id.split('_');
             const userId  = parts[parts.length - 1];
-            const section = parts[2]; // main | khaznad | garaad
+            const section = parts[2]; // main | treasury | garaad
 
             if (interaction.user.id !== userId)
                 return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
@@ -3430,7 +2749,7 @@ module.exports = function setupInteractionHandler(client) {
             const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
             const {
                 applyInterest,
-                buildMainEmbed, buildBankEmbed, buildKhaznadEmbed,
+                buildMainEmbed, buildBankEmbed, buildTreasuryEmbed,
                 bankFullRow, ebCloseRow, backRow,
             } = require('../../data/commands/economy/ebank');
             checkEconUser(userId);
@@ -3441,8 +2760,8 @@ module.exports = function setupInteractionHandler(client) {
             if (section === 'main') {
                 return interaction.update({ embeds: [buildMainEmbed(d)], components: [bankFullRow(userId)] });
             }
-            if (section === 'khaznad') {
-                return interaction.update({ embeds: [buildKhaznadEmbed()], components: [backRow(userId)] });
+            if (section === 'treasury') {
+                return interaction.update({ embeds: [buildTreasuryEmbed()], components: [backRow(userId)] });
             }
             if (section === 'garaad') {
                 return interaction.update({ embeds: [buildBankEmbed(d)], components: [bankFullRow(userId)] });
@@ -3457,13 +2776,13 @@ module.exports = function setupInteractionHandler(client) {
                             .setCustomId('eco_eb_target')
                             .setLabel('Qofka magaciisa (username)')
                             .setStyle(TextInputStyle.Short)
-                            .setPlaceholder('Tusaale: Ahmed')
+                            .setPlaceholder('Example: Ahmed')
                             .setRequired(true)
                     ),
                     new ActionRowBuilder().addComponents(
                         new TextInputBuilder()
                             .setCustomId('eco_eb_bankname')
-                            .setLabel('Bank magaciisa (baniga lacagta lagu dari)')
+                            .setLabel('Bank magaciisa (baniga Coins lagu dari)')
                             .setStyle(TextInputStyle.Short)
                             .setPlaceholder('garaad | Kormaal Bank | GB-72957')
                             .setRequired(true)
@@ -3471,7 +2790,7 @@ module.exports = function setupInteractionHandler(client) {
                     new ActionRowBuilder().addComponents(
                         new TextInputBuilder()
                             .setCustomId('eco_eb_amount')
-                            .setLabel(`Xaddadka (₿: ${(d.banks?.garaad || 0).toLocaleString()} haysataa)`)
+                            .setLabel(`Amount (🪙: ${(d.banks?.garaad || 0).toLocaleString()} you have)`)
                             .setStyle(TextInputStyle.Short)
                             .setPlaceholder('500')
                             .setRequired(true)
@@ -3497,8 +2816,8 @@ module.exports = function setupInteractionHandler(client) {
             const d         = eData[userId];
             const bankLabel = bank.charAt(0).toUpperCase() + bank.slice(1);
             const isDeposit = action === 'deposit';
-            const maxAmt    = isDeposit ? (d.btc || 0) : (d.banks?.[bank] || 0);
-            const label     = isDeposit ? `Dhig (Max: ₿: ${maxAmt.toLocaleString()})` : `Bax (Max: ₿: ${maxAmt.toLocaleString()})`;
+            const maxAmt    = isDeposit ? (d.coins || 0) : (d.banks?.[bank] || 0);
+            const label     = isDeposit ? `Dhig (Max: 🪙: ${maxAmt.toLocaleString()})` : `Bax (Max: 🪙: ${maxAmt.toLocaleString()})`;
 
             const modal = new ModalBuilder()
                 .setCustomId(`eco_ebmod_${action}_${bank}_${userId}`)
@@ -3508,221 +2827,17 @@ module.exports = function setupInteractionHandler(client) {
                     .setCustomId('eco_eb_amount')
                     .setLabel(label)
                     .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 500')
+                    .setPlaceholder('Example: 500')
                     .setRequired(true),
             ));
             return interaction.showModal(modal);
         }
 
-
-        // ── Cashflip: Asset button → amount modal (legacy) ──
-        if (id.startsWith('eco_cf_')) {
-            const rest    = id.replace('eco_cf_', '');
-            const lastUnd = rest.lastIndexOf('_');
-            const asset   = rest.substring(0, lastUnd);
-            const ownerId = rest.substring(lastUnd + 1);
-
-            if (interaction.user.id !== ownerId) {
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            }
-
-            const { ASSET_LABELS } = require('../../data/commands/economy/cashflip');
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            checkEconUser(ownerId);
-            const balance = eData[ownerId][asset];
-
-            const modal = new ModalBuilder()
-                .setCustomId(`eco_cfmod_${asset}_${ownerId}`)
-                .setTitle(`Cashflip — ${ASSET_LABELS[asset] || asset.toUpperCase()}`);
-            modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder()
-                    .setCustomId('eco_cf_amount')
-                    .setLabel(`Xaddadka (Haysataa: ${balance} ${asset.toUpperCase()})`)
-                    .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 100')
-                    .setRequired(true),
-            ));
-            return interaction.showModal(modal);
-        }
-
-
-        // ── Trade: Refresh market view ──
-        if (id.startsWith('eco_trefresh_')) {
-            const ownerId = id.replace('eco_trefresh_', '');
-            if (interaction.user.id !== ownerId) {
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            }
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { buildMarketEmbed, mainRow, tradeCloseRow } = require('../../data/commands/economy/trade');
-            checkEconUser(ownerId);
-            return interaction.update({
-                embeds:     [buildMarketEmbed(eData[ownerId])],
-                components: [mainRow(ownerId), tradeCloseRow(ownerId)],
-            });
-        }
-
-        // ── Trade: Back to market view ──
-        if (id.startsWith('eco_tback_')) {
-            const ownerId = id.replace('eco_tback_', '');
-            if (interaction.user.id !== ownerId) {
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            }
-            const { econData: eData, checkEconUser } = require('../economy/econStore');
-            const { buildMarketEmbed, mainRow, tradeCloseRow } = require('../../data/commands/economy/trade');
-            checkEconUser(ownerId);
-            return interaction.update({
-                embeds:     [buildMarketEmbed(eData[ownerId])],
-                components: [mainRow(ownerId), tradeCloseRow(ownerId)],
-            });
-        }
-
-        // ── Economy: Asset select button → amount modal ──
-        if (id.startsWith('eco_tsel_')) {
-            const rest    = id.replace('eco_tsel_', '');
-            const lastUnd = rest.lastIndexOf('_');
-            const asset   = rest.substring(0, lastUnd);
-            const ownerId = rest.substring(lastUnd + 1);
-
-            if (interaction.user.id !== ownerId) {
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            }
-
-            const { ASSET_LABEL } = require('../../data/commands/economy/trade');
-            const { getPrice }    = require('../economy/market');
-            const price           = getPrice(asset);
-
-            const modal = new ModalBuilder()
-                .setCustomId(`eco_tmod_${asset}_${ownerId}`)
-                .setTitle(`Trade — ${ASSET_LABEL[asset] || asset.toUpperCase()}`);
-            modal.addComponents(new ActionRowBuilder().addComponents(
-                new TextInputBuilder()
-                    .setCustomId('eco_trade_amount')
-                    .setLabel(`Xaddadka (Qiimaha: ₿: ${price.toLocaleString()} / mid)`)
-                    .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('Tusaale: 2')
-                    .setRequired(true),
-            ));
-            return interaction.showModal(modal);
-        }
-
-        // ── Economy: Buy / Sell asset ──
-        if (id.startsWith('eco_buy_') || id.startsWith('eco_sell_')) {
-            const isBuy  = id.startsWith('eco_buy_');
-            const parts  = id.split('_');
-            // format: eco_buy_<asset>_<amount>_<price>_<userId>
-            const userId = parts[parts.length - 1];
-            const price  = parseFloat(parts[parts.length - 2]);
-            const amount = parseFloat(parts[parts.length - 3]);
-            const asset  = parts[2];
-
-            if (interaction.user.id !== userId) {
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            }
-
-            const { econData, checkEconUser, saveEcon, addToTreasury: atT } = require('../economy/econStore');
-            const { getPrice: gp, getMarketSnapshot }  = require('../economy/market');
-            const { ASSET_LABEL }   = require('../../data/commands/economy/trade');
-            checkEconUser(userId);
-            const d         = econData[userId];
-            const totalCost = Math.round(price * amount);
-
-            let tradeWin = true;
-            if (isBuy) {
-                if ((d.btc || 0) < totalCost) {
-                    return interaction.reply({ content: `⚠️ BTC kugu filna ma lihid. Haysataa: **₿: ${(d.btc || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
-                }
-                // Market-weighted win probability: rising=50%, stable=45%, falling=40%
-                const mktChange = getMarketSnapshot().find(s => s.asset === asset)?.change || 0;
-                const winProb   = mktChange > 1 ? 0.50 : mktChange < -1 ? 0.40 : 0.45;
-                tradeWin = Math.random() < winProb;
-                d.btc = (d.btc || 0) - totalCost;
-                if (tradeWin) {
-                    d[asset] += amount;
-                } else {
-                    atT(totalCost);
-                }
-            } else {
-                if (d[asset] < amount) {
-                    return interaction.reply({ content: `⚠️ ${asset.toUpperCase()} kugu filna ma lihid. Haysataa: **${d[asset]}**`, flags: MessageFlags.Ephemeral });
-                }
-                d[asset] -= amount;
-                d.btc     = (d.btc || 0) + totalCost;
-            }
-            saveEcon();
-            const btcP = gp('btc'), goldP = gp('gold');
-            const net  = d.btc * btcP + d.gold * goldP
-                       + d.banks.mandeeq + d.banks.garaad;
-
-            const resultRow = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`eco_min_${isBuy ? 'buy' : 'sell'}_${asset}_${amount}_${userId}`)
-                    .setLabel('📉 So yaree')
-                    .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId(`close_trade_${userId}`)
-                    .setLabel('❌ Iska xir')
-                    .setStyle(ButtonStyle.Danger),
-            );
-
-            const buyTitle = tradeWin
-                ? `✅ Iibsashada — ${ASSET_LABEL[asset] || asset.toUpperCase()}`
-                : `📉 Khasaaro — ${ASSET_LABEL[asset] || asset.toUpperCase()}`;
-            const buyDesc = tradeWin
-                ? `✅ **${amount} ${asset.toUpperCase()}** iibsatay — **₿: ${totalCost.toLocaleString()}**`
-                : `❌ Suuqa si xun u guuray — **₿: ${totalCost.toLocaleString()}** baad lumisay, asset ma helin.`;
-
-            return interaction.update({ embeds: [
-                new EmbedBuilder()
-                    .setTitle(isBuy ? buyTitle : `₿ Iibinta — ${ASSET_LABEL[asset] || asset.toUpperCase()}`)
-                    .setColor(isBuy ? (tradeWin ? '#2ecc71' : '#e74c3c') : '#3498db')
-                    .setDescription(
-                        `${isBuy ? buyDesc : `₿ **${amount} ${asset.toUpperCase()}** iibiyay — **₿: ${totalCost.toLocaleString()}**`}\n\n` +
-                        `**📊 Jeebkaaga Hadda:**\n` +
-                        `₿ BTC: **₿: ${(d.btc || 0).toLocaleString()}**\n` +
-                        `🥇 Gold: **${d.gold}**\n` +
-                        `🏦 Banks: **₿: ${fmt((d.banks.mandeeq + d.banks.garaad))}**\n\n` +
-                        `📊 **Net Worth: ~₿: ${fmt(Math.round(net))}**`
-                    )
-                    .setFooter({ text: 'Garaad Economy' }),
-            ], components: [resultRow] });
-        }
-
-        // ── Economy: Minimize trade result ──
-        if (id.startsWith('eco_min_')) {
-            const parts   = id.split('_');
-            const userId  = parts[parts.length - 1];
-            const action  = parts[2]; // buy or sell
-            const asset   = parts[3];
-            const amount  = parts[4];
-
-            if (interaction.user.id !== userId) {
-                return interaction.reply({ content: '⚠️ Farriintaas adiga kuma codsanin.', flags: MessageFlags.Ephemeral });
-            }
-
-            const { econData } = require('../economy/econStore');
-            const d = econData[userId] || {};
-
-            const closeBtn = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`close_trade_${userId}`)
-                    .setLabel('❌ Iska xir')
-                    .setStyle(ButtonStyle.Danger),
-            );
-
-            return interaction.update({ embeds: [
-                new EmbedBuilder()
-                    .setDescription(
-                        `${action === 'buy' ? '✅ Iibsatay' : '₿ Iibiyay'} **${amount} ${asset.toUpperCase()}** • ` +
-                        `₿ BTC: **₿: ${fmt((d.btc || 0))}**`
-                    )
-                    .setColor('#2ecc71'),
-            ], components: [closeBtn] });
-        }
 
         // ── Economy Shop: Buy title or item via button ──
         if (id.startsWith('eco_shop_')) {
             const key = id.replace('eco_shop_', '');
-            const { econData: eData, checkEconUser, saveEcon, addToTreasury } = require('../economy/econStore');
+            const { econData: eData, checkEconUser, saveEcon, addToTreasury, getSpendableCoins, spendCoins } = require('../economy/econStore');
             const { SHOP_ITEMS } = require('../../data/commands/economy/econShop');
             const userId = interaction.user.id;
             checkEconUser(userId);
@@ -3732,23 +2847,23 @@ module.exports = function setupInteractionHandler(client) {
 
             if (item.type === 'title') {
                 if (d.econTitles.includes(key)) {
-                    return interaction.reply({ content: `⚠️ **${item.label}** hormar haysataa.\n\`?etitle ${key}\` si aad u dhigto.`, flags: MessageFlags.Ephemeral });
+                    return interaction.reply({ content: `⚠️ **${item.label}** hormar you have.\n\`?etitle ${key}\` si aad u dhigto.`, flags: MessageFlags.Ephemeral });
                 }
-                if ((d.btc || 0) < item.price) {
-                    return interaction.reply({ content: `⚠️ BTC kugu filna ma lihid.\nQiimaha: **₿: ${item.price.toLocaleString()}** | Haysataa: **₿: ${(d.btc || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                if (getSpendableCoins(userId) < item.price) {
+                    return interaction.reply({ content: `⚠️ You do not have enough Coins.\nQiimaha: **🪙: ${item.price.toLocaleString()}** | You have: **🪙: ${getSpendableCoins(userId).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
                 }
-                d.btc = (d.btc || 0) - item.price;
+                spendCoins(userId, item.price);
                 d.econTitles.push(key);
                 if (!d.activeEconTitle) d.activeEconTitle = key;
                 addToTreasury(item.price);
                 saveEcon();
-                return interaction.reply({ content: `✅ **${item.label}** si guul leh ayaad u iibsatay!\n\`?etitle ${key}\` si aad u dhigto.`, flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: `✅ **${item.label}** purchased successfully!\n\`?etitle ${key}\` si aad u dhigto.`, flags: MessageFlags.Ephemeral });
             }
 
             // Custom name title — show modal
             if (item.type === 'custom') {
-                if ((d.btc || 0) < item.price) {
-                    return interaction.reply({ content: `⚠️ BTC kugu filna ma lihid.\nQiimaha: **₿: ${item.price.toLocaleString()}** | Haysataa: **₿: ${(d.btc || 0).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
+                if (getSpendableCoins(userId) < item.price) {
+                    return interaction.reply({ content: `⚠️ You do not have enough Coins.\nQiimaha: **🪙: ${item.price.toLocaleString()}** | You have: **🪙: ${getSpendableCoins(userId).toLocaleString()}**`, flags: MessageFlags.Ephemeral });
                 }
                 const modal = new ModalBuilder()
                     .setCustomId(`eco_shop_custom_mod_${userId}`)
@@ -3758,7 +2873,7 @@ module.exports = function setupInteractionHandler(client) {
                         .setCustomId('custom_title_name')
                         .setLabel('Magacaaga title-ka (ugu badnaan 30 xaraf)')
                         .setStyle(TextInputStyle.Short)
-                        .setPlaceholder('Tusaale: Garaadle, Dr. Ahmed, The Shark...')
+                        .setPlaceholder('Example: Garaadle, Dr. Ahmed, The Shark...')
                         .setMaxLength(30)
                         .setRequired(true),
                 ));
@@ -3776,20 +2891,6 @@ module.exports = function setupInteractionHandler(client) {
             return handleSoloLeaderboard(interaction);
         }
 
-        // ── Minno buttons ──
-        if (id.startsWith('minno_tile_')) {
-            const { handleTilePick } = require('../../data/commands/minno');
-            return handleTilePick(interaction);
-        }
-        if (id.startsWith('minno_accept_')) {
-            const { handleMinnoAccept } = require('../../data/commands/minno');
-            return handleMinnoAccept(interaction);
-        }
-        if (id.startsWith('minno_decline_')) {
-            const { handleMinnoDecline } = require('../../data/commands/minno');
-            return handleMinnoDecline(interaction);
-        }
-
         // ── Aqoon Register button (from ?aqoon / ?tartan panels) ──
         if (id.startsWith('aqoon_register_')) {
             const uid  = interaction.user.id;
@@ -3800,13 +2901,13 @@ module.exports = function setupInteractionHandler(client) {
                     embeds: [new EmbedBuilder()
                         .setTitle('🏁 Tartan — Code-kaaga Gaarka ah')
                         .setDescription(
-                            `✅ **Waxaad ku guulaysatay diiwaangelinta!**\n\n` +
+                            `✅ **You won diiwaangelinta!**\n\n` +
                             `Code-gaaga waa:\n\n# \`${code}\`\n\n` +
                             `**Tillaabooyinka:**\n` +
-                            `1. Sug ilaa admin \`?tartan_bilow\` qoro\n` +
+                            `1. Wait to admin \`?tartan_bilow\` qoro\n` +
                             `2. Channel-ka tartanka u tag\n` +
                             `3. Qor: \`?gal ${code}\`\n\n` +
-                            `⚠️ **Code-kan ha u shegin qof kale!**`
+                            `⚠️ **Code-kan ha u shegin player kale!**`
                         )
                         .setColor('#2ecc71')],
                 });
@@ -3828,27 +2929,27 @@ module.exports = function setupInteractionHandler(client) {
                     .setColor('#3498db')
                     .setDescription(
                         `**📚 WAREEGYADA:**\n` +
-                        `• Wareeg 1 — **${TOURNAMENT_R1_QUESTIONS} su'aalood**\n` +
-                        `• Wareeg 2 (Semi-Final) — **${TOURNAMENT_R2_QUESTIONS} su'aalood**\n` +
-                        `• Final 🏆 — **${TOURNAMENT_FINAL_QUESTIONS} su'aalood**\n\n` +
-                        `**⚡ DHIBCO (ku xidhan xawliga):**\n` +
-                        `• < 5 ilbiriqsi → **40 dhibcood** (max)\n` +
-                        `• 18 ilbiriqsi → **5 dhibcood** (min)\n` +
+                        `• Wareeg 1 — **${TOURNAMENT_R1_QUESTIONS} questions**\n` +
+                        `• Wareeg 2 (Semi-Final) — **${TOURNAMENT_R2_QUESTIONS} questions**\n` +
+                        `• Final 🏆 — **${TOURNAMENT_FINAL_QUESTIONS} questions**\n\n` +
+                        `**⚡ points (ku xidhan speed):**\n` +
+                        `• < 5 ilbiriqsi → **40 points** (max)\n` +
+                        `• 18 ilbiriqsi → **5 points** (min)\n` +
                         `• Dhexda → si toos ah hoos ugu dhacaysa\n\n` +
                         `**🔀 SU'AALAHA:**\n` +
                         `• MCQ: **4 doorasho** (A, B, C, D)\n` +
                         `• True/False: **Run** (True) / **Been** (False)\n` +
                         `• Maadooyinka: Diini · Taariikh · Xisaab · Grammar · Juqraafi\n\n` +
                         `**🚫 KA-SAAR:**\n` +
-                        `• Wareeg 1 → 2: 1/6 ee dhibcaha hooseeya baxaan\n` +
+                        `• Wareeg 1 → 2: 1/6 ee points hooseeya baxaan\n` +
                         `• Wareeg 2 → Final: badh (50%) ayaa baxaysa\n\n` +
                         `**🏆 ABAALMARINTA:**\n` +
-                        `• Guuleystaha: **Champion 🏆** title + 500 XP\n\n` +
+                        `• the winner: **Champion 🏆** title + 500 XP\n\n` +
                         `**📋 SIDA LOO BIIRAY:**\n` +
                         `1. Guji **Register** (DM = code-kaaga)\n` +
-                        `2. Sug admin inuu \`?tartan_bilow\` qoro\n` +
+                        `2. Wait admin inuu \`?tartan_bilow\` qoro\n` +
                         `3. Qor \`?gal CODE\` channel-ka tartanka\n` +
-                        `4. Admin qoraa \`?admin_next\` — bilow!`
+                        `4. Admin qoraa \`?admin_next\` — start!`
                     )
                     .setFooter({ text: 'Garaad Quiz Tournament' })],
             }).catch(() => {});
@@ -3862,12 +2963,12 @@ module.exports = function setupInteractionHandler(client) {
                     .map(([uid, { username }], i) => `${i + 1}. **${username || uid}** (\`${uid}\`)`)
                     .join('\n');
                 return interaction.reply({
-                    content: `👥 **Is-diiwaangashay:** ${count} qof\n\n${list || '_Cidna weli ma diiwaangalin_'}`,
+                    content: `👥 **Is-diiwaangashay:** ${count} player\n\n${list || '_Cidna weli ma diiwaangalin_'}`,
                     flags: MessageFlags.Ephemeral,
                 });
             }
             return interaction.reply({
-                content: `👥 **Is-diiwaangashay:** ${count} qof`,
+                content: `👥 **Is-diiwaangashay:** ${count} player`,
                 flags: MessageFlags.Ephemeral,
             });
         }
@@ -3878,20 +2979,20 @@ module.exports = function setupInteractionHandler(client) {
             const state = activeTournament?.get(guildId) || activeTournament?.get(GAME_CHANNEL_ID);
             if (!state || state.stage !== 'registration') {
                 return interaction.reply({
-                    content: '🔒 Diiwaangelinta waa la xiray.',
+                    content: '🔒 Diiwaangelinta was closed.',
                     flags: MessageFlags.Ephemeral,
                 }).catch(() => {});
             }
             return sendRegistrationCode(interaction.user, { reply: (o) => interaction.reply(o) }, state.gameChannelId, state.vcChannelId);
         }
 
-        // ── Tartan Bilow: Status button ──
+        // ── Tartan start: Status button ──
         if (id.startsWith('tartan_bilow_status_')) {
             const guildId = interaction.guildId;
             const state = activeTournament?.get(guildId) || activeTournament?.get(GAME_CHANNEL_ID);
             const count = state ? state.players.size : 0;
             return interaction.reply({
-                content: `👥 Ka qaybgalayaasha: **${count}** qof`,
+                content: `👥 Ka qaybgalayaasha: **${count}** player`,
                 flags: MessageFlags.Ephemeral,
             }).catch(() => {});
         }
@@ -3899,7 +3000,7 @@ module.exports = function setupInteractionHandler(client) {
         // ── Tartan: Admin DM panel — Fur Tartanka ──
         if (id.startsWith('tartan_open_')) {
             if (!isAdmin(interaction.user.id)) {
-                return interaction.reply({ content: '⛔ Kaliya admin.', flags: MessageFlags.Ephemeral }).catch(() => {});
+                return interaction.reply({ content: '⛔ Admins only.', flags: MessageFlags.Ephemeral }).catch(() => {});
             }
             const ok = await openGamePhase(interaction.client, interaction.user.id);
             if (ok) {
@@ -3907,12 +3008,12 @@ module.exports = function setupInteractionHandler(client) {
                     embeds: [new EmbedBuilder()
                         .setTitle('✅ Tartanka Waa La Furay')
                         .setColor('#2ecc71')
-                        .setDescription(`Game channel waa la furay → <#${GAME_CHANNEL_ID}>\nDadka waxay qori karaan \`?gal CODE\``)
+                        .setDescription(`Game channel waa opened → <#${GAME_CHANNEL_ID}>\nDadka waxay qori karaan \`?gal CODE\``)
                     ],
                     components: [],
                 }).catch(() => {});
             }
-            return interaction.reply({ content: '⚠️ Khalad — state hubi.', flags: MessageFlags.Ephemeral }).catch(() => {});
+            return interaction.reply({ content: '⚠️ Incorrect — state hubi.', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
 
         // ── Tartan: Admin DM panel — Tirada ──
@@ -3922,7 +3023,7 @@ module.exports = function setupInteractionHandler(client) {
                 .map(([uid, { username }], i) => `${i + 1}. **${username || uid}** (\`${uid}\`)`)
                 .join('\n');
             return interaction.reply({
-                content: `👥 **Diiwaangeliyay:** ${count} qof\n\n${list || '_Cidna weli ma diiwaangalin_'}`,
+                content: `👥 **Diiwaangeliyay:** ${count} player\n\n${list || '_Cidna weli ma diiwaangalin_'}`,
                 flags: MessageFlags.Ephemeral,
             }).catch(() => {});
         }
@@ -3930,7 +3031,7 @@ module.exports = function setupInteractionHandler(client) {
         // ── Tartan: Admin DM panel — Jooji ──
         if (id.startsWith('tartan_cancel_')) {
             if (!isAdmin(interaction.user.id)) {
-                return interaction.reply({ content: '⛔ Kaliya admin.', flags: MessageFlags.Ephemeral }).catch(() => {});
+                return interaction.reply({ content: '⛔ Admins only.', flags: MessageFlags.Ephemeral }).catch(() => {});
             }
             const guildId = interaction.guildId;
             const state = activeTournament?.get(guildId) || activeTournament?.get(GAME_CHANNEL_ID);
@@ -3954,10 +3055,10 @@ module.exports = function setupInteractionHandler(client) {
             return handlePanelButton(interaction, action);
         }
 
-        // ── Tartan Bilow: Next (admin only) ──
+        // ── Tartan start: Next (admin only) ──
         if (id.startsWith('tartan_bilow_next_')) {
             if (!isAdmin(interaction.user.id)) {
-                return interaction.reply({ content: '⛔ Kaliya **admin** ayaa bilaabi kara!', flags: MessageFlags.Ephemeral }).catch(() => {});
+                return interaction.reply({ content: '⛔ Only **admins** ayaa bilaabi kara!', flags: MessageFlags.Ephemeral }).catch(() => {});
             }
             const guildId = interaction.guildId;
             const state   = activeTournament?.get(guildId) || activeTournament?.get(GAME_CHANNEL_ID);
@@ -3966,7 +3067,7 @@ module.exports = function setupInteractionHandler(client) {
             }
             if (state.players.size < TOURNAMENT_MIN_PLAYERS) {
                 return interaction.reply({
-                    content: `⚠️ Ugu yaraan **${TOURNAMENT_MIN_PLAYERS}** qof. Hadda: **${state.players.size}**`,
+                    content: `⚠️ Ugu yaraan **${TOURNAMENT_MIN_PLAYERS}** player. Current: **${state.players.size}**`,
                     flags: MessageFlags.Ephemeral,
                 }).catch(() => {});
             }
@@ -3983,21 +3084,21 @@ module.exports = function setupInteractionHandler(client) {
         // ── Tournament Admin Next Button ──
         if (id.startsWith('tournament_admin_next_')) {
             if (!isAdmin(interaction.user.id)) {
-                return interaction.reply({ content: '⛔ Kaliya **admin** ayaa badhankaan isticmaali kara.', flags: MessageFlags.Ephemeral }).catch(() => {});
+                return interaction.reply({ content: '⛔ Only **admins** ayaa badhankaan usei kara.', flags: MessageFlags.Ephemeral }).catch(() => {});
             }
             const guildId = interaction.guildId;
             const state   = activeTournament?.get(guildId) || activeTournament?.get(GAME_CHANNEL_ID);
 
             if (!state) {
                 return interaction.reply({
-                    content: '⚠️ Tartan ma jiro. Ugu horreyn `?tartan_bilow` si channel-ka loo furo.',
+                    content: '⚠️ Tartan was not found. Ugu horreyn `?tartan_bilow` si channel-ka loo furo.',
                     flags: MessageFlags.Ephemeral,
                 }).catch(() => {});
             }
 
             if (state.stage === 'play') {
                 return interaction.reply({
-                    content: '⚠️ Wareeg ayaa hadda socda — sug ilaa uu dhammaado.',
+                    content: '⚠️ Wareeg ayaa now socda — wait to uu dhammaado.',
                     flags: MessageFlags.Ephemeral,
                 }).catch(() => {});
             }
@@ -4007,7 +3108,7 @@ module.exports = function setupInteractionHandler(client) {
             if (state.stage === 'join') {
                 if (state.players.size < TOURNAMENT_MIN_PLAYERS) {
                     return interaction.reply({
-                        content: `⚠️ Ugu yaraan **${TOURNAMENT_MIN_PLAYERS}** qof ayaa loo baahan yahay. Hadda: **${state.players.size}** qof.`,
+                        content: `⚠️ Ugu yaraan **${TOURNAMENT_MIN_PLAYERS}** player ayaa loo baahan yahay. Current: **${state.players.size}** player.`,
                         flags: MessageFlags.Ephemeral,
                     }).catch(() => {});
                 }
@@ -4064,9 +3165,9 @@ module.exports = function setupInteractionHandler(client) {
                 });
             }
             const aBusy = isUserBusy(authorId);
-            if (aBusy) return interaction.reply({ content: `Casuumaha mar hore wuxuu ku jiraa ciyaar **${aBusy}**.`, flags: MessageFlags.Ephemeral });
+            if (aBusy) return interaction.reply({ content: `Casuumaha mar hore wuxuu is in game **${aBusy}**.`, flags: MessageFlags.Ephemeral });
             const tBusy = isUserBusy(targetId);
-            if (tBusy) return interaction.reply({ content: `Adigu mar hore waxaad ku jirtaa ciyaar **${tBusy}**.`, flags: MessageFlags.Ephemeral });
+            if (tBusy) return interaction.reply({ content: `You are already playing **${tBusy}**.`, flags: MessageFlags.Ephemeral });
             await interaction.update({ content: `⚔️ <@${targetId}> wuu aqbalay! Dagaalku wuu bilaabmayaa...`, embeds: [], components: [] });
             try {
                 await startDuelGame(interaction.channel, authorId, targetId, count, null);
@@ -4087,11 +3188,11 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('quiz_join_')) {
             const channelId = id.replace('quiz_join_', '');
             const state = activeQuiz.get(channelId);
-            if (!state || state.started) return interaction.reply({ content: 'Lobby ma jiro ama wuu bilaabmay.', flags: MessageFlags.Ephemeral });
-            if (state.players.has(interaction.user.id)) return interaction.reply({ content: 'Mar hore ayaad ku jirtaa lobby-ga.', flags: MessageFlags.Ephemeral });
+            if (!state || state.started) return interaction.reply({ content: 'Lobby was not found ama wuu bilaabmay.', flags: MessageFlags.Ephemeral });
+            if (state.players.has(interaction.user.id)) return interaction.reply({ content: 'Mar hore ayaad are in lobby-ga.', flags: MessageFlags.Ephemeral });
             if (state.players.size >= QUIZ_MAX_PLAYERS) return interaction.reply({ content: 'Lobby-gu wuu buuxsamay.', flags: MessageFlags.Ephemeral });
             const busy = isUserBusy(interaction.user.id);
-            if (busy) return interaction.reply({ content: `Waxaad mar hore ku jirtaa ciyaar **${busy}**!`, flags: MessageFlags.Ephemeral });
+            if (busy) return interaction.reply({ content: `You are already in a game **${busy}**!`, flags: MessageFlags.Ephemeral });
             state.players.add(interaction.user.id);
             state.scores[interaction.user.id] = 0;
             await interaction.deferUpdate().catch(() => {});
@@ -4101,7 +3202,7 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('quiz_leave_')) {
             const channelId = id.replace('quiz_leave_', '');
             const state = activeQuiz.get(channelId);
-            if (!state || state.started) return interaction.reply({ content: 'Lobby ma jiro ama wuu bilaabmay.', flags: MessageFlags.Ephemeral });
+            if (!state || state.started) return interaction.reply({ content: 'Lobby was not found ama wuu bilaabmay.', flags: MessageFlags.Ephemeral });
             if (!state.players.has(interaction.user.id)) return interaction.reply({ content: 'Lobby kuma jirtid.', flags: MessageFlags.Ephemeral });
             const wasHost = interaction.user.id === state.hostId;
             state.players.delete(interaction.user.id);
@@ -4110,7 +3211,7 @@ module.exports = function setupInteractionHandler(client) {
                 if (state.lobbyTimer) clearTimeout(state.lobbyTimer);
                 activeQuiz.delete(channelId);
                 await interaction.deferUpdate().catch(() => {});
-                if (state.message) await state.message.edit({ embeds: [new EmbedBuilder().setTitle('🚪 Lobby waa la xidhay').setDescription('Cidina kuma harin lobby-ga.').setColor('#7f8c8d')], components: [] }).catch(() => {});
+                if (state.message) await state.message.edit({ embeds: [new EmbedBuilder().setTitle('🚪 Lobby waa equipped').setDescription('Cidina kuma harin lobby-ga.').setColor('#7f8c8d')], components: [] }).catch(() => {});
                 return;
             }
             if (wasHost) {
@@ -4124,11 +3225,11 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('quiz_start_')) {
             const channelId = id.replace('quiz_start_', '');
             const state = activeQuiz.get(channelId);
-            if (!state || state.started) return interaction.reply({ content: 'Lobby ma jiro ama wuu bilaabmay.', flags: MessageFlags.Ephemeral });
-            if (interaction.user.id !== state.hostId) return interaction.reply({ content: 'Kaliya hostku ayaa bilaabi kara.', flags: MessageFlags.Ephemeral });
-            if (state.players.size < QUIZ_MIN_PLAYERS) return interaction.reply({ content: `Ugu yaraan ${QUIZ_MIN_PLAYERS} qof. Hadda: ${state.players.size}`, flags: MessageFlags.Ephemeral });
+            if (!state || state.started) return interaction.reply({ content: 'Lobby was not found ama wuu bilaabmay.', flags: MessageFlags.Ephemeral });
+            if (interaction.user.id !== state.hostId) return interaction.reply({ content: 'Only the host ayaa bilaabi kara.', flags: MessageFlags.Ephemeral });
+            if (state.players.size < QUIZ_MIN_PLAYERS) return interaction.reply({ content: `Ugu yaraan ${QUIZ_MIN_PLAYERS} player. Current: ${state.players.size}`, flags: MessageFlags.Ephemeral });
             await interaction.deferUpdate().catch(() => {});
-            if (state.message) await state.message.edit({ embeds: [new EmbedBuilder().setTitle('✅ Lobby waa la xidhay').setDescription(`Quiz wuxuu ku bilaabmayaa **${state.players.size}** qof.`).setColor('#2ecc71')], components: [] }).catch(() => {});
+            if (state.message) await state.message.edit({ embeds: [new EmbedBuilder().setTitle('✅ Lobby waa equipped').setDescription(`Quiz wuxuu ku bilaabmayaa **${state.players.size}** player.`).setColor('#2ecc71')], components: [] }).catch(() => {});
             return beginQuizGame(state);
         }
 
@@ -4147,7 +3248,7 @@ module.exports = function setupInteractionHandler(client) {
                 }).catch(() => {});
             }
             return interaction.reply({
-                content: '⚠️ Quiz-kii wuu dhamaaday ama bot restart ayaa dhacay. Bilow cusub: `?quiz`',
+                content: '⚠️ Quiz-kii wuu dhamaaday ama bot restart ayaa dhacay. start cusub: `?quiz`',
                 flags: MessageFlags.Ephemeral,
             }).catch(() => {});
         }
@@ -4164,7 +3265,7 @@ module.exports = function setupInteractionHandler(client) {
                 }).catch(() => {});
             }
             return interaction.reply({
-                content: '⚠️ Duel-kii wuu dhamaaday ama bot restart ayaa dhacay. Bilow cusub: `?duel`',
+                content: '⚠️ Duel-kii wuu dhamaaday ama bot restart ayaa dhacay. start cusub: `?duel`',
                 flags: MessageFlags.Ephemeral,
             }).catch(() => {});
         }
@@ -4182,7 +3283,7 @@ module.exports = function setupInteractionHandler(client) {
             return interaction.update({
                 embeds: [new EmbedBuilder()
                     .setColor('#95a5a6')
-                    .setDescription('🔕 **Xusuusinta waa la xiraa.**\nDM kuma soo dirin doono. Dib u fur: `?reminder on`')
+                    .setDescription('🔕 **Xusuusinta waa la closeaa.**\nDM kuma sendin doono. Dib u fur: `?reminder on`')
                 ],
                 components: [],
             });
@@ -4198,7 +3299,7 @@ module.exports = function setupInteractionHandler(client) {
             // Close
             if (action === 'close') {
                 if (interaction.user.id !== callerId) return interaction.reply({ content: '⚠️', flags: MessageFlags.Ephemeral });
-                return interaction.update({ embeds: [{ description: '✖ Access panel la xiraa.' }], components: [] });
+                return interaction.update({ embeds: [{ description: '✖ Access panel la closeaa.' }], components: [] });
             }
 
             // Validate session
@@ -4219,20 +3320,20 @@ module.exports = function setupInteractionHandler(client) {
             const ecT = eData[targetId];
             const ecC = eData[callerId];
 
-            function fmtB(n) { return `₿${Math.floor(n||0).toLocaleString()}`; }
+            function fmtB(n) { return `🪙${Math.floor(n||0).toLocaleString()}`; }
 
             // Bank view
             if (action === 'bank') {
                 const bank = ecT.personalBank;
-                if (!bank) return interaction.reply({ content: '⚠️ Bank account ma laha.', flags: MessageFlags.Ephemeral });
+                if (!bank) return interaction.reply({ content: '⚠️ Bank account does not have.', flags: MessageFlags.Ephemeral });
                 let tName = targetId; try { const u = await interaction.client.users.fetch(targetId); tName = u.username; } catch {}
                 return interaction.reply({ flags: MessageFlags.Ephemeral, embeds: [new EmbedBuilder()
                     .setColor('#2ecc71')
                     .setTitle(`🏦 ${tName}'s Bank`)
                     .setDescription(
-                        `💰 **Haraagga:** ${fmtB(bank.balance)}\n` +
-                        `📥 **Wadarta la geliyay:** ${fmtB(bank.deposits)}\n` +
-                        `📤 **Wadarta la bixiyay:** ${fmtB(bank.withdrawals)}`
+                        `💰 **Balance:** ${fmtB(bank.balance)}\n` +
+                        `📥 **Total la geliyay:** ${fmtB(bank.deposits)}\n` +
+                        `📤 **Total la bixiyay:** ${fmtB(bank.withdrawals)}`
                     )
                 ]});
             }
@@ -4240,7 +3341,7 @@ module.exports = function setupInteractionHandler(client) {
             // Company view
             if (action === 'company') {
                 const comp = ecT.company;
-                if (!comp) return interaction.reply({ content: '⚠️ Company ma laha.', flags: MessageFlags.Ephemeral });
+                if (!comp) return interaction.reply({ content: '⚠️ Company does not have.', flags: MessageFlags.Ephemeral });
                 let tName = targetId; try { const u = await interaction.client.users.fetch(targetId); tName = u.username; } catch {}
                 return interaction.reply({ flags: MessageFlags.Ephemeral, embeds: [new EmbedBuilder()
                     .setColor('#3498db')
@@ -4256,13 +3357,13 @@ module.exports = function setupInteractionHandler(client) {
             // Deposit (from caller's wallet → target's bank)
             if (action === 'deposit') {
                 const bank = ecT.personalBank;
-                if (!bank) return interaction.reply({ content: '⚠️ Bank account ma laha.', flags: MessageFlags.Ephemeral });
+                if (!bank) return interaction.reply({ content: '⚠️ Bank account does not have.', flags: MessageFlags.Ephemeral });
                 const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
                 const modal = new ModalBuilder()
                     .setCustomId(`acc_dep_modal_${targetId}_${callerId}`)
                     .setTitle('📥 Deposit → Bank');
                 modal.addComponents(new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('amount').setLabel('Xaddadka BTC').setStyle(TextInputStyle.Short).setPlaceholder('500').setRequired(true)
+                    new TextInputBuilder().setCustomId('amount').setLabel('Amount Coins').setStyle(TextInputStyle.Short).setPlaceholder('500').setRequired(true)
                 ));
                 return interaction.showModal(modal);
             }
@@ -4270,13 +3371,13 @@ module.exports = function setupInteractionHandler(client) {
             // Withdraw (from target's bank → caller's wallet)
             if (action === 'withdraw') {
                 const bank = ecT.personalBank;
-                if (!bank) return interaction.reply({ content: '⚠️ Bank account ma laha.', flags: MessageFlags.Ephemeral });
+                if (!bank) return interaction.reply({ content: '⚠️ Bank account does not have.', flags: MessageFlags.Ephemeral });
                 const { ModalBuilder, TextInputBuilder, TextInputStyle } = require('discord.js');
                 const modal = new ModalBuilder()
                     .setCustomId(`acc_wd_modal_${targetId}_${callerId}`)
                     .setTitle('📤 Withdraw ← Bank');
                 modal.addComponents(new ActionRowBuilder().addComponents(
-                    new TextInputBuilder().setCustomId('amount').setLabel('Xaddadka BTC').setStyle(TextInputStyle.Short).setPlaceholder('500').setRequired(true)
+                    new TextInputBuilder().setCustomId('amount').setLabel('Amount Coins').setStyle(TextInputStyle.Short).setPlaceholder('500').setRequired(true)
                 ));
                 return interaction.showModal(modal);
             }
@@ -4288,18 +3389,18 @@ module.exports = function setupInteractionHandler(client) {
             const targetId = parts[3];
             const callerId = parts[4];
             const amount   = parseInt(interaction.fields.getTextInputValue('amount'));
-            if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+            if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
             const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
             checkEconUser(targetId); checkEconUser(callerId);
             const ecC = eData[callerId]; const bank = eData[targetId].personalBank;
-            if (!bank) return interaction.reply({ content: '⚠️ Bank ma laha.', flags: MessageFlags.Ephemeral });
-            if ((ecC.btc || 0) < amount) return interaction.reply({ content: `⚠️ BTC kugu filna ma lihid. Haysataa: ₿${(ecC.btc||0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
-            ecC.btc = (ecC.btc || 0) - amount;
+            if (!bank) return interaction.reply({ content: '⚠️ Bank does not have.', flags: MessageFlags.Ephemeral });
+            if ((ecC.coins || 0) < amount) return interaction.reply({ content: `⚠️ You do not have enough Coins. You have: 🪙${(ecC.coins||0).toLocaleString()}`, flags: MessageFlags.Ephemeral });
+            ecC.coins = (ecC.coins || 0) - amount;
             bank.balance  += amount;
             bank.deposits += amount;
             saveEcon();
             let tName = targetId; try { const u = await interaction.client.users.fetch(targetId); tName = u.username; } catch {}
-            return interaction.reply({ content: `📥 **₿${amount.toLocaleString()}** waxaad gelisay **${tName}**'s bank!`, flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: `📥 **🪙${amount.toLocaleString()}** you deposited **${tName}**'s bank!`, flags: MessageFlags.Ephemeral });
         }
 
         if (interaction.isModalSubmit?.() && id.startsWith('acc_wd_modal_')) {
@@ -4307,18 +3408,18 @@ module.exports = function setupInteractionHandler(client) {
             const targetId = parts[3];
             const callerId = parts[4];
             const amount   = parseInt(interaction.fields.getTextInputValue('amount'));
-            if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Xaddad sax ah geli.', flags: MessageFlags.Ephemeral });
+            if (isNaN(amount) || amount <= 0) return interaction.reply({ content: '⚠️ Enter a valid amount.', flags: MessageFlags.Ephemeral });
             const { econData: eData, checkEconUser, saveEcon } = require('../economy/econStore');
             checkEconUser(targetId); checkEconUser(callerId);
             const bank = eData[targetId].personalBank;
-            if (!bank) return interaction.reply({ content: '⚠️ Bank ma laha.', flags: MessageFlags.Ephemeral });
-            if (bank.balance < amount) return interaction.reply({ content: `⚠️ Bank ma filna. Haraagga: ₿${bank.balance.toLocaleString()}`, flags: MessageFlags.Ephemeral });
+            if (!bank) return interaction.reply({ content: '⚠️ Bank does not have.', flags: MessageFlags.Ephemeral });
+            if (bank.balance < amount) return interaction.reply({ content: `⚠️ Bank is not enough. Balance: 🪙${bank.balance.toLocaleString()}`, flags: MessageFlags.Ephemeral });
             bank.balance      -= amount;
             bank.withdrawals  += amount;
-            eData[callerId].btc = (eData[callerId].btc || 0) + amount;
+            eData[callerId].coins = (eData[callerId].coins || 0) + amount;
             saveEcon();
             let tName = targetId; try { const u = await interaction.client.users.fetch(targetId); tName = u.username; } catch {}
-            return interaction.reply({ content: `📤 **₿${amount.toLocaleString()}** ka soo baxday **${tName}**'s bank — jeebkaaga!`, flags: MessageFlags.Ephemeral });
+            return interaction.reply({ content: `📤 **🪙${amount.toLocaleString()}** ka soo baxday **${tName}**'s bank — your wallet!`, flags: MessageFlags.Ephemeral });
         }
 
         // ── Game reward claim buttons ────────────────────────────────────
@@ -4327,17 +3428,11 @@ module.exports = function setupInteractionHandler(client) {
             return handleGameRewardChoice(interaction);
         }
 
-        // ── Classic Token diamond drop buttons ───────────────────────────
-        if (id.startsWith('diamond_btc_')) {
-            const { handleDiamondInteraction } = require('../economy/diamondDrops');
-            return handleDiamondInteraction(interaction);
-        }
-
         // ── Rich Leaderboard Buttons ──────────────────────────────────────
         if (id.startsWith('close_rich_')) {
             const authorId = id.replace('close_rich_', '');
             if (interaction.user.id !== authorId) {
-                return interaction.reply({ content: '⛔ Qofkii amarka bixiyay kaliya ayaa xiri kara.', flags: MessageFlags.Ephemeral });
+                return interaction.reply({ content: '⛔ The player who amarka bixiyay only ayaa can close.', flags: MessageFlags.Ephemeral });
             }
             return interaction.message.delete().catch(() => {});
         }
@@ -4356,7 +3451,7 @@ module.exports = function setupInteractionHandler(client) {
             // If a tournament is actively running, let the message collector handle it
             if (tnState && tnState.stage === 'play') return;
             return interaction.reply({
-                content: '⚠️ Tartanku waa joojiyay ama bot restart ayaa dhacay. Sug wareeg cusub.',
+                content: '⚠️ Tartanku waa joojiyay ama bot restart ayaa dhacay. Wait wareeg cusub.',
                 flags: MessageFlags.Ephemeral,
             }).catch(() => {});
         }

@@ -2,13 +2,15 @@ const { EmbedBuilder } = require('discord.js');
 const { econData, checkEconUser, saveEcon, resetWeeklyEarnings } = require('../economy/econStore');
 const { userData }     = require('../store');
 const { getLevel, getDisplayTitle, checkUser, getDisplayName } = require('../utils/helpers');
+const { getCoinWealthByUser } = require('../economy/coinWealth');
+const { banksData } = require('../economy/bankStore');
 
 const CHANNEL_IDS      = ['1504517873673048185', '1510701592708517898'];
 const WEEK_MS          = 7 * 24 * 60 * 60 * 1000;
 const FIRST_TICK_MS    = 30 * 1000;
-const PRIZE_ECO_BTC    = 2_000;  // Top weekly earner
-const PRIZE_IQ_BTC     = 1_500;  // Top IQ winner
-const PRIZE_RICH_BTC   = 1_500;  // Top rich (highest BTC balance)
+const PRIZE_ECO_Coins    = 2_000;  // Top weekly earner
+const PRIZE_IQ_Coins     = 1_500;  // Top IQ winner
+const PRIZE_RICH_Coins   = 1_500;  // Top rich (highest Coins balance)
 
 const MEDALS = ['🥇', '🥈', '🥉'];
 
@@ -25,7 +27,7 @@ async function buildEcoLines(client) {
         .filter(([k]) => /^\d{17,19}$/.test(k))
         .map(([uid, d]) => ({
             uid,
-            earned: (d.weeklyEarned?.week === week ? (d.weeklyEarned.btc || d.weeklyEarned.usd || 0) : 0),
+            earned: (d.weeklyEarned?.week === week ? (d.weeklyEarned.coins || 0) : 0),
         }))
         .filter(e => e.earned > 0)
         .sort((a, b) => b.earned - a.earned)
@@ -34,7 +36,7 @@ async function buildEcoLines(client) {
     const lines = await Promise.all(entries.map(async ({ uid, earned }, i) => {
         const name = await getDisplayName(client, null, uid);
         const medal = MEDALS[i] || `**${i + 1}.**`;
-        return `${medal} **${name}** — ₿ ${earned.toLocaleString()} BTC earned`;
+        return `${medal} **${name}** — 🪙 ${earned.toLocaleString()} Coins earned`;
     }));
 
     return { lines, winner: entries[0] || null };
@@ -50,7 +52,7 @@ async function buildIqLines(client) {
         const name = await getDisplayName(client, null, uid);
         checkUser(uid);
         const title = getDisplayTitle(uid);
-        const titlePart = (title && title !== 'Bilow') ? ` [${title}]` : '';
+        const titlePart = (title && title !== 'start') ? ` [${title}]` : '';
         const lvl   = getLevel(d.iq || 0);
         const medal = MEDALS[i] || `**${i + 1}.**`;
         return `${medal} **${name}**${titlePart} — 🧠 ${(d.iq || 0).toLocaleString()} IQ · Lvl ${lvl}`;
@@ -60,17 +62,16 @@ async function buildIqLines(client) {
 }
 
 async function buildRichLines(client) {
-    const sorted = Object.entries(econData)
-        .filter(([k]) => /^\d{17,19}$/.test(k))
-        .map(([uid, d]) => ({ uid, btc: (d.btc || 0) + Object.values(d.banks || {}).reduce((s, v) => s + (v || 0), 0) }))
-        .filter(e => e.btc > 0)
-        .sort((a, b) => b.btc - a.btc)
+    const sorted = Object.entries(getCoinWealthByUser(econData, banksData))
+        .map(([uid, coins]) => ({ uid, coins }))
+        .filter(e => e.coins > 0)
+        .sort((a, b) => b.coins - a.coins)
         .slice(0, 10);
 
-    const lines = await Promise.all(sorted.map(async ({ uid, btc }, i) => {
+    const lines = await Promise.all(sorted.map(async ({ uid, coins }, i) => {
         const name = await getDisplayName(client, null, uid);
         const medal = MEDALS[i] || `**${i + 1}.**`;
-        return `${medal} **${name}** — ₿ ${btc.toLocaleString()} BTC`;
+        return `${medal} **${name}** — 🪙 ${coins.toLocaleString()} Coins`;
     }));
 
     return { lines, winner: sorted[0] || null };
@@ -92,25 +93,25 @@ async function sendLeaderboard(client) {
         let ecoPrizeLine = '';
         if (ecoWinner) {
             checkEconUser(ecoWinner.uid);
-            econData[ecoWinner.uid].btc = (econData[ecoWinner.uid].btc || 0) + PRIZE_ECO_BTC;
+            econData[ecoWinner.uid].coins = (econData[ecoWinner.uid].coins || 0) + PRIZE_ECO_Coins;
             econChanged = true;
-            ecoPrizeLine = `\n\n🏆 **Winner:** <@${ecoWinner.uid}> — **+₿ ${PRIZE_ECO_BTC.toLocaleString()} BTC** abaalmarinta!`;
+            ecoPrizeLine = `\n\n🏆 **Winner:** <@${ecoWinner.uid}> — **+🪙 ${PRIZE_ECO_Coins.toLocaleString()} Coins** abaalmarinta!`;
         }
 
         let iqPrizeLine = '';
         if (iqWinner) {
             checkEconUser(iqWinner.uid);
-            econData[iqWinner.uid].btc = (econData[iqWinner.uid].btc || 0) + PRIZE_IQ_BTC;
+            econData[iqWinner.uid].coins = (econData[iqWinner.uid].coins || 0) + PRIZE_IQ_Coins;
             econChanged = true;
-            iqPrizeLine = `\n\n🏆 **Winner:** <@${iqWinner.uid}> — **+₿ ${PRIZE_IQ_BTC.toLocaleString()} BTC** abaalmarinta!`;
+            iqPrizeLine = `\n\n🏆 **Winner:** <@${iqWinner.uid}> — **+🪙 ${PRIZE_IQ_Coins.toLocaleString()} Coins** abaalmarinta!`;
         }
 
         let richPrizeLine = '';
         if (richWinner) {
             checkEconUser(richWinner.uid);
-            econData[richWinner.uid].btc = (econData[richWinner.uid].btc || 0) + PRIZE_RICH_BTC;
+            econData[richWinner.uid].coins = (econData[richWinner.uid].coins || 0) + PRIZE_RICH_Coins;
             econChanged = true;
-            richPrizeLine = `\n\n🏆 **Winner:** <@${richWinner.uid}> — **+₿ ${PRIZE_RICH_BTC.toLocaleString()} BTC** abaalmarinta!`;
+            richPrizeLine = `\n\n🏆 **Winner:** <@${richWinner.uid}> — **+🪙 ${PRIZE_RICH_Coins.toLocaleString()} Coins** abaalmarinta!`;
         }
 
         if (econChanged) saveEcon();

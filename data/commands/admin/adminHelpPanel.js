@@ -1,33 +1,32 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { econData, getTreasury } = require('../../../src/economy/econStore');
 const { fmt } = require('../../../src/utils/helpers');
+const { banksData } = require('../../../src/economy/bankStore');
+const { getCoinWealthByUser } = require('../../../src/economy/coinWealth');
 
 const OWNER_ID = '1191096205955055690';
 
 function buildAdminEmbed(uid) {
     const users = Object.entries(econData).filter(([k]) => /^\d{17,19}$/.test(k));
     const t     = getTreasury();
-    let totalBtc = 0;
-    for (const [, d] of users) {
-        totalBtc += d.btc || 0;
-    }
+    const totalCoins = Object.values(getCoinWealthByUser(econData, banksData)).reduce((sum, amount) => sum + amount, 0);
     const isOwner = uid === OWNER_ID;
     return new EmbedBuilder()
         .setTitle('⚙️ Admin Panel')
         .setColor('#8e44ad')
         .setDescription(
-            `**🏛️ Treasury:** ${fmt(t.balance)} BTC\n` +
-            `**👥 Players:** ${users.length} | **₿ Circulation:** ${fmt(totalBtc)} BTC\n\n` +
+            `**🏛️ Treasury:** ${fmt(t.balance)} Coins\n` +
+            `**👥 Players:** ${users.length} | **🪙 Player wealth:** ${fmt(totalCoins)} Coins\n\n` +
             `**Actions:**\n` +
-            `🎁 Give User  •  🧠 Give IQ  •  ₿ Give All BTC  •  🏆 Champion\n` +
+            `🎁 Give User  •  🧠 Give IQ  •  🪙 Give All Coins  •  🏆 Champion\n` +
             `💬 DM  •  💸 Transfer  •  👥 Players\n` +
             `📢 Broadcast  •  🐛 Bugs` +
             (isOwner ? `\n🏛️ Top-up  •  👥 Admin  •  ♻️ Reset` : '') +
             `\n\n**🏦 Bank Commands (text):**\n` +
             `\`?adminbank pw @user\` — Personal bank password reset\n` +
             `\`?adminbank view @user\` — User bank info eeg\n` +
-            `\`?adminbank tax <ID> <%>\` — Macaamiisha tax qaado\n` +
-            `\`?adminbank close <ID>\` — Bank xir + lacag celi`
+            `\`?adminbank tax <ID> <%>\` — Macaamiisha tax claim\n` +
+            `\`?adminbank close <ID>\` — Bank close + Coins celi`
         )
         .setFooter({ text: 'Garaad Admin' });
 }
@@ -37,7 +36,7 @@ function adminRow1(uid) {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`admin_give_${uid}`)        .setLabel('🎁 Give User')   .setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId(`admin_giveall_iq_${uid}`)  .setLabel('🧠 Give IQ')     .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder().setCustomId(`admin_giveall_btc_${uid}`) .setLabel('₿ Give All BTC') .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId(`admin_giveall_coins_${uid}`) .setLabel('🪙 Give All Coins') .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId(`admin_aq_champion_${uid}`) .setLabel('🏆 Champion')    .setStyle(ButtonStyle.Success),
     );
 }

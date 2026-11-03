@@ -14,8 +14,8 @@ function getAnswerOptions(q) {
             stmtTrue = q.correct;
         } else if (typeof q.correct === 'string') {
             const s = q.correct.trim().toLowerCase();
-            if (['true', 'run', 'haa', 'yes', '1', 'sax'].includes(s)) stmtTrue = true;
-            else if (['false', 'been', 'maya', 'no', '0', 'khalad'].includes(s)) stmtTrue = false;
+            if (['true', 'run', 'haa', 'yes', '1', 'correct'].includes(s)) stmtTrue = true;
+            else if (['false', 'been', 'maya', 'no', '0', 'incorrect'].includes(s)) stmtTrue = false;
             else stmtTrue = true;
         } else {
             stmtTrue = !!q.correct;

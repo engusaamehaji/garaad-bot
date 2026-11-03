@@ -2,33 +2,33 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { getTreasury } = require('../../../src/economy/econStore');
 const { fmt } = require('../../../src/utils/helpers');
 
-module.exports = async function khaznadCmd(message) {
+module.exports = async function treasuryCmd(message) {
     const t       = getTreasury();
     const bal     = t.balance || 0;
     const totalIn = t.totalIn || 0;
-    const spent   = totalIn - bal;
+    const spent   = t.totalOut || 0;
 
     const userId = message.author.id;
     const closeRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-            .setCustomId(`close_khaznad_${userId}`)
-            .setLabel('❌ Iska xir')
+            .setCustomId(`close_treasury_${userId}`)
+            .setLabel('❌ Close')
             .setStyle(ButtonStyle.Danger),
     );
 
     return message.reply({ embeds: [
         new EmbedBuilder()
-            .setTitle('🏛️ Khaznadda Garaad — Treasury')
+            .setTitle('🏛️ Garaad Treasury')
             .setColor('#8e44ad')
             .setDescription(
-                `**💰 Hadda:**\n` +
-                `🏦 Khaznad: **${fmt(bal)} BTC**\n\n` +
-                `**📊 Tirakoobka:**\n` +
-                `📥 Wadarta soo gashay: **${fmt(totalIn)} BTC**\n` +
-                `📤 Wadarta la qaybiyay: **${fmt(spent)} BTC**\n\n` +
-                `**📌 Lacagta xaga kale:** Title iibsiga iyo Ecoflip qasaaraha\n` +
-                `**📌 Lacagta la siiyaa:** Admin ayaa qaybiyaa dadka`
+                `**💰 Current Balance:**\n` +
+                `🏦 Treasury: **${fmt(bal)} Coins**\n\n` +
+                `**📊 Statistics:**\n` +
+                `📥 Total received: **${fmt(totalIn)} Coins**\n` +
+                `📤 Total spent: **${fmt(spent)} Coins**\n\n` +
+                `**📌 Treasury income:** title purchases and losing coinflips\n` +
+                `**📌 Treasury payouts:** Coins distributed by admins`
             )
-            .setFooter({ text: 'Garaad Economy • Keedsane Bank Treasury' }),
+            .setFooter({ text: 'Garaad Economy • Treasury balances are in Coins' }),
     ], components: [closeRow] });
 };

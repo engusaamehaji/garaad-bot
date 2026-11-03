@@ -96,7 +96,7 @@ module.exports = async function qCommand(message) {
                 },
                 {
                     name: '🟡 Solo Stats',
-                    value: `Ciyaaray: **${soloPlayed}** | ✅ **${soloCorrect}** sax | ❌ **${soloWrong}** khalad\nSaxnaan: **${soloPct}%**`,
+                    value: `Gameay: **${soloPlayed}** | ✅ **${soloCorrect}** correct | ❌ **${soloWrong}** incorrect\nSaxnaan: **${soloPct}%**`,
                     inline: true,
                 },
                 {
@@ -106,11 +106,11 @@ module.exports = async function qCommand(message) {
                 },
                 {
                     name: '📚 Quiz/Team Stats',
-                    value: `Ciyaaray: **${qPlayed}** | Guulaystay: **${qWins}**`,
+                    value: `Gameay: **${qPlayed}** | Won: **${qWins}**`,
                     inline: true,
                 },
             )
-            .setFooter({ text: streak > 0 ? `🔥 Streak hadda: ${streak}` : `${PREFIX}q @user — Eeg ciyaaryahankaas` });
+            .setFooter({ text: streak > 0 ? `🔥 Streak now: ${streak}` : `${PREFIX}q @user — View playerkaas` });
 
         if (streak > 1) {
             embed.addFields({ name: '🔥 Streak', value: `**${streak}** jawaab oo isku xigta!`, inline: false });
@@ -119,6 +119,6 @@ module.exports = async function qCommand(message) {
         return message.reply({ embeds: [embed] });
     } catch (err) {
         console.error('[qCmd]', err);
-        return message.reply('❌ Khalad ayaa dhacay. Isku day mar kale.').catch(() => {});
+        return message.reply('❌ Incorrect ayaa dhacay. Isku day mar kale.').catch(() => {});
     }
 };

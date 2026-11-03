@@ -1,6 +1,6 @@
 // =====================================================================
-// CIYAARTA DUEL — dhig IQ + guul
-// Labadu: −5 IQ dhig | guuleystaha: +10 IQ | barbaro: dib u celin 5 IQ
+// The game DUEL — dhig IQ + guul
+// Labadu: −5 IQ dhig | the winner: +10 IQ | barbaro: dib u celin 5 IQ
 // =====================================================================
 
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } = require('discord.js');
@@ -17,10 +17,10 @@ const {
     DUEL_WIN_IQ,
 } = require('../config');
 const { getAnswerOptions } = require('../utils/questionOptions');
-const { checkEconUser, econData, saveEcon } = require('../economy/econStore');
-const DUEL_REPLAY_BTC = 50;
+const { checkEconUser, econData, saveEcon, trackEarning } = require('../economy/econStore');
+const DUEL_REPLAY_Coins = 50;
 const { saveDuelState, loadAllDuelStates, deleteDuelState } = require('../utils/gamePersist');
-const { createRewardSession, rewardRow, rewardSummary, POINTS_PER_REWARD, IQ_PER_REWARD, BTC_PER_REWARD } = require('../utils/gameRewards');
+const { createRewardSession, rewardRow, rewardSummary, POINTS_PER_REWARD, IQ_PER_REWARD, COINS_PER_REWARD } = require('../utils/gameRewards');
 
 function persistDuel(channelId, state) {
     saveDuelState(channelId, state).catch(() => {});
@@ -42,10 +42,10 @@ async function startDuelGame(channel, p1Id, p2Id, count = 0, originMsg = null) {
 
     if (!count || count < DUEL_MIN_QUESTIONS || count > DUEL_MAX_QUESTIONS) {
         await channel.send(
-            `🎯 <@${p1Id}> & <@${p2Id}> — imisa su'aalood ayaad rabtaan?\n` +
-            `Mid kasta oo idinka mid ah ha qoro lambar **${DUEL_MIN_QUESTIONS}** ilaa **${DUEL_MAX_QUESTIONS}** ` +
-            `(tusaale: \`5\` ama \`10\`).\n` +
-            `_(30 ilbiriqsi ayaad heysataan — haddii kale duel waa la joojinayaa)_`
+            `🎯 <@${p1Id}> & <@${p2Id}> — how many questions would you like?\n` +
+            `Either player can enter a number from **${DUEL_MIN_QUESTIONS}** to **${DUEL_MAX_QUESTIONS}** ` +
+            `(e.g. \`5\` or \`10\`).\n` +
+            `_(You have 30 seconds. Otherwise, the duel will be cancelled.)_`
         );
 
         const filter = m =>
@@ -55,14 +55,14 @@ async function startDuelGame(channel, p1Id, p2Id, count = 0, originMsg = null) {
         const collected = await channel.awaitMessages({ filter, max: 1, time: 30000 });
 
         if (collected.size === 0) {
-            return channel.send(`⏰ Wakhti dhammaaday — duel waa la joojiyay.`);
+            return channel.send('⏰ Time expired — the duel was cancelled.');
         }
 
         const num = parseInt(collected.first().content.trim());
         if (num < DUEL_MIN_QUESTIONS || num > DUEL_MAX_QUESTIONS) {
             return channel.send(
-                `⚠️ Tirada waa inay u dhexeyso **${DUEL_MIN_QUESTIONS}** iyo **${DUEL_MAX_QUESTIONS}**. ` +
-                `Duel waa la joojiyay.`
+                `⚠️ The question count must be between **${DUEL_MIN_QUESTIONS}** and **${DUEL_MAX_QUESTIONS}**. ` +
+                `The duel was cancelled.`
             );
         }
         count = num;
@@ -74,7 +74,7 @@ async function startDuelGame(channel, p1Id, p2Id, count = 0, originMsg = null) {
 
     if (!isReplay && (userData[p1Id].iq < DUEL_STAKE_IQ || userData[p2Id].iq < DUEL_STAKE_IQ)) {
         return channel.send(
-            `⚠️ Duel wuxuu u baahan yahay **${DUEL_STAKE_IQ} IQ** dhig ah labadaba.\n` +
+            `⚠️ Both players need at least **${DUEL_STAKE_IQ} IQ** to stake.\n` +
             `<@${p1Id}> **${userData[p1Id].iq} IQ** | <@${p2Id}> **${userData[p2Id].iq} IQ**`
         );
     }
@@ -85,8 +85,8 @@ async function startDuelGame(channel, p1Id, p2Id, count = 0, originMsg = null) {
         resetSeenDuelQuestions(p2Id);
         isReplay = true;
         await channel.send(
-            `🔄 Dhammaan su'aalaha duel waad arkey — dib loo bilaabay!\n` +
-            `⚠️ Dib-u-ciyaarta: IQ dhig ma jiro, guuleystaha **BTC yar** ayuu helaa.`
+            `🔄 You have seen every duel question. The question set has been reset!\n` +
+            `⚠️ Replay games do not require an IQ stake; the winner earns a smaller Coins reward.`
         );
         picked = pickQuestionsForGame(p1Id, 'duel', count);
         if (!picked || picked.length === 0) {
@@ -100,8 +100,8 @@ async function startDuelGame(channel, p1Id, p2Id, count = 0, originMsg = null) {
     let actualCount = picked.length;
     if (actualCount < count) {
         await channel.send(
-            `📚 Waxaa kaliya hadhay **${actualCount}** su'aalood oo cusub (adigoo codsaday ${count}).\n` +
-            `Duel-ku wuxuu socon doonaa **${actualCount}** su'aalood.`
+            `📚 Only **${actualCount}** unseen questions are available (you requested ${count}).\n` +
+            `This duel will have **${actualCount}** questions.`
         );
     }
 
@@ -135,14 +135,14 @@ async function startDuelGame(channel, p1Id, p2Id, count = 0, originMsg = null) {
     try {
         await channel.send({
             embeds: [new EmbedBuilder()
-                .setTitle('⚔️ Dagaalku wuu bilaabmay!')
+                .setTitle('⚔️ The Duel Has Started!')
                 .setDescription(
                     `<@${p1Id}> 🆚 <@${p2Id}>\n\n` +
-                    `**Dhig:** labaduba **−${DUEL_STAKE_IQ} IQ** (wadarta **${DUEL_STAKE_IQ * 2} IQ**).\n` +
-                    `**Guul:** guuleystaha wuxuu helayaa **+${DUEL_WIN_IQ} IQ**.\n` +
-                    `**Barbaro:** labaduba waxay helayaan **+${DUEL_STAKE_IQ} IQ** (dib u celinta dhigga).\n\n` +
-                    `**${actualCount}** su'aalood — qofka ugu horreeya ee si sax ah u jawaaba ayaa dhibicda helaya!\n` +
-                    `Bilaabaya 3 ilbiriqsi gudahood...`
+                    `**Stake:** Both players wagered **−${DUEL_STAKE_IQ} IQ** (total **${DUEL_STAKE_IQ * 2} IQ**).\n` +
+                    `**Win:** The winner earns **+${DUEL_WIN_IQ} IQ**.\n` +
+                    `**Tie:** Both players get their **${DUEL_STAKE_IQ} IQ** stake back.\n\n` +
+                    `First to answer a question correctly earns a point. There are **${actualCount}** questions.\n` +
+                    `Starting in 3 seconds...`
                 )
                 .setColor('#e67e22')],
         });
@@ -175,14 +175,14 @@ async function sendDuelQuestion(channel) {
     if (entries.length === 0) {
         activeDuels.delete(channel.id);
         refundDuelStakes(state.p1, state.p2);
-        return channel.send('⚠️ Su\'aal aan la fahmin — dhigga waa la soo celiyay.');
+        return channel.send('⚠️ The question could not be read. The stakes have been refunded.');
     }
 
     const embed = new EmbedBuilder()
-        .setTitle(`⚔️ Duel — Su'aal ${qIndex + 1}/${state.totalQ}`)
+        .setTitle(`⚔️ Duel — Question ${qIndex + 1}/${state.totalQ}`)
         .setDescription(
             `## ${stripQuestionNumber(q.question)}\n\n` +
-            `⏱️ ${GLOBAL_WAIT_MS / 1000} ilbiriqsi — qofka ugu horreeya ee sax ayaa dhibic helaya!\n\n` +
+            `⏱️ ${GLOBAL_WAIT_MS / 1000} seconds — the first correct answer earns a point!\n\n` +
             `📊 <@${state.p1}>: **${state.scores[state.p1]}** | <@${state.p2}>: **${state.scores[state.p2]}**`
         )
         .setColor('#e74c3c');
@@ -203,7 +203,7 @@ async function sendDuelQuestion(channel) {
         console.error('[Duel] Failed to send question:', e.message);
         activeDuels.delete(channel.id);
         refundDuelStakes(state.p1, state.p2);
-        await channel.send(`⚠️ <@${state.p1}> <@${state.p2}> — Duel su'aal soo dirin kari waayay. IQ waa la soo celiyay.`).catch(() => {});
+        await channel.send(`⚠️ <@${state.p1}> <@${state.p2}> — the duel question could not be sent. IQ stakes were refunded.`).catch(() => {});
         return;
     }
     state.message = msg;
@@ -216,10 +216,10 @@ async function sendDuelQuestion(channel) {
     collector.on('collect', async interaction => {
         const cur = activeDuels.get(channel.id);
         if (!cur || cur.currentQ !== qIndex) {
-            return interaction.reply({ content: 'Su\'aashan way dhamaatay.', flags: MessageFlags.Ephemeral }).catch(() => {});
+            return interaction.reply({ content: 'This question has ended.', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
         if (cur.answeredBy.has(interaction.user.id)) {
-            return interaction.reply({ content: 'Mar hore ayaad isku dayday su\'aashan!', flags: MessageFlags.Ephemeral }).catch(() => {});
+            return interaction.reply({ content: 'You already answered this question!', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
         cur.answeredBy.add(interaction.user.id);
 
@@ -227,10 +227,10 @@ async function sendDuelQuestion(channel) {
         if (isCorrect) {
             cur.scores[interaction.user.id]++;
             cur.correctAnswerer = interaction.user.id;
-            await interaction.reply({ content: `✅ <@${interaction.user.id}> wuu helay dhibic!`, flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: `✅ <@${interaction.user.id}> earned a point!`, flags: MessageFlags.Ephemeral }).catch(() => {});
             collector.stop('correct');
         } else {
-            await interaction.reply({ content: '❌ Khalad! Sug qofka kale ama waqtigu wuu dhamaan.', flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: '❌ Incorrect! Wait for the other player or the timer to end.', flags: MessageFlags.Ephemeral }).catch(() => {});
             if (cur.answeredBy.size >= 2) collector.stop('both_wrong');
         }
     });
@@ -244,18 +244,18 @@ async function sendDuelQuestion(channel) {
 
         let resultLine;
         if (reason === 'correct' && cur.correctAnswerer) {
-            resultLine = `✅ <@${cur.correctAnswerer}> ayaa si sax ah u jawaabay!\nJawaabta saxda ah waxaa lagu muujiyaa hoose.`;
+            resultLine = `✅ <@${cur.correctAnswerer}> answered correctly!\nThe correct answer is shown below.`;
         } else if (reason === 'both_wrong') {
-            resultLine = `❌ Labadiinaba waad khaldameen!`;
+            resultLine = '❌ Both players answered incorrectly!';
         } else {
-            resultLine = `⏰ Waqtigii wuu dhamaaday!`;
+            resultLine = '⏰ Time is up!';
         }
 
         const correctLabel = entries.find(e => e.isCorrect)?.label || String(q.correct);
-        resultLine += `\nJawaabta saxda ah: **${correctLabel}**`;
+        resultLine += `\nCorrect answer: **${correctLabel}**`;
 
         const summaryEmbed = new EmbedBuilder()
-            .setTitle(`⚔️ Duel — Su'aal ${qIndex + 1}/${cur.totalQ}`)
+            .setTitle(`⚔️ Duel — Question ${qIndex + 1}/${cur.totalQ}`)
             .setDescription(
                 `## ${stripQuestionNumber(q.question)}\n\n${resultLine}\n\n` +
                 `📊 <@${cur.p1}>: **${cur.scores[cur.p1]}** | <@${cur.p2}>: **${cur.scores[cur.p2]}**`
@@ -295,7 +295,7 @@ async function finishDuel(channel) {
             .setTitle('🤝 Dagaalku wuu iskumid noqday!')
             .setDescription(
                 `<@${state.p1}> **${s1}** — **${s2}** <@${state.p2}>\n\n` +
-                (isReplay ? 'Dib-u-ciyaar — abaalmarin ma jirto.' : `Dhigga **${DUEL_STAKE_IQ} IQ** waa la soo celiyay labadaba.`)
+                (isReplay ? 'Dib-u-game — abaalmarin was not found.' : `Dhigga **${DUEL_STAKE_IQ} IQ** waa la soo celiyay labadaba.`)
             )
             .setColor('#f1c40f');
     } else {
@@ -306,7 +306,8 @@ async function finishDuel(channel) {
 
         if (isReplay) {
             checkEconUser(winnerId);
-            econData[winnerId].btc = (econData[winnerId].btc || 0) + DUEL_REPLAY_BTC;
+            econData[winnerId].coins = (econData[winnerId].coins || 0) + DUEL_REPLAY_Coins;
+            trackEarning(winnerId, DUEL_REPLAY_Coins);
             saveEcon();
             userData[winnerId].duelReplaying = false;
             userData[loserId].duelReplaying = false;
@@ -321,10 +322,10 @@ async function finishDuel(channel) {
             .setDescription(
                 `<@${state.p1}> **${s1}** — **${s2}** <@${state.p2}>\n\n` +
                 (isReplay
-                    ? `🥇 Guulaystay: <@${winnerId}> (**+${DUEL_REPLAY_BTC} BTC** — dib-u-ciyaar)\n💀 Lumiyay: <@${loserId}>`
-                    : `🥇 Guulaystay: <@${winnerId}> (**+${DUEL_WIN_IQ} IQ**)\n` +
+                    ? `🥇 Won: <@${winnerId}> (**+${DUEL_REPLAY_Coins} Coins** — dib-u-game)\n💀 Lumiyay: <@${loserId}>`
+                    : `🥇 Won: <@${winnerId}> (**+${DUEL_WIN_IQ} IQ**)\n` +
                       `💀 Lumiyay: <@${loserId}> (wuxuu lumay dhigii **${DUEL_STAKE_IQ} IQ**)\n\n` +
-                      `IQ hadda: <@${winnerId}> **${userData[winnerId].iq}** | <@${loserId}> **${userData[loserId].iq}** ` +
+                      `IQ now: <@${winnerId}> **${userData[winnerId].iq}** | <@${loserId}> **${userData[loserId].iq}** ` +
                       `(Level ${getLevel(userData[winnerId].iq)} / ${getLevel(userData[loserId].iq)})`)
             )
             .setColor('#2ecc71');
@@ -344,13 +345,13 @@ async function finishDuel(channel) {
         value:
             `<@${state.p1}> — ${rewardSummary(rewardPoints[state.p1])}\n` +
             `<@${state.p2}> — ${rewardSummary(rewardPoints[state.p2])}\n` +
-            `Dooro IQ ama BTC. (${POINTS_PER_REWARD} pts = ${IQ_PER_REWARD} IQ ama ${BTC_PER_REWARD} BTC)`,
+            `Choose IQ ama Coins. (${POINTS_PER_REWARD} pts = ${IQ_PER_REWARD} IQ ama ${COINS_PER_REWARD} Coins)`,
     });
 
     const closeRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`close_duel_${state.p1}`)
-            .setLabel('❌ Iska xir')
+            .setLabel('❌ Iska close')
             .setStyle(ButtonStyle.Danger),
     );
 

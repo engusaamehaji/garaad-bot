@@ -15,7 +15,7 @@ const EID_DESC =
     `oo aad la qaadataan qoyska iyo asxaabta. Waxaan idiin rajeynaynaa guul iyo barako aan ` +
     `dhammaad lahayn. ✨\n\n` +
     `🎮 Dhamaan players-ka **Garaad Bot** Discord Game, mahadsanidiin taageeradiinna iyo ` +
-    `ciyaartiinna joogtada ah. Ciid wanaagsan, ciyaarta sii wada, kuna raaxaysta madadaalada ` +
+    `gametiinna joogtada ah. Ciid wanaagsan, the game sii wada, kuna raaxaysta madadaalada ` +
     `iyo tartanka saaxiibbadiin. 🏆\n\n` +
     `**Garaad Bot Community • Ciid Mubaarak Dhamaan Players-ka**`;
 

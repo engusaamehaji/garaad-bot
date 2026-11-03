@@ -1,6 +1,6 @@
 // =====================================================================
 // GitHub → Bot: soo deji su'aalaha cusub (pull) oo reload garee
-// Isticmaal BACKUP_REPO + BACKUP_TOKEN (ama QUESTIONS_REPO)
+// Use BACKUP_REPO + BACKUP_TOKEN (ama QUESTIONS_REPO)
 // =====================================================================
 
 const fs   = require('fs');

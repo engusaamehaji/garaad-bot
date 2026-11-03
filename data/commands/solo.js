@@ -1,8 +1,8 @@
 // =====================================================================
 // AMARKA: ?solo  (interactive — bot wuxuu weydiinayaa tirada su'aalaha)
-// Tusaale:
-//   ?solo        → bot wuxuu weydiinayaa "Imisa su'aalood?" → user qoraa "10"
-//   ?solo 10     → toos buu u bilaabmayaa 10 su'aalood
+// Example:
+//   ?solo        → bot wuxuu weydiinayaa "Imisa questions?" → user qoraa "10"
+//   ?solo 10     → toos buu u bilaabmayaa 10 questions
 // =====================================================================
 
 const { EmbedBuilder } = require('discord.js');
@@ -14,40 +14,40 @@ const { PREFIX, SOLO_MIN_QUESTIONS, SOLO_MAX_QUESTIONS } = require('../../src/co
 
 function soloIntroEmbed() {
     return new EmbedBuilder()
-        .setTitle('📘 Macallin — Solo')
+        .setTitle('📘 Solo Game Guide')
         .setDescription(
-            '**Sida loo ciyaaro:**\n' +
-            '• Jawaab **sax** ah - **dhibcood + 10 BTC** 💰\n' +
-            '• Jawaab **qalad** ama **waqti dhammaaday** - **−1 IQ** + **10 BTC** (waqti awgeed)\n' +
-            '• Dhibcahaagu **≥ 80** yahay game dhammaadkiisa - **IQ heli** ✅\n' +
-            '• Dhibcahaagu **< 80** yahay - IQ laguma siin (waxaad heshaa BTC kaliya)\n\n' +
-            '**90%+ sax** = 🌟 Aad u fiican! | **80-89%** = ✨ Wanaagsan!\n\n' +
-            'Markaad jawaabto dhammaan su\'aalooyinka, ciyaarta si otomaatig ah ayay dib u bilaabataa, laakiin IQ lama siin doono.'
+            '**How to play:**\n' +
+            '• Correct answer: **points + 10 Coins** 💰\n' +
+            '• Incorrect answer or timeout: **−1 IQ** + **10 Coins** (time reward)\n' +
+            '• Finish with **80+ points** to earn IQ ✅\n' +
+            '• Finish with **under 80 points** to earn Coins only\n\n' +
+            '**90%+ correct** = 🌟 Excellent! | **80–89%** = ✨ Great!\n\n' +
+            'After you answer every question, the game restarts automatically. Replay rounds award Coins instead of IQ.'
         )
         .setColor('#3498db');
 }
 
-// Sharrax: bilow ciyaarta solo iyada oo la isticmaalayo tirada gaarka ah
+// Sharrax: start the game solo iyada oo la useayo tirada gaarka ah
 async function startSoloGame(message, count) {
     const userId = message.author.id;
 
     checkUser(userId);
     const d = userData[userId];
 
-    // Hubi xadka 30 IQ maalintiiba
+    // Hubi the limit 30 IQ maalintiiba
     const dayKey = new Date().toISOString().slice(0, 10);
     if (d.soloIqDayKey !== dayKey) { d.soloIqDayKey = dayKey; d.soloIqToday = 0; saveData(); }
     if ((d.soloIqToday || 0) >= 30) {
         const { EmbedBuilder } = require('discord.js');
         return message.reply({ embeds: [
             new EmbedBuilder()
-                .setTitle('🚫 Solo — Xadka Maanta Waad Gaartay!')
+                .setTitle('🚫 Solo — Daily Limit Reached')
                 .setDescription(
-                    `✅ Maanta **30 IQ** solo kasoo helatay — xad maalinlaha ah.\n\n` +
-                    `Ciyaar kuwa kale si aad IQ u hesho:\n` +
-                    `🎓 \`${PREFIX}quiz\` — Tartan koox\n` +
-                    `⚔️ \`${PREFIX}duel @qof\` — Tartam qof kale\n\n` +
-                    `_Solo dib ayuu u furmayaa berri._`
+                    `✅ You have earned today's **30 IQ** from Solo.\n\n` +
+                    `Play another game to earn IQ:\n` +
+                    `🎓 \`${PREFIX}quiz\` — Group quiz\n` +
+                    `⚔️ \`${PREFIX}duel @player\` — Challenge another player\n\n` +
+                    `_Your Solo limit resets tomorrow._`
                 )
                 .setColor('#e74c3c'),
         ]});
@@ -63,18 +63,18 @@ async function startSoloGame(message, count) {
 
     const busy = isUserBusy(userId);
     if (busy) {
-        return message.reply(`⚠️ Waxaad mar hore ku jirtaa ciyaar **${busy}**! Sug ilaa ay dhammaato.`);
+        return message.reply(`⚠️ You are already in a game **${busy}**! Wait for it to finish.`);
     }
 
     let picked = pickQuestionsForGame(userId, 'solo', count);
 
-    // Haddii su'aalo dhammaan (user-ku wuu arkey dhammaan) → dib u bilow
+    // If questions dhammaan (user-ku wuu arkey dhammaan) → dib u start
     if (!picked || picked.length === 0) {
         resetSeenSoloQuestions(userId);
         await message.reply(
-            `🔄 **${message.author.username}**, dhammaan su'aalaha ayaad arkey — si toos ah ayaa dib loo bilaabay!\n` +
-            `⚠️ **Xasuusnow:** Ciyaarka cusub IQ kuma heli doonto (waxaad heshaa BTC kaliya su'aal kasta).\n` +
-            `💰 **+10 BTC** ayaad heshaysaa su'aal walba waqti aad galiso.`
+            `🔄 **${message.author.username}**, you have seen every Solo question. The question set has been reset!\n` +
+            `⚠️ **Note:** Replay games award Coins instead of IQ.\n` +
+            `💰 Earn **+10 Coins** for each question you answer.`
         );
         picked = pickQuestionsForGame(userId, 'solo', count);
         if (!picked || picked.length === 0) {
@@ -84,12 +84,12 @@ async function startSoloGame(message, count) {
         clearReplayFlag(userId, 'soloReplaying');
     }
 
-    // ⭐ Haddii su'aalo cusub ka yar yihiin tirada la codsaday → ka warbixi
+    // ⭐ If questions cusub ka yar yihiin tirada la codsaday → ka warbixi
     let actualCount = picked.length;
     if (actualCount < count) {
         await message.reply(
-            `📚 **${message.author.username}**, waxaa kuu hadhay **${actualCount}** su'aalood oo aanad weligaa arkin (adigoo codsaday ${count}).\n` +
-            `Ciyaartu waxay socon doontaa **${actualCount}** su'aalood.`
+            `📚 **${message.author.username}**, only **${actualCount}** unseen questions are available (you requested ${count}).\n` +
+            `This game will have **${actualCount}** questions.`
         );
     }
 
@@ -100,29 +100,29 @@ async function startSoloGame(message, count) {
 module.exports = async function soloCommand(message, args) {
     const userId = message.author.id;
 
-    // 1. Hubi in user-ku ku jiro ciyaar kale
+    // 1. Hubi in user-ku ku jiro game kale
     const busy = isUserBusy(userId);
     if (busy) {
-        return message.reply(`⚠️ Waxaad mar hore ku jirtaa ciyaar **${busy}**! Sug ilaa ay dhammaato.`);
+        return message.reply(`⚠️ You are already in a game **${busy}**! Wait for it to finish.`);
     }
 
-    // 2. Haddii user-ku tilmaamay tirada toos ah (?solo 10), bilow toos
+    // 2. If user-ku tilmaamay tirada toos ah (?solo 10), start toos
     if (args[0] !== undefined) {
         const count = parseInt(args[0]);
         if (isNaN(count) || count < SOLO_MIN_QUESTIONS || count > SOLO_MAX_QUESTIONS) {
             return message.reply(
-                `⚠️ Tirada waa inay u dhexeyso **${SOLO_MIN_QUESTIONS}** iyo **${SOLO_MAX_QUESTIONS}**.\n` +
-                `Tusaale: \`${PREFIX}solo 10\``
+                `⚠️ The question count must be between **${SOLO_MIN_QUESTIONS}** and **${SOLO_MAX_QUESTIONS}**.\n` +
+                `Example: \`${PREFIX}solo 10\``
             );
         }
         return startSoloGame(message, count);
     }
 
-    // 3. Haddii kale, weydii user-ka tirada (interactive)
+    // 3. If kale, weydii user-ka tirada (interactive)
     await message.reply(
-        `🎯 **${message.author.username}**, imisa su'aalood ayaad rabtaa?\n` +
-        `Qor lambar **${SOLO_MIN_QUESTIONS}** ilaa **${SOLO_MAX_QUESTIONS}** (tusaale: \`10\` ama \`25\`).\n` +
-        `_(30 ilbiriqsi ayaad heysataa — haddii kale waa la tirtirayaa)_`
+        `🎯 **${message.author.username}**, how many questions would you like?\n` +
+        `Choose a number from **${SOLO_MIN_QUESTIONS}** to **${SOLO_MAX_QUESTIONS}** (e.g. \`10\` or \`25\`).\n` +
+        `_(You have 30 seconds to reply.)_`
     );
 
     const filter    = m => m.author.id === userId && /^\d+$/.test(m.content.trim());
@@ -131,7 +131,7 @@ module.exports = async function soloCommand(message, args) {
     });
 
     if (collected.size === 0) {
-        return message.channel.send(`⏰ <@${userId}>, wakhti dhammaaday — \`${PREFIX}solo\` mar kale isku day.`);
+        return message.channel.send(`⏰ <@${userId}>, time expired. Use \`${PREFIX}solo\` to try again.`);
     }
 
     const reply = collected.first();
@@ -139,8 +139,8 @@ module.exports = async function soloCommand(message, args) {
 
     if (count < SOLO_MIN_QUESTIONS || count > SOLO_MAX_QUESTIONS) {
         return reply.reply(
-            `⚠️ Tirada waa inay u dhexeyso **${SOLO_MIN_QUESTIONS}** iyo **${SOLO_MAX_QUESTIONS}**.\n` +
-            `\`${PREFIX}solo\` mar kale isku day.`
+            `⚠️ The question count must be between **${SOLO_MIN_QUESTIONS}** and **${SOLO_MAX_QUESTIONS}**.\n` +
+            `Use \`${PREFIX}solo\` to try again.`
         );
     }
 

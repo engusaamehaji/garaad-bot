@@ -10,24 +10,24 @@ function getHiddenUntil(user) {
 function createHeist(robberId, victimId) {
     const victim = userData[victimId];
     if (!victim || !victim.password) {
-        return { error: 'Ciyaartaan lama bilaabi karo. Ujeedada ma laha password.' };
+        return { error: 'This heist cannot start because the target has no password set.' };
     }
     if (victim.hiddenUntil && victim.hiddenUntil > Date.now()) {
-        return { error: 'Calaamaddu waa qarsoon tahay. Ma xadin kartid qofkan hadda.' };
+        return { error: 'This player is hidden right now. You cannot rob them.' };
     }
     if (robberId === victimId) {
-        return { error: 'Ma xadin kartid naftaada.' };
+        return { error: 'You cannot rob yourself.' };
     }
 
     const password = victim.password.toString();
     if (!/^[0-9]{4}$/.test(password)) {
-        return { error: 'Ujeedada ma laha password sax ah.' };
+        return { error: 'The target does not have a valid password set.' };
     }
 
     checkEconUser(victimId);
-    const victimCash = econData[victimId].usd || 0;
+    const victimCash = econData[victimId].coins || 0;
     if (victimCash <= 0) {
-        return { error: 'Ujeedada ma hayso lacag. Waxba ma xadi kartid.' };
+        return { error: 'The target has no Coins to steal.' };
     }
 
     const revealIndex    = Math.floor(Math.random() * 4);
@@ -52,21 +52,21 @@ function createHeist(robberId, victimId) {
 function guessHeist(robberId, guessCode) {
     const state = activeHeists.get(robberId);
     if (!state) {
-        return { error: 'Ma jiro xatooyo socda. Bilow `?xatooyo @user` marka hore.' };
+        return { error: 'No heist is active. Start one with `?xatooyo @user`.' };
     }
 
     const victimUser = userData[state.victimId];
     if (!victimUser) {
         activeHeists.delete(robberId);
-        return { error: 'Ujeedada lama helin. Xatooyadu waa la joojiyay.' };
+        return { error: 'The target could not be found. The heist was cancelled.' };
     }
     if (victimUser.hiddenUntil && victimUser.hiddenUntil > Date.now()) {
         activeHeists.delete(robberId);
-        return { error: 'Ujeedada hadda waa qarsoon, xatooyo ma suuroobi karto.' };
+        return { error: 'The target is hidden now, so the heist cannot continue.' };
     }
 
     if (!/^[0-9]{4}$/.test(guessCode)) {
-        return { error: 'Fadlan geli 4-lambar oo sax ah si aad u qiyaasto.' };
+        return { error: 'Enter a valid 4-digit code.' };
     }
 
     checkEconUser(robberId);
@@ -77,37 +77,37 @@ function guessHeist(robberId, guessCode) {
     if (guessCode[state.revealIndex] !== state.revealedDigit) {
         state.attemptsLeft -= 1;
         if (state.attemptsLeft <= 0) {
-            robberEcon.btc = Math.max(0, (robberEcon.btc || 0) - 100);
+            robberEcon.coins = Math.max(0, (robberEcon.coins || 0) - 100);
             saveEcon();
             activeHeists.delete(robberId);
-            return { failure: true, attemptsLeft: 0, penalty: { cash: 100 }, message: 'Qiyaastaada waa khalad xad dhaaf ah. 100 BTC ayaa lagaa jaray.' };
+            return { failure: true, attemptsLeft: 0, penalty: { cash: 100 }, message: 'Too many incorrect guesses. 100 Coins were deducted.' };
         }
-        return { failure: true, attemptsLeft: state.attemptsLeft, message: `Lambarka la soo bandhigay waa khalad ama ma lahan meel sax ah. Waxaa kugu harsan ${state.attemptsLeft} isku day.` };
+        return { failure: true, attemptsLeft: state.attemptsLeft, message: `Incorrect code. ${state.attemptsLeft} attempts remaining.` };
     }
 
     if (guessCode !== victimUser.password) {
         state.attemptsLeft -= 1;
         if (state.attemptsLeft <= 0) {
-            robberEcon.btc = Math.max(0, (robberEcon.btc || 0) - 100);
+            robberEcon.coins = Math.max(0, (robberEcon.coins || 0) - 100);
             saveEcon();
             activeHeists.delete(robberId);
-            return { failure: true, attemptsLeft: 0, penalty: { cash: 100 }, message: 'Qiyaastaada waa khalad. Waxaa lagaa jaray 100 BTC.' };
+            return { failure: true, attemptsLeft: 0, penalty: { cash: 100 }, message: 'Incorrect code. 100 Coins were deducted.' };
         }
-        return { failure: true, attemptsLeft: state.attemptsLeft, message: `Qiyaasuhu ma aha mid sax ah. Waxaa kugu harsan ${state.attemptsLeft} isku day.` };
+        return { failure: true, attemptsLeft: state.attemptsLeft, message: `Incorrect guess. ${state.attemptsLeft} attempts remaining.` };
     }
 
     const stealPercent = 0.18 + Math.random() * 0.12;
-    const stolenCash   = Math.max(1, Math.floor((victimEcon.btc || 0) * stealPercent));
+    const stolenCash   = Math.max(1, Math.floor((victimEcon.coins || 0) * stealPercent));
 
-    victimEcon.btc = Math.max(0, (victimEcon.btc || 0) - stolenCash);
-    robberEcon.btc = (robberEcon.btc || 0) + stolenCash;
+    victimEcon.coins = Math.max(0, (victimEcon.coins || 0) - stolenCash);
+    robberEcon.coins = (robberEcon.coins || 0) + stolenCash;
     saveEcon();
     activeHeists.delete(robberId);
 
     return {
         success: true,
         stolenCash,
-        message: `Xatooyadii waa guuleysatay! Waxaad ka xaday ${stolenCash} BTC.`,
+        message: `The heist succeeded! You stole ${stolenCash} Coins.`,
     };
 }
 

@@ -27,8 +27,8 @@ module.exports = function setupReminderScheduler(client) {
                         .setTitle('🔔 Garaad — Xusuusin')
                         .setDescription(
                             `Ku soo dhawoow! Wakhti badan ayaad ka maqnayd.\n\n` +
-                            `🎁 **\`${PREFIX}today\`** ku qor server-kii Garaad si aad u qaadato dhibcahaaga maalinlaha ah!\n\n` +
-                            `🧠 Sidoo kale, su'aalo cusub ayaa ku sugaya \`${PREFIX}solo\``
+                            `🎁 **\`${PREFIX}today\`** type server-kii Garaad si aad u qaadato pointsaga maalinlaha ah!\n\n` +
+                            `🧠 Sidoo kale, su'aalo cusub ayaa ku waitaya \`${PREFIX}solo\``
                         )
                         .setColor('#3498db')
                         .setFooter({ text: 'Garaad Bot — Mahadsanid' });
@@ -36,7 +36,7 @@ module.exports = function setupReminderScheduler(client) {
                     const row = new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
                             .setCustomId(`reminder_optout_${userId}`)
-                            .setLabel('🔕 Iska xir xusuusinta')
+                            .setLabel('🔕 Iska close xusuusinta')
                             .setStyle(ButtonStyle.Secondary),
                     );
 
@@ -50,9 +50,9 @@ module.exports = function setupReminderScheduler(client) {
                 await new Promise(r => setTimeout(r, 250));
             }
 
-            console.log(`[Reminder] ✅ ${success} la diray | ❌ ${failed} guuldaray`);
+            console.log(`[Reminder] ✅ ${success} sent | ❌ ${failed} failed`);
         } catch (err) {
-            console.error('[Reminder] Khalad scheduler-ka:', err);
+            console.error('[Reminder] Incorrect scheduler-ka:', err);
         }
     }
 

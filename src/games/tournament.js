@@ -4,12 +4,12 @@
 // 1. Admin: ?tartan → bot weydiiyaa 3 channel ID (announce, game, vc)
 // 2. Admin ku gala IDs → bot "✅ Ok" dhahaa, panel bilaabaa
 // 3. Users click "📝 Diiwaan Geli" → code DM instantly
-// 4. Admin panel: Bilow Registration / Bilow Toos
+// 4. Admin panel: start Registration / start Toos
 // 5. Bot posts in GAME channel: ?gal CODE
 // 6. Users join with code, admin starts rounds
 //
-// Wareegyada: R1=25 | R2=20 | Final=15 su'aalood
-// Dhibco: < 5s = 40pts | 18s = 5pts (timed)
+// Wareegyada: R1=25 | R2=20 | Final=15 questions
+// points: < 5s = 40pts | 18s = 5pts (timed)
 // Keyed by guild ID — servers kasta tournament gaar ah
 // =====================================================================
 
@@ -130,8 +130,8 @@ function buildAnnounceEmbed(deadline, regCount, closed, state) {
     const mins     = Math.floor((timeLeft % 3600000) / 60000);
 
     const regStatus = closed
-        ? `🔒 **Diiwaangelintu waa la xiray** · **${regCount}** qof ayaa diiwaangeliyay`
-        : `⏰ **Diiwaangelintu waxay xirmaysaa:** ${hours > 0 ? `${hours} saac ` : ''}${mins} daqiiqo gudahood\n👥 **Diiwaangeliyay:** ${regCount} qof`;
+        ? `🔒 **Diiwaangelintu was closed** · **${regCount}** player ayaa diiwaangeliyay`
+        : `⏰ **Diiwaangelintu waxay closemaysaa:** ${hours > 0 ? `${hours} saac ` : ''}${mins} daqiiqo gudahood\n👥 **Diiwaangeliyay:** ${regCount} player`;
 
     return new EmbedBuilder()
         .setTitle('🏆 Garaad Quiz — Tartanka Rasmiga ah')
@@ -139,14 +139,14 @@ function buildAnnounceEmbed(deadline, regCount, closed, state) {
         .setDescription(
             `## 🔥 Ku soo dhowaada dhammaan ka qaybgalayaasha Garaad Quiz!\n\n` +
             `Waxaa si rasmi ah loo qabanayaa **tartan weyn oo aqooneed**.\n` +
-            `Haddii aad doonayso inaad ka qayb gasho, riix badhanka **📝 Diiwaan Geli** si aad u hesho **code gaar ah** oo si toos ah kuugu imaanaya fariimahaaga.\n\n` +
-            `Marka maamulka furo albaabka tartanka, code-kaaga ku qor <#${gameChId}> si loo xaqiijiyo gelitaankaaga.\n\n` +
+            `If aad doonayso inaad ka qayb gasho, riix badhanka **📝 Diiwaan Geli** si aad u hesho **code gaar ah** oo si toos ah kuugu imaanaya fariimahaaga.\n\n` +
+            `Marka maamulka furo albaabka tartanka, code-kaaga type <#${gameChId}> si loo xaqiijiyo gelitaankaaga.\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n\n` +
             `## ⚔️ Qaabka Tartanka\n\n` +
             `🏁 Tartanku wuxuu ka koobnaan doonaa **3 wareeg**\n` +
             `⚡ Qofka ugu dhaqso badan\n` +
             `🧠 Jawaabaha ugu saxda badan bixiya\n` +
-            `👑 Isaga ayaa noqon doona guuleystaha rasmiga ah\n\n` +
+            `👑 Isaga ayaa noqon doona the winner rasmiga ah\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n\n` +
             `# 💰 Abaalmarinnada\n\n` +
             `🥇 **Kaalinta 1aad** — **$15** + 🏆 Champion Title\n` +
@@ -156,7 +156,7 @@ function buildAnnounceEmbed(deadline, regCount, closed, state) {
             
             `${regStatus}\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n\n` +
-            `# 📝 Is Diiwaan Geli Hadda ⬇️\n\n` +
+            `# 📝 Is Diiwaan Geli Now ⬇️\n\n` +
             `## 🔥 Garaad Quiz Tournament 🔥`
         )
         .setFooter({ text: 'Garaad Quiz Tournament' });
@@ -188,7 +188,7 @@ function buildAdminPanelEmbed(state) {
     const joinCount = state.players?.size || 0;
     const stageText = {
         initial:      '⚙️ Heer: Diyaargarow — door habka',
-        registration: `📝 Heer: Diiwaangelinta socdaa · **${regCount}** qof diiwaangeliyay`,
+        registration: `📝 Heer: Diiwaangelinta socdaa · **${regCount}** player diiwaangeliyay`,
         join:         `🟢 Heer: Game furan · **${regCount}** diiwaangeliyay · **${joinCount}** ku biirtay`,
     }[state.stage] || state.stage;
 
@@ -210,12 +210,12 @@ function buildAdminPanelButtons(stage, gameChId) {
     if (stage === 'initial') {
         return [
             new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('tartan_panel_announce').setLabel('📢 Bilow Registration').setStyle(ButtonStyle.Primary),
-                new ButtonBuilder().setCustomId('tartan_panel_quick')   .setLabel('🚀 Bilow Toos')        .setStyle(ButtonStyle.Success),
+                new ButtonBuilder().setCustomId('tartan_panel_announce').setLabel('📢 start Registration').setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('tartan_panel_quick')   .setLabel('🚀 start Toos')        .setStyle(ButtonStyle.Success),
                 new ButtonBuilder().setCustomId('tartan_panel_cancel')  .setLabel('🛑 Jooji')             .setStyle(ButtonStyle.Danger),
             ),
             new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('tartan_panel_dismiss') .setLabel('❌ Iska xir')          .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId('tartan_panel_dismiss') .setLabel('❌ Iska close')          .setStyle(ButtonStyle.Secondary),
             ),
         ];
     }
@@ -227,18 +227,18 @@ function buildAdminPanelButtons(stage, gameChId) {
                 new ButtonBuilder().setCustomId('tartan_panel_cancel')  .setLabel('🛑 Jooji')             .setStyle(ButtonStyle.Danger),
             ),
             new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('tartan_panel_dismiss') .setLabel('❌ Iska xir')          .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId('tartan_panel_dismiss') .setLabel('❌ Iska close')          .setStyle(ButtonStyle.Secondary),
             ),
         ];
     }
     return [
         new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId(`tartan_bilow_next_${gch}`).setLabel('🚀 Bilow Wareeg 1aad').setStyle(ButtonStyle.Danger),
+            new ButtonBuilder().setCustomId(`tartan_bilow_next_${gch}`).setLabel('🚀 start Wareeg 1aad').setStyle(ButtonStyle.Danger),
             new ButtonBuilder().setCustomId('tartan_panel_count')      .setLabel('👥 Players')          .setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId('tartan_panel_cancel')     .setLabel('🛑 Jooji')            .setStyle(ButtonStyle.Danger),
         ),
         new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId('tartan_panel_dismiss').setLabel('❌ Iska xir').setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId('tartan_panel_dismiss').setLabel('❌ Iska close').setStyle(ButtonStyle.Secondary),
         ),
     ];
 }
@@ -257,7 +257,7 @@ async function updateAdminPanel(state) {
 
 async function handlePanelButton(interaction, action) {
     if (!isAdmin(interaction.user.id)) {
-        return interaction.reply({ content: '⛔ Kaliya admin.', flags: MessageFlags.Ephemeral }).catch(() => {});
+        return interaction.reply({ content: '⛔ Admins only.', flags: MessageFlags.Ephemeral }).catch(() => {});
     }
     const guildId = interaction.guildId;
     const state   = getState(guildId);
@@ -265,7 +265,7 @@ async function handlePanelButton(interaction, action) {
 
     if (action === 'announce') {
         if (!state || state.stage !== 'initial') {
-            return interaction.reply({ content: '⚠️ Tartan heer khalad ah.', flags: MessageFlags.Ephemeral }).catch(() => {});
+            return interaction.reply({ content: '⚠️ Tartan heer incorrect ah.', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
         const announceChannel = await interaction.client.channels.fetch(annChId).catch(() => null);
         if (!announceChannel) {
@@ -293,7 +293,7 @@ async function handlePanelButton(interaction, action) {
 
     if (action === 'quick') {
         if (!state || state.stage !== 'initial') {
-            return interaction.reply({ content: '⚠️ Tartan heer khalad ah.', flags: MessageFlags.Ephemeral }).catch(() => {});
+            return interaction.reply({ content: '⚠️ Tartan heer incorrect ah.', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
         tournamentRegistry.clear();
         state.stage = 'join';
@@ -350,7 +350,7 @@ async function handlePanelButton(interaction, action) {
             ? '\n\n**Ku biirtay game:**\n' + [...state.players].map((id, i) => `${i + 1}. <@${id}>`).join('\n')
             : '';
         return interaction.reply({
-            content: `👥 **Diiwaangeliyay:** ${regCount} qof\n${list || '_Cidna weli ma diiwaangalin_'}${joinList}`,
+            content: `👥 **Diiwaangeliyay:** ${regCount} player\n${list || '_Cidna weli ma diiwaangalin_'}${joinList}`,
             flags: MessageFlags.Ephemeral,
         }).catch(() => {});
     }
@@ -420,14 +420,14 @@ async function openGamePhase(client, adminId, state) {
     await gameChannel.send({
         content: '@here',
         embeds: [new EmbedBuilder()
-            .setTitle('🟢 Tartanka Waa La Furay — Ku Soo Biir Hadda!')
+            .setTitle('🟢 Tartanka Waa La Furay — Ku Soo Biir Now!')
             .setColor('#2ecc71')
             .setDescription(
-                `**${regCount}** qof ayaa diiwaangeliyay — albaabku waa furan yahay.\n\n` +
+                `**${regCount}** player ayaa diiwaangeliyay — albaabku waa furan yahay.\n\n` +
                 `━━━━━━━━━━━━━━━━━━━━\n` +
-                `Haddaad code-kaaga hayso, hadda ayaad gasho:\n\n` +
+                `If you code-kaaga hayso, now ayaad gasho:\n\n` +
                 `➡️ Qor: \`${PREFIX}gal CODE-KAAGA\`\n\n` +
-                `Code-kaagu DM-kaaga ayuu ku jiraa — fur oo eeg.\n\n` +
+                `Code-kaagu DM-kaaga ayuu is in — fur oo eeg.\n\n` +
                 
                 `━━━━━━━━━━━━━━━━━━━━\n` +
                 `_Marka dadku diyaar yihiin, admin ayaa su'aalaha bilaabi doona._`
@@ -436,11 +436,11 @@ async function openGamePhase(client, adminId, state) {
         components: [new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId(`tartan_bilow_next_${gameChId}`)
-                .setLabel('🚀 Bilow Wareeg 1aad (Admin Only)')
+                .setLabel('🚀 start Wareeg 1aad (Admin Only)')
                 .setStyle(ButtonStyle.Danger),
             new ButtonBuilder()
                 .setCustomId(`tartan_bilow_status_${gameChId}`)
-                .setLabel('👥 Tirada Hadda')
+                .setLabel('👥 Tirada Now')
                 .setStyle(ButtonStyle.Secondary),
         )],
     });
@@ -452,7 +452,7 @@ async function openGamePhase(client, adminId, state) {
 // ─────────────────────────────────────────────────────────────────────
 async function cmdAnnounce(message) {
     if (!isAdmin(message.author.id)) {
-        return message.reply('⛔ Kaliya **admin** ayaa tartan ku dhawaaqin kara.');
+        return message.reply('⛔ Only **admins** ayaa tartan ku dhawaaqin kara.');
     }
 
     const guildId = message.guild?.id || GAME_CHANNEL_ID;
@@ -536,11 +536,11 @@ async function cmdAnnounce(message) {
 // ?tartan_bilow
 // ─────────────────────────────────────────────────────────────────────
 async function cmdOpen(message) {
-    if (!isAdmin(message.author.id)) return message.reply('⛔ Kaliya admin.');
+    if (!isAdmin(message.author.id)) return message.reply('⛔ Admins only.');
 
     const guildId = message.guild?.id || GAME_CHANNEL_ID;
     const state   = getState(guildId);
-    if (!state) return message.reply(`⚠️ Tartan ma jiro. Ugu horreyn \`${PREFIX}tartan\` qoro.`);
+    if (!state) return message.reply(`⚠️ Tartan was not found. Ugu horreyn \`${PREFIX}tartan\` qoro.`);
 
     if (state.stage === 'registration') {
         if (state._regTimer) { clearTimeout(state._regTimer); state._regTimer = null; }
@@ -548,12 +548,12 @@ async function cmdOpen(message) {
     }
 
     if (state.stage !== 'join') {
-        return message.reply('⚠️ Tartan heer kale ayuu ku jiraa (play ama pause).');
+        return message.reply('⚠️ Tartan heer kale ayuu is in (play ama pause).');
     }
 
     const ok = await openGamePhase(message.client, message.author.id, state);
     if (!ok) return message.reply('⚠️ Game channel-ka la heyn waayay.');
-    return message.reply(`✅ **Game channel waa la furay!** → <#${state.gameChannelId || GAME_CHANNEL_ID}>`);
+    return message.reply(`✅ **Game channel waa opened!** → <#${state.gameChannelId || GAME_CHANNEL_ID}>`);
 }
 
 // ─────────────────────────────────────────────────────────────────────
@@ -563,7 +563,7 @@ async function cmdRegister(message) {
     const guildId = message.guild?.id || GAME_CHANNEL_ID;
     const state   = getState(guildId);
     if (!state || state.stage !== 'registration') {
-        return message.reply('⚠️ Diiwaangelinta waa la xiray ama tartan ma jiro.');
+        return message.reply('⚠️ Diiwaangelinta was closed ama tartan was not found.');
     }
     await sendRegistrationCode(message.author, { reply: (o) => message.reply(o) }, state.gameChannelId, state.vcChannelId);
 }
@@ -580,7 +580,7 @@ async function sendRegistrationCode(user, replyTarget, gameChId, vcChId) {
             `**Sidee u gasho:**\n` +
             `**1.** Marka admin game furo, tag <#${gCh}>\n` +
             `**2.** Qor: \`${PREFIX}gal ${code}\`\n\n` +
-            `⚠️ Code-kan qof kale ha siinin — adiga oo keliya ayuu u shaqeeyaa!`
+            `⚠️ Code-kan player kale ha siinin — adiga oo keliya ayuu u shaqeeyaa!`
         );
     }
 
@@ -604,7 +604,7 @@ async function sendRegistrationCode(user, replyTarget, gameChId, vcChId) {
     try {
         await user.send({
             embeds: [new EmbedBuilder()
-                .setTitle('🎉 Diiwaangelintii waa lagu guuleystay!')
+                .setTitle('🎉 Registration successful!')
                 .setDescription(`Ku soo dhowow tartanka! Kan hoose waa code-kaaga:\n\n` + buildDesc(code))
                 .setColor('#2ecc71')
                 .setFooter({ text: 'Garaad Quiz Tournament' })],
@@ -625,26 +625,26 @@ async function cmdJoin(message, args) {
     const annChId  = state?.announceChannelId || ANNOUNCE_CHANNEL_ID;
 
     if (message.channel.id !== gameChId) {
-        return message.reply(`⚠️ \`${PREFIX}gal\` kaliya <#${gameChId}> ku qor!`);
+        return message.reply(`⚠️ \`${PREFIX}gal\` only <#${gameChId}> type!`);
     }
 
     const code = (args[0] || '').trim().toUpperCase();
-    if (!code) return message.reply(`⚠️ Code-ka qor! Tusaale: \`${PREFIX}gal ABC123\``);
+    if (!code) return message.reply(`⚠️ Code-ka qor! Example: \`${PREFIX}gal ABC123\``);
 
     if (!state || state.stage !== 'join') {
-        return message.reply(`⚠️ Albaabka tartanka weli ma furan. Sug admin.`);
+        return message.reply(`⚠️ Albaabka tartanka weli ma furan. Wait admin.`);
     }
 
     const reg = tournamentRegistry.get(message.author.id);
     if (!reg || reg.code !== code) {
         return message.reply(
-            `❌ **Code khalad** ama **maadan diiwaangelinin!**\n\n` +
-            `• Haddii code-kaagu DM-ka ku jiro: hubi saxnimada\n` +
-            `• Haddii kale: riix **📝 Diiwaan Geli** <#${annChId}>`
+            `❌ **Code incorrect** ama **maadan diiwaangelinin!**\n\n` +
+            `• If code-kaagu DM-ka ku jiro: hubi saxnimada\n` +
+            `• If kale: riix **📝 Diiwaan Geli** <#${annChId}>`
         );
     }
     if (state.players.has(message.author.id)) {
-        return message.reply('✅ Mar hore ayaad tartanka ku jirtaa! Sug bilaabidda.');
+        return message.reply('✅ Mar hore ayaad tartanka are in! Wait bilaabidda.');
     }
 
     state.players.add(message.author.id);
@@ -663,12 +663,12 @@ async function cmdJoin(message, args) {
 // ?admin_next
 // ─────────────────────────────────────────────────────────────────────
 async function cmdAdminNext(message) {
-    if (!isAdmin(message.author.id)) return message.reply('⛔ Kaliya admin.');
+    if (!isAdmin(message.author.id)) return message.reply('⛔ Admins only.');
     message.delete().catch(() => {});
 
     const guildId = message.guild?.id || GAME_CHANNEL_ID;
     const state   = getState(guildId);
-    if (!state) return message.channel.send(`⚠️ Tartan ma jiro.`);
+    if (!state) return message.channel.send(`⚠️ Tartan was not found.`);
 
     if (state.prevRoundQuestions?.length > 0) {
         const recap  = state.prevRoundQuestions.map((q, i) => `**${i + 1}.** ${stripQuestionNumber(q.question)}\n↳ ✅ **${q.correct}**`).join('\n\n');
@@ -695,7 +695,7 @@ async function cmdAdminNext(message) {
 
     if (state.stage === 'join') {
         if (state.players.size < TOURNAMENT_MIN_PLAYERS) {
-            return gameChannel.send(`⚠️ Ugu yaraan **${TOURNAMENT_MIN_PLAYERS}** qof. Hadda: **${state.players.size}**`);
+            return gameChannel.send(`⚠️ Ugu yaraan **${TOURNAMENT_MIN_PLAYERS}** player. Current: **${state.players.size}**`);
         }
         state.survivors = new Set(state.players);
         state.roundIdx  = 1;
@@ -715,17 +715,17 @@ async function cmdAdminNext(message) {
         state.channel   = gameChannel;
         return beginRound(state, gameChannel);
     }
-    return message.channel.send('⚠️ Hadda admin_next looma isticmaali karo — sug wareeggu dhammaado.');
+    return message.channel.send('⚠️ Now admin_next looma usei karo — wait wareeggu dhammaado.');
 }
 
 // ─────────────────────────────────────────────────────────────────────
 // ?tartan_jooji
 // ─────────────────────────────────────────────────────────────────────
 async function cmdStop(message) {
-    if (!isAdmin(message.author.id)) return message.reply('⛔ Kaliya admin.');
+    if (!isAdmin(message.author.id)) return message.reply('⛔ Admins only.');
     const guildId = message.guild?.id || GAME_CHANNEL_ID;
     const state   = getState(guildId);
-    if (!state) return message.reply('⚠️ Tartan ma jiro.');
+    if (!state) return message.reply('⚠️ Tartan was not found.');
     if (state?._regTimer) clearTimeout(state._regTimer);
     activeTournament.delete(guildId);
     activeTournament.delete(GAME_CHANNEL_ID);
@@ -739,13 +739,13 @@ async function cmdStop(message) {
 async function cmdStatus(message) {
     const guildId = message.guild?.id || GAME_CHANNEL_ID;
     const state   = getState(guildId);
-    if (!state) return message.reply('⚠️ Hadda ma jiro tartan soconaya.');
+    if (!state) return message.reply('⚠️ Now was not found tartan soconaya.');
 
     const stageLabels = {
         registration: '📝 Diiwaangelinta socotaa (24h)',
         join:         '🟢 Albaabka furan — `?gal CODE`',
         play:         '🔴 Wareeggu socdaa',
-        pause:        '🟡 Joog — admin sug `?admin_next`',
+        pause:        '🟡 Joog — admin wait `?admin_next`',
     };
     const regCount = tournamentRegistry.size;
 
@@ -763,14 +763,14 @@ async function cmdStatus(message) {
 
     await message.channel.send({
         embeds: [new EmbedBuilder()
-            .setTitle('📊 Tartan — Xaaladda Hadda')
+            .setTitle('📊 Tartan — status Now')
             .setDescription(
-                `**Xaaladda:** ${stageLabels[state.stage] || state.stage}\n` +
+                `**status:** ${stageLabels[state.stage] || state.stage}\n` +
                 `**Wareeg:** ${ROUND_LABELS[state.roundIdx]?.name || '—'}\n` +
-                `**Diiwaangeliyay:** ${regCount} qof\n` +
-                `**Tartamayaasha:** ${state.survivors.size || state.players.size} qof\n` +
+                `**Diiwaangeliyay:** ${regCount} player\n` +
+                `**Tartamayaasha:** ${state.survivors.size || state.players.size} player\n` +
                 (totalQ > 0 ? `**Su'aalo hadhay:** ${Math.max(0, totalQ - answered)} / ${totalQ}\n\n` : '\n') +
-                `**🏅 Dhibcaha:**\n${board}`
+                `**🏅 Points:**\n${board}`
             )
             .setColor('#3498db')
             .setFooter({ text: 'Garaad Quiz — Tartan Status' })],
@@ -822,14 +822,14 @@ async function beginRound(state, channel) {
     if (state.roundIdx === 1) {
         const toElim = Math.max(1, Math.floor(state.survivors.size / 6));
         const toKeep = Math.max(2, state.survivors.size - toElim);
-        elimInfo = `⚠️ Dhammaadka: **${toElim}** qof baxayaa — **${toKeep}** qof Wareeg 2-da galeysa`;
+        elimInfo = `⚠️ Dhammaadka: **${toElim}** player baxayaa — **${toKeep}** player Wareeg 2-da galeysa`;
     } else if (state.roundIdx === 2) {
         const toElim = Math.max(1, Math.floor(state.survivors.size / 5));
         const afterE = Math.max(2, state.survivors.size - toElim);
         const toFin  = Math.max(2, Math.floor(afterE / 2));
-        elimInfo = `⚠️ Dhammaadka: **${toFin}** qof kaliya Final-ka galeysa`;
+        elimInfo = `⚠️ Dhammaadka: **${toFin}** player only Final-ka galeysa`;
     } else {
-        elimInfo = `🏆 **Final** — Guuleystaha hal qof! **Champion 🏆** title!`;
+        elimInfo = `🏆 **Final** — the winner hal player! **Champion 🏆** title!`;
     }
 
     const playersList = [...state.survivors].map((id, i) => `${i + 1}. <@${id}>`).join('\n');
@@ -838,8 +838,8 @@ async function beginRound(state, channel) {
         embeds: [new EmbedBuilder()
             .setTitle(`🔥 ${meta.name} — Bilaabmay!`)
             .setDescription(
-                `${state.survivors.size} qof ayaa tartamaya · ${useN} su'aalood\n` +
-                `⚡ Xawliga ayaa dhibcaha go'aamiya — hore u bixi!\n\n` +
+                `${state.survivors.size} player ayaa tartamaya · ${useN} questions\n` +
+                `⚡ Xawliga ayaa points go'aamiya — hore u bixi!\n\n` +
                 `${elimInfo}\n\n` +
                 `**Tartamayaasha:**\n${playersList}\n\n` +
                 `_Su'aalaha waxay bilaabmayaan 3 ilbiriqsi gudahood — diyaar noqo!_`
@@ -939,11 +939,11 @@ async function sendQuestion(state) {
             correctAnswers.push({ uid, timeMs: timeTaken, pts });
             const medal = ['🥇', '🥈', '🥉'][rank - 1] || `${rank}aad`;
             await interaction.reply({
-                content: `✅ **SAX!** ${medal} — **+${pts} pts** (${(timeTaken / 1000).toFixed(1)}s)`,
+                content: `✅ **correct!** ${medal} — **+${pts} pts** (${(timeTaken / 1000).toFixed(1)}s)`,
                 flags: MessageFlags.Ephemeral,
             }).catch(() => {});
         } else {
-            await interaction.reply({ content: '❌ Khalad. Isku day su\'aasha xiga!', flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: '❌ Incorrect. Isku day su\'aasha xiga!', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
     });
 
@@ -954,7 +954,7 @@ async function sendQuestion(state) {
 
         let resultLine;
         if (correctAnswers.length === 0) {
-            resultLine = `⏰ Cidna si sax ah uma jawaabin.\n✅ Jawaabta saxda: **${correctLabel}**`;
+            resultLine = `⏰ Cidna si correct uma jawaabin.\n✅ Jawaabta saxda: **${correctLabel}**`;
         } else {
             const topList = correctAnswers.slice(0, 5)
                 .map(({ uid, timeMs, pts }, i) => {
@@ -972,7 +972,7 @@ async function sendQuestion(state) {
             .join('\n');
 
         const sumEmbed = EmbedBuilder.from(embed)
-            .setDescription(`## ${stripQuestionNumber(q.question)}\n\n${resultLine}\n\n📊 **Dhibcaha Wareegga:**\n${board || '—'}`);
+            .setDescription(`## ${stripQuestionNumber(q.question)}\n\n${resultLine}\n\n📊 **Points Wareegga:**\n${board || '—'}`);
 
         await msg.edit({ embeds: [sumEmbed], components: [] }).catch(() => {});
         state.currentQ += 1;
@@ -1006,8 +1006,8 @@ async function endRoundPause(state) {
         }).join('\n');
 
     const nextRoundName = state.roundIdx === 1
-        ? `Wareegga 2aad (${TOURNAMENT_R2_QUESTIONS} su'aalood)`
-        : `Final 🏆 (${TOURNAMENT_FINAL_QUESTIONS} su'aalood)`;
+        ? `Wareegga 2aad (${TOURNAMENT_R2_QUESTIONS} questions)`
+        : `Final 🏆 (${TOURNAMENT_FINAL_QUESTIONS} questions)`;
 
     const remainingList  = remaining.map((id, i) => `🔥 ${i + 1}. <@${id}>`).join('\n');
     const eliminatedList = eliminated.length > 0
@@ -1022,7 +1022,7 @@ async function endRoundPause(state) {
             .setTitle(`⏸️ ${ROUND_LABELS[state.roundIdx].name} — Waa Dhamaaday`)
             .setColor('#f39c12')
             .setDescription(
-                `**Dhibcaha Guud:**\n${totalBoard}\n\n` +
+                `**Points Guud:**\n${totalBoard}\n\n` +
                 `━━━━━━━━━━━━━━━━━━━━\n` +
                 (eliminated.length > 0
                     ? `**Baxay (${eliminated.length}):**\n${eliminatedList}\n\n`
@@ -1060,7 +1060,7 @@ async function endRoundPause(state) {
                 .setColor('#2ecc71')
                 .setDescription(
                     `${encourageList}\n\n` +
-                    `Waxaad gaartay halkan — guusha waxay kaa fog tahay su'aal! Sii wad xoogga.\n\n` +
+                    `you gaartay halkan — guusha waxay kaa fog tahay su'aal! Sii wad xoogga.\n\n` +
                     `_Su'aalaha waxay bilaabmayaan 3 ilbiriqsi gudahood..._`
                 )],
         });
@@ -1113,10 +1113,10 @@ async function finishTournament(state) {
                 .setTitle('🏆 Tartanka Waa Dhamaaday!')
                 .setDescription(
                     `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
-                    `👑 **Guuleystaha**\n` +
+                    `👑 **the winner**\n` +
                     `## <@${winId}>\n` +
                     `Hambalyo! 🏆 **Champion** title ayaa kuu galay.\n` +
-                    `Dhibcahaaga guud: **${winScore}pts** · Abaalmarintaada: **$15**\n\n` +
+                    `Pointsaga guud: **${winScore}pts** · Abaalmarintaada: **$15**\n\n` +
                     `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
                     `**Natiijada Guud:**\n\n${allScores}\n\n` +
                     `━━━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
@@ -1134,10 +1134,10 @@ async function finishTournament(state) {
                 .setTitle('🏆 Hambalyo!')
                 .setColor('#FFD700')
                 .setDescription(
-                    `Adiga ayaa tartanka ku guulaysatay — taas waa wax weyn! 👑\n\n` +
+                    `Adiga ayaa tartanka ku won — taas waa wax weyn! 👑\n\n` +
                     `🏆 **Champion** title ayaa kuu galay\n` +
-                    `📊 Dhibcahaaga guud: **${winScore}pts**\n` +
-                    `💵 Abaalmarintaada **$15** — admin ayaa kula xiriiri doona dhow.\n\n` +
+                    `📊 Pointsaga guud: **${winScore}pts**\n` +
+                    `💵 Abaalmarintaada **$15** — admin ayaa kula will contact you soon.\n\n` +
                     `Mahadsanid ka qaybgalashadaada. 🎉`
                 )
             ],
@@ -1149,7 +1149,7 @@ async function finishTournament(state) {
     const dmMedals = ['🥈', '🥉'];
     for (const [idx, [pid, sc]] of sorted.slice(1).entries()) {
         const place = idx + 2;
-        const prize = dmPrizes[idx] ? `💵 Abaalmarintaada **${dmPrizes[idx]}** — admin ayaa kula xiriiri doona.\n` : '';
+        const prize = dmPrizes[idx] ? `💵 Abaalmarintaada **${dmPrizes[idx]}** — admin ayaa kula will contact you.\n` : '';
         const medal = dmMedals[idx] || `${place}aad`;
         const color = dmColors[idx] || '#7f8c8d';
         try {
@@ -1160,9 +1160,9 @@ async function finishTournament(state) {
                     .setColor(color)
                     .setDescription(
                         `Mahadsanid ka qaybgalashadaada — si fiican ayaad u tartantay! 🎉\n\n` +
-                        `📊 Heerkaaga: **${place}aad** · Dhibcahaaga: **${sc}pts**\n` +
+                        `📊 Heerkaaga: **${place}aad** · Pointsaga: **${sc}pts**\n` +
                         `${prize}\n` +
-                        `Tartanka xiga sug — weli xoog baad leedahay!`
+                        `Tartanka xiga wait — weli xoog baad leedahay!`
                     )
                 ],
             });
@@ -1257,9 +1257,9 @@ async function restoreTournaments(client) {
                         .setTitle('⚠️ Bot Wuu Dib Bilaabmay — Wareeggu Wuu Joojiyay')
                         .setColor('#e74c3c')
                         .setDescription(
-                            `Bot restart ayaa dhacay ciyaarta dhex maraysay.\n\n` +
+                            `Bot restart ayaa dhacay the game dhex maraysay.\n\n` +
                             `**Wareegga:** ${ROUND_LABELS[state.roundIdx]?.name || `Wareeg ${state.roundIdx}`}\n` +
-                            `**Tartamayaasha:** ${state.survivors.size} qof\n\n` +
+                            `**Tartamayaasha:** ${state.survivors.size} player\n\n` +
                             `⏳ Wareegga xiga wuxuu si toos ah u bilaabmayaa **30 ilbiriqsi gudahood**!`
                         )
                     ],

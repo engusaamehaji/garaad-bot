@@ -3,7 +3,7 @@
 // =====================================================================
 
 const { userData, saveData } = require('../../src/store');
-const { econData, saveEcon }  = require('../../src/economy/econStore');
+const { econData, saveEcon, getSpendableCoins, spendCoins } = require('../../src/economy/econStore');
 const { PREFIX, SHOP_ITEMS, TITLES } = require('../../src/config');
 const { checkUser } = require('../../src/utils/helpers');
 const { FRAMES, BOOSTERS, LOOT_BOXES, RINGS } = require('../../src/utils/itemDefs');
@@ -22,12 +22,12 @@ module.exports = async function buyCommand(message, args) {
         const { checkEconUser } = require('../../src/economy/econStore');
         checkEconUser(userId);
         const ec = econData[userId];
-        if ((ec.btc || 0) < PRICE) return message.reply(`⚠️ BTC kuu ma filna. U baahan: **₿${PRICE.toLocaleString()}**, haysataa: **₿${(ec.btc||0).toLocaleString()}**.`);
-        ec.btc -= PRICE;
+        if (getSpendableCoins(userId) < PRICE) return message.reply(`⚠️ You do not have enough Coins. U baahan: **🪙${PRICE.toLocaleString()}**, you have: **🪙${getSpendableCoins(userId).toLocaleString()}**.`);
+        spendCoins(userId, PRICE);
         ec.inventory ??= {};
         ec.inventory.safetyExpiry = Date.now() + 24 * 60 * 60 * 1000;
         saveEcon();
-        return message.reply(`✅ **🛡️ Safety Shield** la iibsaday! (-₿${PRICE.toLocaleString()})\n24 saac rob kaa kari maysid.`);
+        return message.reply(`✅ **🛡️ Safety Shield** purchased! (-🪙${PRICE.toLocaleString()})\n24 saac rob kaa kari maysid.`);
     }
 
     // ── ?buy rob_ticket ──
@@ -36,12 +36,12 @@ module.exports = async function buyCommand(message, args) {
         const { checkEconUser } = require('../../src/economy/econStore');
         checkEconUser(userId);
         const ec = econData[userId];
-        if ((ec.btc || 0) < PRICE) return message.reply(`⚠️ BTC kuu ma filna. U baahan: **₿${PRICE.toLocaleString()}**, haysataa: **₿${(ec.btc||0).toLocaleString()}**.`);
-        ec.btc -= PRICE;
+        if (getSpendableCoins(userId) < PRICE) return message.reply(`⚠️ You do not have enough Coins. U baahan: **🪙${PRICE.toLocaleString()}**, you have: **🪙${getSpendableCoins(userId).toLocaleString()}**.`);
+        spendCoins(userId, PRICE);
         ec.inventory ??= {};
         ec.inventory.robticketExpiry = Date.now() + 24 * 60 * 60 * 1000;
         saveEcon();
-        return message.reply(`✅ **🔫 Rob Ticket** la iibsaday! (-₿${PRICE.toLocaleString()})\n24 saac \`?rob @user\` isticmaal.`);
+        return message.reply(`✅ **🔫 Rob Ticket** purchased! (-🪙${PRICE.toLocaleString()})\n24 saac \`?rob @user\` use.`);
     }
 
     // ── ?buy ring <type> ──
@@ -50,88 +50,89 @@ module.exports = async function buyCommand(message, args) {
         const { ensureRel } = require('./relationship');
         const type = (args[1] || '').toLowerCase();
         const ring = RINGS[type];
-        if (!ring) return message.reply(`⚠️ Noocyada: \`silver\`, \`diamond\`, \`royal\`, \`somali\`\nTusaale: \`?buy ring diamond\``);
+        if (!ring) return message.reply(`⚠️ Noocyada: \`silver\`, \`diamond\`, \`royal\`, \`somali\`\nExample: \`?buy ring diamond\``);
         checkEconUser(userId);
         ensureRel(userId);
         const ec = econData[userId];
-        if ((ec.btc || 0) < ring.price) return message.reply(`⚠️ BTC kuu ma filna. U baahan: **₿${ring.price.toLocaleString()}**, haysataa: **₿${(ec.btc||0).toLocaleString()}**.`);
-        ec.btc -= ring.price;
+        if (getSpendableCoins(userId) < ring.price) return message.reply(`⚠️ You do not have enough Coins. U baahan: **🪙${ring.price.toLocaleString()}**, you have: **🪙${getSpendableCoins(userId).toLocaleString()}**.`);
+        spendCoins(userId, ring.price);
         userData[userId].ownedRings ??= { silver: 0, diamond: 0, royal: 0, somali: 0 };
         userData[userId].ownedRings[type] = (userData[userId].ownedRings[type] || 0) + 1;
         saveData(); saveEcon();
-        return message.reply(`✅ **${ring.emoji} ${ring.name}** la iibsaday! (-₿${ring.price.toLocaleString()})\nIsticmaal: \`?propose @user\``);
+        return message.reply(`✅ **${ring.emoji} ${ring.name}** purchased! (-🪙${ring.price.toLocaleString()})\nUsage: \`?propose @user\``);
     }
 
     // ── ?buy frame <key> ──
     if (itemKey === 'frame') {
-        const key   = (args[1] || '').toLowerCase();
+        const key = (args[1] || '').toLowerCase();
         const frame = FRAMES[key];
-        if (!frame) return message.reply(`⚠️ Frame-kaas ma jiro. Eeg: \`?shop frames\``);
-        if (frame.lootOnly) return message.reply(`⚠️ **${frame.name}** waxaa laga heli karaa kaliya Loot Box. Iibso: \`?buy loot legendary\``);
+        if (!frame) return message.reply(`⚠️ Frame not found. View: \`?shop frames\``);
+        if (frame.lootOnly) return message.reply(`⚠️ **${frame.name}** waxaa laga heli karaa only Loot Box. Buy: \`?buy loot legendary\``);
         const ec = econData[userId];
-        if (!ec) return message.reply('⚠️ Economy account-kaaga ma jiro. \`?jeeb\` ku bilow.');
-        if ((ec.btc || 0) < frame.price) return message.reply(`⚠️ BTC kaa ma filna. Waxaad u baahan tahay **₿${frame.price.toLocaleString()}**, haysataa **₿${(ec.btc||0).toLocaleString()}**.`);
+        if (!ec) return message.reply('⚠️ Economy account not found. \`?jeeb\` to get started.');
+        if (getSpendableCoins(userId) < frame.price) return message.reply(`⚠️ You do not have enough Coins. You need **🪙${frame.price.toLocaleString()}**, you have **🪙${getSpendableCoins(userId).toLocaleString()}**.`);
         if ((userData[userId].ownedFrames || []).includes(key)) return message.reply(`✅ Frame-kaas horay ayaad u lahayd.`);
-        ec.btc -= frame.price;
+        spendCoins(userId, frame.price);
         userData[userId].ownedFrames.push(key);
         userData[userId].activeFrame = key; // auto-equip
         saveData(); saveEcon();
-        return message.reply(`✅ **${frame.emoji} ${frame.name}** la iibsaday & la xidhay! (-₿${frame.price.toLocaleString()})\n\`?profile\` ku eeg.`);
+        return message.reply(`✅ **${frame.emoji} ${frame.name}** purchased & equipped! (-🪙${frame.price.toLocaleString()})\n\`?profile\` ku eeg.`);
     }
 
     // ── ?buy booster <key> ──
     if (itemKey === 'booster') {
-        const key   = (args[1] || '').toLowerCase();
+        const requestedKey = (args[1] || '').toLowerCase();
+        const key = requestedKey;
         const boost = BOOSTERS[key];
-        if (!boost) return message.reply(`⚠️ Booster-kaas ma jiro. Eeg: \`?shop boosters\``);
+        if (!boost) return message.reply(`⚠️ Booster not found. View: \`?shop boosters\``);
         const ec = econData[userId];
-        if (!ec) return message.reply('⚠️ Economy account-kaaga ma jiro.');
-        if ((ec.btc || 0) < boost.price) return message.reply(`⚠️ BTC kaa ma filna. Waxaad u baahan tahay **₿${boost.price.toLocaleString()}**.`);
-        ec.btc -= boost.price;
+        if (!ec) return message.reply('⚠️ Economy account not found.');
+        if (getSpendableCoins(userId) < boost.price) return message.reply(`⚠️ You do not have enough Coins. You need **🪙${boost.price.toLocaleString()}**.`);
+        spendCoins(userId, boost.price);
         const d = userData[userId];
         if (key === 'iq_shield')  d.boosters.iqShields = (d.boosters.iqShields || 0) + 1;
         else if (key === 'double_iq')  d.boosters.doubleIq  = Date.now() + boost.duration;
         else if (key === 'double_xp')  d.boosters.doubleXp  = Date.now() + boost.duration;
-        else if (key === 'double_btc') d.boosters.doubleBtc = Date.now() + boost.duration;
+        else if (key === 'double_coins') d.boosters.doubleCoins = Date.now() + boost.duration;
         saveData(); saveEcon();
-        return message.reply(`✅ **${boost.emoji} ${boost.name}** la iibsaday! (-₿${boost.price.toLocaleString()})\n${boost.desc}`);
+        return message.reply(`✅ **${boost.emoji} ${boost.name}** purchased! (-🪙${boost.price.toLocaleString()})\n${boost.desc}`);
     }
 
     // ── ?buy loot <type> ──
     if (itemKey === 'loot') {
         const type = (args[1] || 'common').toLowerCase();
         const box  = LOOT_BOXES[type];
-        if (!box) return message.reply(`⚠️ Nooc: \`common\`, \`rare\`, \`legendary\``);
+        if (!box) return message.reply(`⚠️ Type: \`common\`, \`rare\`, \`legendary\``);
         const ec = econData[userId];
-        if (!ec) return message.reply('⚠️ Economy account-kaaga ma jiro.');
-        if ((ec.btc || 0) < box.price) return message.reply(`⚠️ BTC kaa ma filna. Waxaad u baahan tahay **₿${box.price.toLocaleString()}**.`);
-        ec.btc -= box.price;
+        if (!ec) return message.reply('⚠️ Economy account not found.');
+        if (getSpendableCoins(userId) < box.price) return message.reply(`⚠️ You do not have enough Coins. You need **🪙${box.price.toLocaleString()}**.`);
+        spendCoins(userId, box.price);
         userData[userId].lootBoxes       ??= {};
         userData[userId].lootBoxes[type]  = (userData[userId].lootBoxes[type] || 0) + 1;
         saveData(); saveEcon();
-        return message.reply(`✅ **${box.emoji} ${box.name}** la iibsaday! (-₿${box.price.toLocaleString()})\nFur: \`?open ${type}\``);
+        return message.reply(`✅ **${box.emoji} ${box.name}** purchased! (-🪙${box.price.toLocaleString()})\nFur: \`?open ${type}\``);
     }
 
-    // ── ?buy title <key> (BTC-based economy titles) ──
+    // ── ?buy title <key> (Coins-based economy titles) ──
     if (itemKey === 'title') {
         const key   = (args[1] || '').toLowerCase();
         const title = ECON_TITLES[key];
-        if (!title) return message.reply(`⚠️ Title-kaas ma jiro. Eeg: \`?shop titles\``);
+        if (!title) return message.reply(`⚠️ Title-kaas was not found. View: \`?shop titles\``);
         const ec = econData[userId];
-        if (!ec) return message.reply('⚠️ Economy account-kaaga ma jiro.');
+        if (!ec) return message.reply('⚠️ Economy account not found.');
         if ((ec.econTitles || []).includes(key)) return message.reply(`✅ Title-kaas horay ayaad u lahayd.`);
-        if ((ec.btc || 0) < title.price) return message.reply(`⚠️ BTC kaa ma filna. Waxaad u baahan tahay **₿${title.price.toLocaleString()}**.`);
-        ec.btc -= title.price;
+        if (getSpendableCoins(userId) < title.price) return message.reply(`⚠️ You do not have enough Coins. You need **🪙${title.price.toLocaleString()}**.`);
+        spendCoins(userId, title.price);
         ec.econTitles = ec.econTitles || [];
         ec.econTitles.push(key);
         if (key === 'custom') {
             const name = args.slice(2).join(' ').trim();
-            if (!name) return message.reply('⚠️ Isticmaal: `?buy title custom <magacaaga>`');
+            if (!name) return message.reply('⚠️ Usage: `?buy title custom <magacaaga>`');
             ec.customEconTitle = name;
             ec.activeEconTitle = 'custom';
         }
         saveEcon();
-        return message.reply(`✅ **${title.label}** la iibsaday! (-₿${title.price.toLocaleString()})\n\`?equip title ${key}\` si aad u xidho.`);
+        return message.reply(`✅ **${title.label}** purchased! (-🪙${title.price.toLocaleString()})\n\`?equip title ${key}\` si aad u xidho.`);
     }
 
     // ── Custom title: ?buy custom <magac> ──
@@ -141,9 +142,9 @@ module.exports = async function buyCommand(message, args) {
 
         if (!customName) {
             return message.reply(
-                `✍️ **Custom Title — Sida loo isticmaalo:**\n\n` +
+                `✍️ **Custom Title — Sida loo useo:**\n\n` +
                 `\`${PREFIX}buy custom <magacaaga>\`\n\n` +
-                `**Tusaale:** \`${PREFIX}buy custom Garaadle\`\n\n` +
+                `**Example:** \`${PREFIX}buy custom Garaadle\`\n\n` +
                 `💰 Qiimaha: **${price} XP** · XP-gaaga: **${userData[userId].xp} XP**`
             );
         }
@@ -154,11 +155,11 @@ module.exports = async function buyCommand(message, args) {
 
         if (userData[userId].xp < price) {
             return message.reply(
-                `⚠️ XP-gaagu ma filna!\n\nWaxaad u baahan tahay **${price} XP** · Waxaadse haysataa **${userData[userId].xp} XP**.`
+                `⚠️ You do not have enough XP!\n\nYou need **${price} XP** · and you have **${userData[userId].xp} XP**.`
             );
         }
 
-        // Haddii horeba u iibsaday — update kaliya la sameeyaa (lacag cusub la qaadaa)
+        // If horeba u purchased — update only sameeyaa (Coins cusub la qaadaa)
         const alreadyOwned = userData[userId].ownedTitles.includes('custom');
         if (alreadyOwned) {
             // Beddelid title cusub — XP la qaadaa mar kale
@@ -166,7 +167,7 @@ module.exports = async function buyCommand(message, args) {
             userData[userId].customTitle = customName;
             userData[userId].activeTitle = 'custom';
             saveData();
-            return message.reply(`✅ Custom title-kaaga waa la cusboonaasiiyay: **${customName}** (-${price} XP)\n\nTitle-kaaga cusub marka xigta ayuu muuqan doonaa.`);
+            return message.reply(`✅ Custom title-kaaga waa la cusboonaasiiyay: **${customName}** (-${price} XP)\n\nYour new title will appear next time.`);
         }
 
         // Iibsasho cusub
@@ -177,7 +178,7 @@ module.exports = async function buyCommand(message, args) {
             userData[userId].ownedTitles.push('custom');
         }
         saveData();
-        return message.reply(`✅ Custom title la iibsaday: **${customName}** (-${price} XP)\n\nTitle-kaaga cusub marka xigta ayuu muuqan doonaa!`);
+        return message.reply(`✅ Custom title purchased: **${customName}** (-${price} XP)\n\nYour new title will appear next time!`);
     }
 
     // ── Shayga kale: SHOP_ITEMS ama TITLES ──
@@ -192,20 +193,20 @@ module.exports = async function buyCommand(message, args) {
     }
 
     if (!item) {
-        return message.reply(`⚠️ Shay aan jirin. Isticmaal \`${PREFIX}titles\` si aad u aragto darajooyinka.`);
+        return message.reply(`⚠️ Shay aan jirin. Use \`${PREFIX}titles\` si aad u aragto darajooyinka.`);
     }
 
-    // Champion title — admin kaliya
+    // Champion title — admin only
     if (itemKey === 'champion') {
         return message.reply(
             `🏆 **Champion** title-ka waa la iibsan **karin**.\n\n` +
-            `Title-kan waxaa heli kara **kaliya** guulaha tartan weyn — admin ayaa u ogolaan doona.`
+            `Title-kan waxaa heli kara **only** major tournament wins — admin ayaa u ogolaan doona.`
         );
     }
 
     if (userData[userId].xp < item.price) {
         return message.reply(
-            `⚠️ XP-gaagu ma filna! Waxaad u baahan tahay **${item.price} XP**, waxaadse haysataa **${userData[userId].xp} XP**.`
+            `⚠️ You do not have enough XP! You need **${item.price} XP**, and you have **${userData[userId].xp} XP**.`
         );
     }
 
@@ -227,5 +228,5 @@ module.exports = async function buyCommand(message, args) {
     }
 
     saveData();
-    return message.reply(`✅ Waxaad iibsatay **${item.name}** (-${item.price} XP). Mahadsanid!`);
+    return message.reply(`✅ You purchased **${item.name}** (-${item.price} XP). Thank you!`);
 };

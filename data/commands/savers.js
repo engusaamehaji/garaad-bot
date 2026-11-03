@@ -12,7 +12,7 @@ module.exports = async function saversCmd(message) {
         .sort((a, b) => b.memberCount - a.memberCount || a.name.localeCompare(b.name));
 
     if (!guilds.length) {
-        return message.reply('⚠️ Bot-ku server ma hayo hadda.');
+        return message.reply('⚠️ Bot-ku server ma hayo now.');
     }
 
     const chunks = [];
@@ -34,7 +34,7 @@ module.exports = async function saversCmd(message) {
             .setTitle(`🌐 Servers-ka ${botName} (${guilds.length})`)
             .setDescription(lines.join('\n'))
             .setFooter({
-                text: `Wadarta: ${guilds.length} server • ${totalMembers.toLocaleString()} members • Page ${i + 1}/${chunks.length}`,
+                text: `Total: ${guilds.length} server • ${totalMembers.toLocaleString()} members • Page ${i + 1}/${chunks.length}`,
             });
 
         if (i === 0) await message.reply({ embeds: [embed] });

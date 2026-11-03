@@ -6,12 +6,12 @@ const connections = new Map();
 async function joinCmd(message) {
     const channel = message.member?.voice?.channel;
     if (!channel)
-        return message.reply('⚠️ Marka hore VC channel ku gal, kadib `?join` isticmaal.');
+        return message.reply('⚠️ Marka hore VC channel ku gal, kadib `?join` Use.');
 
     // Already connected to same channel
     const existing = connections.get(message.guild.id);
     if (existing && existing.joinConfig?.channelId === channel.id)
-        return message.reply(`✅ Horay waan ku jiraa **${channel.name}**!`);
+        return message.reply(`✅ Horay waan is in **${channel.name}**!`);
 
     try {
         const conn = joinVoiceChannel({
@@ -58,7 +58,7 @@ async function joinCmd(message) {
 async function leaveCmd(message) {
     const conn = connections.get(message.guild.id);
     if (!conn)
-        return message.reply('⚠️ Wax VC ah kuma jiro.');
+        return message.reply('⚠️ Wax VC ah kuwas not found.');
     conn.destroy();
     connections.delete(message.guild.id);
     return message.reply('👋 VC-ga waa laga baxay.');

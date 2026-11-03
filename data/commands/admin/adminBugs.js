@@ -9,13 +9,13 @@ module.exports = async function adminBugs(message) {
     const bugs = getBugs(15);
 
     if (!bugs.length) {
-        return message.reply('🎉 Cilad lama soo sheegin!');
+        return message.reply('🎉 No issues have been reported!');
     }
 
     const embed = new EmbedBuilder()
         .setTitle('🐛 Cilada La Soo Sheegay')
         .setColor('#e74c3c')
-        .setFooter({ text: `Hadda la muujinayo ${bugs.length} cilad` });
+        .setFooter({ text: `Now la muujinayo ${bugs.length} cilad` });
 
     bugs.forEach((b, i) => {
         const date = new Date(b.timestamp).toLocaleString();

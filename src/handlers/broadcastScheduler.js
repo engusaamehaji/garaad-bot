@@ -1,21 +1,21 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
 
 const INTERVAL_MS = 4 * 60 * 60 * 1000; // 4 hours
 
 const MESSAGE = [
     '📢 **U codee Garaad** si aad u hesho **abaalmarino gaar ah**.',
     '',
-    'Haddii aad aragto **cilad, bug, ama qalad** ku jira bot-ka, maamulka usoo sheeg si loo hagaajiyo. Dadka caawiya hagaajinta server-ka waxay heli karaan **abaalmarin gaar ah**.',
+    'If aad aragto **cilad, bug, ama qalad** ku jira bot-ka, maamulka usoo sheeg si loo hagaajiyo. Dadka caawiya hagaajinta the server waxay heli karaan **abaalmarin gaar ah**.',
     '',
-    '🎮 **Dheelo ciyaaro aqoon iyo shaqo kuu horseedi kara** si aad u hesho faa\'iido iyo madadaalo badan.',
+    '🎮 **Dheelo gameo aqoon iyo shaqo kuu horseedi kara** si aad u hesho faa\'iido iyo madadaalo badan.',
     '',
     '📖 **Qor `?caawin`** si aad u aragto dhammaan features-ka iyo commands-ka bot-ka.',
     '',
     '**Commands:**',
-    '🛠️ **`?cilad [fariin]`** — Soo sheeg cilad ama qalad',
+    '🛠️ **`?cilad [message]`** — Soo sheeg cilad ama qalad',
     '💡 **`?dm`** — U dir maamulka fikrad, talo, ama aragti',
     '',
-    '**Mahadsanid isticmaalka Garaad Bot ❤️**',
+    '**Thank you for using Garaad Bot ❤️**',
     '**Kobco garaadkaaga, yeelo kormaal sare.**',
 ].join('\n');
 
@@ -55,19 +55,12 @@ async function broadcast(client) {
         .setDescription(MESSAGE)
         .setFooter({ text: 'Garaad Bot • garaadkaaga kobco' });
 
-    const voteRow = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setLabel('🗳️ Vote for Garaad')
-            .setStyle(ButtonStyle.Link)
-            .setURL('https://top.gg/bot/1495341089266073705'),
-    );
-
     let sent = 0;
     for (const guild of client.guilds.cache.values()) {
         try {
             const ch = getBestChannel(guild);
             if (!ch) continue;
-            await ch.send({ embeds: [embed], components: [voteRow] });
+            await ch.send({ embeds: [embed] });
             sent++;
         } catch {
             // skip guilds where send fails

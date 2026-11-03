@@ -10,13 +10,13 @@ module.exports = async function adminAddAdmin(message, args) {
         target = await message.client.users.fetch(args[0]).catch(() => null);
     }
     if (!target) {
-        return message.reply('⚠️ Fadlan tilmaan user. Tusaale: `?admin add @user` ama `?admin add 1234567890`');
+        return message.reply('⚠️ Please mention a user. Example: `?admin add @user` ama `?admin add 1234567890`');
     }
 
     const added = addAdmin(target.id);
     if (added) {
         return message.reply(`✅ <@${target.id}> waxaa loo daray admin-yada.`);
     } else {
-        return message.reply(`ℹ️ <@${target.id}> mar hore ayuu admin ahaa.`);
+        return message.reply(`ℹ️ <@${target.id}> is already an admin.`);
     }
 };

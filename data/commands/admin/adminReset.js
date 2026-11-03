@@ -11,11 +11,11 @@ module.exports = async function adminReset(message, args) {
         target = await message.client.users.fetch(args[0]).catch(() => null);
     }
     if (!target) {
-        return message.reply('⚠️ Fadlan tilmaan user. Tusaale: `?admin reset @user`');
+        return message.reply('⚠️ Please mention a user. Example: `?admin reset @user`');
     }
 
     if (!userData[target.id]) {
-        return message.reply(`ℹ️ <@${target.id}> xog ma laha database-ka.`);
+        return message.reply(`ℹ️ <@${target.id}> xog does not have database-ka.`);
     }
 
     delete userData[target.id];

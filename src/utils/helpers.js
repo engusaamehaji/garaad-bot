@@ -42,7 +42,7 @@ function checkUser(userId) {
             ownedFrames:  [],
             activeFrame:  null,
             badges:       [],
-            boosters:     { doubleIq: 0, doubleXp: 0, doubleBtc: 0, iqShields: 0 },
+            boosters:     { doubleIq: 0, doubleXp: 0, doubleCoins: 0, iqShields: 0 },
             lootBoxes:    { common: 0, rare: 0, legendary: 0 },
             missions:     { date: '', tasks: [], baseline: {} },
             relationship:      { partnerId: null, partnerUsername: null, ringType: null, since: null },
@@ -103,7 +103,10 @@ function checkUser(userId) {
         d.boosters     ??= {};
         d.boosters.doubleIq  ??= 0;
         d.boosters.doubleXp  ??= 0;
-        d.boosters.doubleBtc ??= 0;
+        if (d.boosters.doubleCoins == null && d.boosters.doubleBtc != null)
+            d.boosters.doubleCoins = d.boosters.doubleBtc;
+        delete d.boosters.doubleBtc;
+        d.boosters.doubleCoins ??= 0;
         d.boosters.iqShields ??= 0;
         d.lootBoxes    ??= {};
         d.lootBoxes.common    ??= 0;
@@ -160,8 +163,8 @@ function checkAndAwardBadges(userId) {
     if (s.duelWins >= 100)                     award('duel_100');
     if (s.quizPlayed >= 10)                    award('quiz_10');
     if (s.quizWins >= 20)                      award('quiz_champ');
-    if ((econ.btc || 0) >= 100_000)            award('rich_100k');
-    if ((econ.btc || 0) >= 1_000_000)          award('rich_1m');
+    if ((econ.coins || 0) >= 100_000)            award('rich_100k');
+    if ((econ.coins || 0) >= 1_000_000)          award('rich_1m');
     if ((d.iq || 0) >= 7000)                   award('legend_rank');
     if ((d.stats?.lootOpened || 0) >= 10)      award('loot_opener');
 
@@ -195,7 +198,7 @@ function fmt(n) {
     return Math.round(n || 0).toLocaleString();
 }
 
-// Lambarka horeba ka tir (tusaale: "85. Su'aal" → "Su'aal")
+// Lambarka horeba ka tir (e.g.: "85. Su'aal" → "Su'aal")
 function stripQuestionNumber(text) {
     return String(text).replace(/^\d+\.\s*/, '');
 }

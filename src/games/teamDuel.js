@@ -1,12 +1,12 @@
 // =====================================================================
 // GARAAD BOT — Team Duel (?2v2 / ?3v3)
-// BTC-only · Auto-start when full · Max 25 questions · ?r @user
+// Coins-only · Auto-start when full · Max 25 questions · ?r @user
 // =====================================================================
 
 const {
     EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags,
 } = require('discord.js');
-const { econData, saveEcon, checkEconUser } = require('../economy/econStore');
+const { econData, saveEcon, checkEconUser, trackEarning } = require('../economy/econStore');
 const { fmt, stripQuestionNumber } = require('../utils/helpers');
 const {
     pickQuestionsForGame,
@@ -14,7 +14,7 @@ const {
 } = require('../utils/questions');
 const { getAnswerOptions } = require('../utils/questionOptions');
 const { GLOBAL_WAIT_MS, SOLO_FAST_MS, SOLO_MAX_SCORE, SOLO_MIN_SCORE } = require('../config');
-const { createRewardSession, rewardRow, rewardSummary, POINTS_PER_REWARD, IQ_PER_REWARD, BTC_PER_REWARD } = require('../utils/gameRewards');
+const { createRewardSession, rewardRow, rewardSummary, POINTS_PER_REWARD, IQ_PER_REWARD, COINS_PER_REWARD } = require('../utils/gameRewards');
 
 // channelId → state
 const activeTeamDuels = new Map();
@@ -39,9 +39,9 @@ function teamOf(state, uid) {
     return null;
 }
 
-function deductBTC(uid, amount) { checkEconUser(uid); econData[uid].btc = (econData[uid].btc || 0) - amount; }
-function refundBTC(uid, amount) { checkEconUser(uid); econData[uid].btc = (econData[uid].btc || 0) + amount; }
-function refundAll(state)  { for (const uid of allJoined(state)) refundBTC(uid, state.stakeAmount); }
+function deductCoins(uid, amount) { checkEconUser(uid); econData[uid].coins = (econData[uid].coins || 0) - amount; }
+function refundCoins(uid, amount) { checkEconUser(uid); econData[uid].coins = (econData[uid].coins || 0) + amount; }
+function refundAll(state)  { for (const uid of allJoined(state)) refundCoins(uid, state.stakeAmount); }
 
 // ── Embeds / Rows ─────────────────────────────────────────────────────
 
@@ -56,20 +56,20 @@ function buildLobbyEmbed(state) {
         .setColor('#e67e22')
         .setDescription(
             `**Host:** <@${state.hostId}>\n` +
-            `**₿ Dhig qof kasta:** ${fmt(state.stakeAmount)} BTC\n` +
+            `**🪙 Dhig player kasta:** ${fmt(state.stakeAmount)} Coins\n` +
             `**Su'aalood:** ${state.totalQ}\n\n` +
             `🔵 **Team 1** (${state.teams[1].length}/${state.maxPerTeam})\n${t1}\n\n` +
             `🔴 **Team 2** (${state.teams[2].length}/${state.maxPerTeam})\n${t2}\n\n` +
-            `👥 **${joined}/${needed}** — buuxsho si ciyaartu bilaabato`
+            `👥 **${joined}/${needed}** — buuxsho si the game starts`
         )
-        .setFooter({ text: 'Host: ?r @user si qof loo saaro lobby-ga' });
+        .setFooter({ text: 'Host: ?r @user si player loo saaro lobby-ga' });
 }
 
 function lobbyRow(channelId, hostId) {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId(`tduel_join_${channelId}`)             .setLabel('✅ Ku biir') .setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId(`tduel_leave_${channelId}`)            .setLabel('🚪 Ka bax') .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId(`tduel_start_${hostId}_${channelId}`) .setLabel('▶️ Bilow')  .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId(`tduel_start_${hostId}_${channelId}`) .setLabel('▶️ start')  .setStyle(ButtonStyle.Primary),
         new ButtonBuilder().setCustomId(`tduel_cancel_${hostId}_${channelId}`).setLabel('❌ Jooji')  .setStyle(ButtonStyle.Danger),
     );
 }
@@ -78,29 +78,29 @@ function lobbyRow(channelId, hostId) {
 
 async function cmdTeamGame(message, args, maxPerTeam) {
     if (!message.guild)
-        return message.reply('⛔ Server channel kaliya ayaa loogu shaqeeyaa.');
+        return message.reply('⛔ Team duels can only be played in a server channel.');
 
     const channelId = message.channel.id;
     const hostId    = message.author.id;
     const mode      = maxPerTeam === 2 ? '2v2' : '3v3';
 
     if (activeTeamDuels.has(channelId))
-        return message.reply(`⚠️ Channel-kan ${mode} duel ayaa socda. Sug ama host-ku ha joojiyaa.`);
+        return message.reply(`⚠️ A ${mode} duel is already active in this channel. Wait for it to finish or ask the host to stop it.`);
 
     const amountArg = parseFloat(args[0]);
     if (!args[0] || isNaN(amountArg) || amountArg <= 0)
         return message.reply(
-            `⚠️ Isticmaal: \`?${mode} [lacag]\` ama \`?${mode} [lacag] [su'aalood]\`\n` +
-            `Tusaale: \`?${mode} 500\` ama \`?${mode} 500 15\``
+            `⚠️ Usage: \`?${mode} [Coins]\` or \`?${mode} [Coins] [questions]\`\n` +
+            `Example: \`?${mode} 500\` or \`?${mode} 500 15\``
         );
     if (amountArg < MIN_BET)
-        return message.reply(`⚠️ Min dhig waa **₿ ${MIN_BET.toLocaleString()}**.`);
+        return message.reply(`⚠️ Min dhig waa **🪙 ${MIN_BET.toLocaleString()}**.`);
     if (amountArg > MAX_BET)
-        return message.reply(`⚠️ Max dhig waa **₿ ${fmt(MAX_BET)}**.`);
+        return message.reply(`⚠️ Max dhig waa **🪙 ${fmt(MAX_BET)}**.`);
 
     checkEconUser(hostId);
-    if ((econData[hostId].btc || 0) < amountArg)
-        return message.reply(`⚠️ BTC kugu filna ma lihid. Wallet: **₿ ${fmt(econData[hostId].btc || 0)}**`);
+    if ((econData[hostId].coins || 0) < amountArg)
+        return message.reply(`⚠️ You do not have enough Coins. Wallet: **🪙 ${fmt(econData[hostId].coins || 0)}**`);
 
     const countRaw = args[1] ? parseInt(args[1]) : Q_DEFAULT;
     if (isNaN(countRaw) || countRaw < Q_MIN || countRaw > Q_MAX)
@@ -134,22 +134,22 @@ async function cmdTeamRemove(message) {
     const state     = activeTeamDuels.get(channelId);
 
     if (!state || state.phase !== 'lobby')
-        return message.reply('⚠️ Lobby ma jirto channel-kan.');
+        return message.reply('⚠️ Lobby was not found channel-kan.');
     if (message.author.id !== state.hostId)
-        return message.reply('⛔ Host kaliya ayaa qof ka saari kara.');
+        return message.reply('⛔ Only the host can remove a player.');
 
     const target = message.mentions.users.first();
     if (!target)
-        return message.reply('⚠️ Isticmaal: `?r @user`');
+        return message.reply('⚠️ Usage: `?r @user`');
     if (target.id === state.hostId)
-        return message.reply('⚠️ Host isaga ma saari karo — `❌ Jooji` gujiso haddaad rabto.');
+        return message.reply('⚠️ The host cannot remove themselves. Click `❌ Stop` to end the duel.');
 
     const team = teamOf(state, target.id);
     if (team === null)
-        return message.reply(`⚠️ <@${target.id}> lobby kuma jirto.`);
+        return message.reply(`⚠️ <@${target.id}> lobby kuwas not found.`);
 
     state.teams[team].splice(state.teams[team].indexOf(target.id), 1);
-    refundBTC(target.id, state.stakeAmount);
+    refundCoins(target.id, state.stakeAmount);
     saveEcon();
 
     await state.lobbyMsg?.edit({
@@ -157,7 +157,7 @@ async function cmdTeamRemove(message) {
         components: [lobbyRow(state.channelId, state.hostId)],
     }).catch(() => {});
 
-    return message.reply(`✅ <@${target.id}> lobby ayaa laga saaray — **₿ ${fmt(state.stakeAmount)}** waa la soo celiyay.`);
+    return message.reply(`✅ <@${target.id}> was removed from the lobby. **🪙 ${fmt(state.stakeAmount)}** was refunded.`);
 }
 
 // ── Button handlers ───────────────────────────────────────────────────
@@ -165,26 +165,26 @@ async function cmdTeamRemove(message) {
 async function handleJoin(interaction, channelId) {
     const state = activeTeamDuels.get(channelId);
     if (!state || state.phase !== 'lobby')
-        return interaction.reply({ content: '⚠️ Lobby ma jirto.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⚠️ Lobby was not found.', flags: MessageFlags.Ephemeral });
 
     const userId = interaction.user.id;
     if (teamOf(state, userId) !== null)
-        return interaction.reply({ content: '✅ Horey ayaad u ku biirtay!', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '✅ You have already joined!', flags: MessageFlags.Ephemeral });
 
     if (state.teams[1].length >= state.maxPerTeam && state.teams[2].length >= state.maxPerTeam)
         return interaction.reply({ content: '⚠️ Lobby waa buuxday!', flags: MessageFlags.Ephemeral });
 
     checkEconUser(userId);
-    if ((econData[userId].btc || 0) < state.stakeAmount)
+    if ((econData[userId].coins || 0) < state.stakeAmount)
         return interaction.reply({
-            content: `⚠️ BTC kugu filna ma lihid.\nWallet: **₿ ${fmt(econData[userId].btc || 0)}** — Dhig: **₿ ${fmt(state.stakeAmount)}**`,
+            content: `⚠️ You do not have enough Coins.\nWallet: **🪙 ${fmt(econData[userId].coins || 0)}** — Dhig: **🪙 ${fmt(state.stakeAmount)}**`,
             flags: MessageFlags.Ephemeral,
         });
 
     if (state.teams[1].length < state.maxPerTeam) state.teams[1].push(userId);
     else state.teams[2].push(userId);
 
-    deductBTC(userId, state.stakeAmount);
+    deductCoins(userId, state.stakeAmount);
     saveEcon();
 
     // Auto-start when all slots filled
@@ -203,7 +203,7 @@ async function handleJoin(interaction, channelId) {
 async function handleLeave(interaction, channelId) {
     const state = activeTeamDuels.get(channelId);
     if (!state || state.phase !== 'lobby')
-        return interaction.reply({ content: '⚠️ Lobby ma jirto.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⚠️ Lobby was not found.', flags: MessageFlags.Ephemeral });
 
     const userId = interaction.user.id;
     if (userId === state.hostId)
@@ -211,10 +211,10 @@ async function handleLeave(interaction, channelId) {
 
     const team = teamOf(state, userId);
     if (team === null)
-        return interaction.reply({ content: '⚠️ Lobby kuma jirtid.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⚠️ You are not in this lobby.', flags: MessageFlags.Ephemeral });
 
     state.teams[team].splice(state.teams[team].indexOf(userId), 1);
-    refundBTC(userId, state.stakeAmount);
+    refundCoins(userId, state.stakeAmount);
     saveEcon();
 
     return interaction.update({
@@ -226,14 +226,14 @@ async function handleLeave(interaction, channelId) {
 async function handleStart(interaction, hostId, channelId) {
     const state = activeTeamDuels.get(channelId);
     if (!state || state.phase !== 'lobby')
-        return interaction.reply({ content: '⚠️ Lobby ma jirto.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⚠️ Lobby was not found.', flags: MessageFlags.Ephemeral });
     if (interaction.user.id !== hostId)
-        return interaction.reply({ content: '⛔ Host kaliya ayaa bilaabi kara.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⛔ Only the host can start the duel.', flags: MessageFlags.Ephemeral });
 
     const t1 = state.teams[1].length;
     const t2 = state.teams[2].length;
     if (t1 === 0 || t2 === 0)
-        return interaction.reply({ content: '⚠️ Labada koob mid walba waa inuu leeyahay ugu yaraan 1 ciyaaryahan.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⚠️ Labada koob mid walba waa inuu leeyahay at least 1 player.', flags: MessageFlags.Ephemeral });
     if (t1 !== t2)
         return interaction.reply({ content: `⚠️ Koobabku waa inay isla tirsanyihiin. Team 1: ${t1} | Team 2: ${t2}`, flags: MessageFlags.Ephemeral });
 
@@ -244,16 +244,16 @@ async function handleStart(interaction, hostId, channelId) {
 async function handleCancel(interaction, hostId, channelId) {
     const state = activeTeamDuels.get(channelId);
     if (!state)
-        return interaction.reply({ content: '⚠️ Lobby ma jirto.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⚠️ Lobby was not found.', flags: MessageFlags.Ephemeral });
     if (interaction.user.id !== hostId)
-        return interaction.reply({ content: '⛔ Host kaliya ayaa joojin kara.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⛔ Only the host can stop the duel.', flags: MessageFlags.Ephemeral });
 
     refundAll(state);
     saveEcon();
     activeTeamDuels.delete(channelId);
 
     return interaction.update({
-        embeds: [new EmbedBuilder().setTitle('❌ Team Duel waa la joojiyay').setDescription('Dhigga waa la soo celiyay.').setColor('#e74c3c')],
+        embeds: [new EmbedBuilder().setTitle('❌ Team Duel Cancelled').setDescription('The stakes have been refunded.').setColor('#e74c3c')],
         components: [],
     });
 }
@@ -269,9 +269,9 @@ function buildStartEmbed(state) {
         .setDescription(
             `🔵 **Team 1:** ${state.teams[1].map(id => `<@${id}>`).join(', ')}\n` +
             `🔴 **Team 2:** ${state.teams[2].map(id => `<@${id}>`).join(', ')}\n\n` +
-            `💰 **Wadarta:** ₿ ${fmt(totalPrize)}\n` +
-            `📋 **${state.totalQ}** su'aalood\n\n` +
-            `Su'aasha 1aad ayaa yimaadda...`
+            `💰 **Total:** 🪙 ${fmt(totalPrize)}\n` +
+            `📋 **${state.totalQ}** questions\n\n` +
+            `Question 1 is coming up...`
         );
 }
 
@@ -293,7 +293,7 @@ async function prepareAndStart(channel, channelId) {
         refundAll(state);
         saveEcon();
         activeTeamDuels.delete(channelId);
-        await channel.send('⚠️ Su\'aalaha lama helin — dhigga waa la soo celiyay.').catch(() => {});
+        await channel.send('⚠️ No questions were found. The stakes have been refunded.').catch(() => {});
         return;
     }
 
@@ -323,7 +323,7 @@ async function sendTeamQuestion(channel, channelId) {
         refundAll(state);
         saveEcon();
         activeTeamDuels.delete(channelId);
-        await channel.send('⚠️ Su\'aal khaldan — dhigga waa la soo celiyay.').catch(() => {});
+        await channel.send('⚠️ Invalid question. The stakes have been refunded.').catch(() => {});
         return;
     }
 
@@ -354,7 +354,7 @@ async function sendTeamQuestion(channel, channelId) {
         refundAll(state);
         saveEcon();
         activeTeamDuels.delete(channelId);
-        await channel.send('⚠️ Su\'aal soo dirin kari waayay — dhigga waa la soo celiyay.').catch(() => {});
+        await channel.send('⚠️ The question could not be sent. The stakes have been refunded.').catch(() => {});
         return;
     }
     state.currentMsg = msg;
@@ -369,7 +369,7 @@ async function sendTeamQuestion(channel, channelId) {
 
     collector.on('collect', async interaction => {
         if (answeredThisQ.has(interaction.user.id))
-            return interaction.reply({ content: '↩️ Su\'aashan mar hore ayaad jawaabday!', flags: MessageFlags.Ephemeral }).catch(() => {});
+            return interaction.reply({ content: '↩️ You already answered this question!', flags: MessageFlags.Ephemeral }).catch(() => {});
         answeredThisQ.add(interaction.user.id);
 
         const isCorrect = interaction.customId.endsWith('_t');
@@ -377,9 +377,9 @@ async function sendTeamQuestion(channel, channelId) {
             const pts  = calcTimedScore(Date.now() - questionStartMs);
             const secs = ((Date.now() - questionStartMs) / 1000).toFixed(1);
             state.scores[interaction.user.id] = (state.scores[interaction.user.id] || 0) + pts;
-            await interaction.reply({ content: `✅ Saxsanaan! +${pts} dhibcood · ⏱️ ${secs}s`, flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: `✅ Saxsanaan! +${pts} points · ⏱️ ${secs}s`, flags: MessageFlags.Ephemeral }).catch(() => {});
         } else {
-            await interaction.reply({ content: '❌ Khalad! 0 dhibcood', flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: '❌ Incorrect! 0 points', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
 
         if (answeredThisQ.size >= players.length) collector.stop('all_answered');
@@ -425,9 +425,9 @@ async function finishTeamDuel(channel, channelId) {
             .setTitle('🤝 Team Duel — Iskumid!')
             .setColor('#f1c40f')
             .setDescription(
-                `🔵 Team 1: **${t1Score}** dhibic\n` +
-                `🔴 Team 2: **${t2Score}** dhibic\n\n` +
-                `Waa iskumid! Dhigga waa la soo celiyay.`
+                `🔵 Team 1: **${t1Score}** points\n` +
+                `🔴 Team 2: **${t2Score}** points\n\n` +
+                `It's a tie! The stakes have been refunded.`
             );
     } else {
         const winTeam   = t1Score > t2Score ? 1 : 2;
@@ -438,7 +438,8 @@ async function finishTeamDuel(channel, channelId) {
 
         for (const uid of winIds) {
             checkEconUser(uid);
-            econData[uid].btc = (econData[uid].btc || 0) + perWinner;
+            econData[uid].coins = (econData[uid].coins || 0) + perWinner;
+            trackEarning(uid, perWinner);
         }
 
         const icon = winTeam === 1 ? '🔵' : '🔴';
@@ -446,12 +447,12 @@ async function finishTeamDuel(channel, channelId) {
             .setTitle(`🏆 ${state.mode.toUpperCase()} — Dhamaatay!`)
             .setColor('#2ecc71')
             .setDescription(
-                `${icon} **Team ${winTeam}:** **${Math.max(t1Score, t2Score)}** dhibic 🏆\n` +
-                `${winTeam === 1 ? '🔴' : '🔵'} **Team ${loseTeam}:** **${Math.min(t1Score, t2Score)}** dhibic\n\n` +
+                `${icon} **Team ${winTeam}:** **${Math.max(t1Score, t2Score)}** points 🏆\n` +
+                `${winTeam === 1 ? '🔴' : '🔵'} **Team ${loseTeam}:** **${Math.min(t1Score, t2Score)}** points\n\n` +
                 `🥇 **Guulayste:** ${winIds.map(id => `<@${id}>`).join(', ')}\n` +
-                `   Qof kasta: **+₿ ${fmt(perWinner)}**\n\n` +
+                `   player kasta: **+🪙 ${fmt(perWinner)}**\n\n` +
                 `💀 **Lumiyay:** ${loseIds.map(id => `<@${id}>`).join(', ')}\n` +
-                `   Qof kasta: **−₿ ${fmt(state.stakeAmount)}**`
+                `   player kasta: **−🪙 ${fmt(state.stakeAmount)}**`
             );
     }
 
@@ -466,7 +467,7 @@ async function finishTeamDuel(channel, channelId) {
 
     resultEmbed.addFields({
         name: '🎁 Abaalmarin points',
-        value: `${rewardLines}\nDooro IQ ama BTC. (${POINTS_PER_REWARD} pts = ${IQ_PER_REWARD} IQ ama ${BTC_PER_REWARD} BTC)`,
+        value: `${rewardLines}\nChoose IQ or Coins. (${POINTS_PER_REWARD} pts = ${IQ_PER_REWARD} IQ or ${COINS_PER_REWARD} Coins)`,
     });
 
     await channel.send({ embeds: [resultEmbed], components: [rewardRow(rewardSessionId)] });
@@ -475,9 +476,9 @@ async function finishTeamDuel(channel, channelId) {
 async function handleNonParticipantAnswer(interaction, channelId) {
     const state = activeTeamDuels.get(channelId);
     if (!state || state.phase !== 'playing')
-        return interaction.reply({ content: '⚠️ Ciyaar ma socdo.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⚠️ No game is active.', flags: MessageFlags.Ephemeral });
     if (!allJoined(state).includes(interaction.user.id))
-        return interaction.reply({ content: '⛔ Game kuma jirtid — kama jawaabi kartid.', flags: MessageFlags.Ephemeral });
+        return interaction.reply({ content: '⛔ You are not in this game and cannot answer.', flags: MessageFlags.Ephemeral });
 }
 
 module.exports = {

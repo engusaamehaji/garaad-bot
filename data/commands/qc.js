@@ -1,7 +1,7 @@
 // =====================================================================
 // AMARKA: ?qc [category]  /  ?quiz category [category]
 // • ?qc           → liiska qaybaha + tirada su'aalaha
-// • ?qc juqraafi  → 10 su'aalood oo filtered ah (solo-style, per-user seen)
+// • ?qc juqraafi  → 10 questions oo filtered ah (solo-style, per-user seen)
 // =====================================================================
 
 const {
@@ -41,7 +41,7 @@ const CATEGORIES = {
     diinta:     { label: '☪️ Diinta',       desc: 'Surah-yada, nabiyada, sahaabada, Islaamka' },
     taariikhda: { label: '📜 Taariikhda',   desc: 'Taariikhda adduunka iyo Soomaalida' },
     sayniska:   { label: '🔬 Sayniska',     desc: 'Cilmiga, xiddigaha, chemistry, biology' },
-    ciyaaraha:  { label: '⚽ Ciyaaraha',    desc: 'Kubadda cagta, olombikada, xiddigaha' },
+    ciyaaraha: { label: '⚽ Sports', desc: 'Sports, Olympics, and athletes' },
     luqadda:    { label: '📖 Luqadda',      desc: 'Af-Soomaali, Af-Ingiriis, vocabulary' },
 };
 
@@ -55,7 +55,7 @@ function getCatKey(raw) {
     if (['diin','islam','religion'].includes(r))  return 'diinta';
     if (['history','taariikh'].includes(r))       return 'taariikhda';
     if (['science','sayn'].includes(r))           return 'sayniska';
-    if (['sport','sports','ciyaar'].includes(r))  return 'ciyaaraha';
+    if (['sport','sports','game','ciyaar'].includes(r)) return 'ciyaaraha';
     if (['language','luqad','vocab'].includes(r)) return 'luqadda';
     return null;
 }
@@ -78,18 +78,18 @@ function showCategoryList(message) {
     const total  = Object.values(counts).reduce((a, b) => a + b, 0);
 
     const lines = Object.entries(CATEGORIES).map(([k, { label, desc }]) =>
-        `${label} — **${(counts[k] || 0).toLocaleString()}** su'aalood\n*${desc}*\n\`${PREFIX}qc ${k}\``
+        `${label} — **${(counts[k] || 0).toLocaleString()}** questions\n*${desc}*\n\`${PREFIX}qc ${k}\``
     );
 
     const embed = new EmbedBuilder()
         .setTitle('📂 Qaybaha Su\'aalaha')
         .setDescription(
-            `**${total.toLocaleString()}** su'aalood oo dhan ayaa la heli karaa.\n` +
-            `Isticmaal \`${PREFIX}qc <qaybta>\` si aad u bilowdo.\n\n` +
+            `**${total.toLocaleString()}** questions oo dhan ayaa la heli karaa.\n` +
+            `Use \`${PREFIX}qc <qaybta>\` si aad u start.\n\n` +
             lines.join('\n\n')
         )
         .setColor(0x00b0f4)
-        .setFooter({ text: `Tusaale: ${PREFIX}qc diinta` });
+        .setFooter({ text: `Example: ${PREFIX}qc diinta` });
 
     return message.reply({ embeds: [embed] });
 }
@@ -100,7 +100,7 @@ async function runCatQuiz(message, catKey) {
     checkUser(userId);
 
     if (activeGames.has(userId)) {
-        return message.reply('⚠️ Ciyaar baa socda. Dhamee ka hor aad cusub bilowdo.');
+        return message.reply('⚠️ Game baa socda. Dhamee ka hor aad cusub start.');
     }
 
     const pool  = getAllPool();
@@ -113,7 +113,7 @@ async function runCatQuiz(message, catKey) {
     const pool10 = (unseen.length >= 10 ? unseen : catQ);
 
     if (pool10.length === 0) {
-        return message.reply(`⚠️ Qaybta **${CATEGORIES[catKey]?.label || catKey}** su'aalo kuma jirto.`);
+        return message.reply(`⚠️ Qaybta **${CATEGORIES[catKey]?.label || catKey}** questions kuwas not found.`);
     }
 
     const questions = shuffleArray(pool10).slice(0, 10);
@@ -121,7 +121,7 @@ async function runCatQuiz(message, catKey) {
 
     const embed0 = new EmbedBuilder()
         .setTitle(`${label} — 10 Su'aalood`)
-        .setDescription(`Waxaad heleysaa **10 su'aalood** oo ku saabsan **${label}**.\nCiyaartu waxay bilaabaneysaa! ⬇️`)
+        .setDescription(`You will receive **10 questions** oo about **${label}**.\nThe game waxay is starting! ⬇️`)
         .setColor(0x00b0f4);
 
     await message.reply({ embeds: [embed0] });
@@ -152,7 +152,7 @@ async function askCatQuestion(message, userId, questions, idx, score) {
         .setTitle(`❓ Su'aal ${idx + 1} / ${questions.length}`)
         .setDescription(`**${q.question}**\n\n${desc}`)
         .setColor(0xfee75c)
-        .setFooter({ text: `⏱ ${GLOBAL_WAIT_MS / 1000}s | Dhibcaha: ${score}` });
+        .setFooter({ text: `⏱ ${GLOBAL_WAIT_MS / 1000}s | Points: ${score}` });
 
     const row = new ActionRowBuilder().addComponents(buttons);
     const sent = await message.channel.send({ embeds: [embed], components: [row] });
@@ -194,7 +194,7 @@ async function askCatQuestion(message, userId, questions, idx, score) {
             .setColor(isRight ? 0x57f287 : 0xed4245)
             .setDescription(isRight
                 ? `✅ **Saxsax!** — ${correctLabel}`
-                : `❌ **Khalad!** Jawaabta saxda: **${correctLabel}**`
+                : `❌ **Incorrect!** Jawaabta saxda: **${correctLabel}**`
             );
 
         await interaction.update({ embeds: [resultEmbed], components: [] }).catch(() => {});
@@ -236,15 +236,15 @@ async function finishCatQuiz(message, userId, score, total) {
     const emoji = pct >= 80 ? '🏆' : pct >= 50 ? '👍' : '😓';
 
     const embed = new EmbedBuilder()
-        .setTitle(`${emoji} Ciyaarta Waa Dhammaysay!`)
+        .setTitle(`${emoji} The game Waa Dhammaysay!`)
         .setDescription(
-            `Dhibcahaaga: **${score} / ${total}** (${pct}%)\n\n` +
+            `Pointsaga: **${score} / ${total}** (${pct}%)\n\n` +
             (pct >= 80 ? '🌟 Aad baad u wanaagsan tahay!' :
              pct >= 50 ? '👍 Waa hagaag, sii wad dhaqanka.' :
              '📚 Barasho dheeraad ah ayaa loo baahan yahay.')
         )
         .setColor(pct >= 80 ? 0x57f287 : pct >= 50 ? 0xfee75c : 0xed4245)
-        .setFooter({ text: `${PREFIX}qc — Bilow qaybta kale` });
+        .setFooter({ text: `${PREFIX}qc — start qaybta kale` });
 
     await message.channel.send({ embeds: [embed] });
     saveData();
@@ -264,7 +264,7 @@ async function qcCommand(message, args) {
         if (!catKey) {
             return message.reply(
                 `❓ Qaybta **"${catRaw}"** lama garanin.\n` +
-                `Isticmaal \`${PREFIX}qc\` si aad u aragto liiska.\n` +
+                `Use \`${PREFIX}qc\` si aad u aragto liiska.\n` +
                 `**Qaybaha:** ${Object.keys(CATEGORIES).join(', ')}`
             );
         }
@@ -272,7 +272,7 @@ async function qcCommand(message, args) {
         return runCatQuiz(message, catKey);
     } catch (err) {
         console.error('[qcCmd]', err);
-        return message.reply('❌ Khalad ayaa dhacay. Isku day mar kale.').catch(() => {});
+        return message.reply('❌ Incorrect ayaa dhacay. Isku day mar kale.').catch(() => {});
     }
 };
 

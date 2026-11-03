@@ -14,10 +14,10 @@ module.exports = async function adminList(message) {
     }));
 
     const embed = new EmbedBuilder()
-        .setTitle('👑 Garaad — Liiska Admin-yada')
-        .setDescription(lines.length ? lines.join('\n') : 'Cidna admin maaha.')
+        .setTitle('👑 Garaad — Admin List')
+        .setDescription(lines.length ? lines.join('\n') : 'No admins are configured.')
         .setColor('#9b59b6')
-        .setFooter({ text: `Wadarta admin-yada: ${admins.length}` });
+        .setFooter({ text: `Total admins: ${admins.length}` });
 
     return message.reply({ embeds: [embed] });
 };

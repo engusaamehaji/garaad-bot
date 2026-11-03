@@ -1,11 +1,11 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { userData, saveData } = require('../store');
 const { checkUser, applyIqChange } = require('./helpers');
-const { econData, checkEconUser, saveEcon } = require('../economy/econStore');
+const { econData, checkEconUser, saveEcon, trackEarning } = require('../economy/econStore');
 
 const POINTS_PER_REWARD = 50;
 const IQ_PER_REWARD = 2;
-const BTC_PER_REWARD = 100;
+const COINS_PER_REWARD = 100;
 const rewardSessions = new Map();
 
 function calcReward(points) {
@@ -13,7 +13,7 @@ function calcReward(points) {
     return {
         units,
         iq: units * IQ_PER_REWARD,
-        btc: units * BTC_PER_REWARD,
+        coins: units * COINS_PER_REWARD,
     };
 }
 
@@ -40,14 +40,14 @@ function createRewardSession(gameName, rewardsByUser) {
 function rewardSummary(points) {
     const reward = calcReward(points);
     if (reward.units < 1) return `${points || 0} pts → abaalmarin ma gaarin`;
-    return `${points || 0} pts → ${reward.iq} IQ ama ${reward.btc} BTC`;
+    return `${points || 0} pts → ${reward.iq} IQ ama ${reward.coins} Coins`;
 }
 
 function rewardRow(sessionId) {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`gr_iq_${sessionId}`)
-            .setLabel(`🧠 IQ qaado`)
+            .setLabel(`🧠 IQ claim`)
             .setStyle(ButtonStyle.Primary),
     );
 }
@@ -65,7 +65,7 @@ async function handleGameRewardChoice(interaction) {
     const userId = interaction.user.id;
     const entry = session.rewards[userId];
     if (!entry) {
-        return interaction.reply({ content: '⚠️ Abaalmarintan adiga kuma jirto.', flags: 64 });
+        return interaction.reply({ content: '⚠️ Abaalmarintan adiga kuwas not found.', flags: 64 });
     }
     if (entry.claimed) {
         return interaction.reply({ content: `✅ Horey ayaad u qaadatay: **${entry.choice.toUpperCase()}**.`, flags: 64 });
@@ -74,7 +74,7 @@ async function handleGameRewardChoice(interaction) {
     const reward = calcReward(entry.points);
     if (reward.units < 1) {
         return interaction.reply({
-            content: `⚠️ Waxaad haysataa **${entry.points} pts**. Ugu yaraan **${POINTS_PER_REWARD} pts** ayaa abaalmarin lagu qaataa.`,
+            content: `⚠️ you you have **${entry.points} pts**. Ugu yaraan **${POINTS_PER_REWARD} pts** ayaa abaalmarin lagu qaataa.`,
             flags: 64,
         });
     }
@@ -88,18 +88,19 @@ async function handleGameRewardChoice(interaction) {
         entry.choice = 'iq';
         saveData();
         return interaction.reply({
-            content: `✅ **${session.gameName}**: ${entry.points} pts → **+${actual} IQ**. Hadda: **${userData[userId].iq} IQ**`,
+            content: `✅ **${session.gameName}**: ${entry.points} pts → **+${actual} IQ**. Current: **${userData[userId].iq} IQ**`,
             flags: 64,
         });
     }
 
-    if (choice === 'btc') {
-        econData[userId].btc = (econData[userId].btc || 0) + reward.btc;
+    if (choice === 'coins') {
+        econData[userId].coins = (econData[userId].coins || 0) + reward.coins;
+        trackEarning(userId, reward.coins);
         entry.claimed = true;
-        entry.choice = 'btc';
+        entry.choice = 'coins';
         saveEcon();
         return interaction.reply({
-            content: `✅ **${session.gameName}**: ${entry.points} pts → **+₿${reward.btc.toLocaleString()} BTC**. Hadda: **₿${(econData[userId].btc || 0).toLocaleString()}**`,
+            content: `✅ **${session.gameName}**: ${entry.points} pts → **+🪙${reward.coins.toLocaleString()} Coins**. Current: **🪙${(econData[userId].coins || 0).toLocaleString()}**`,
             flags: 64,
         });
     }
@@ -110,7 +111,7 @@ async function handleGameRewardChoice(interaction) {
 module.exports = {
     POINTS_PER_REWARD,
     IQ_PER_REWARD,
-    BTC_PER_REWARD,
+    COINS_PER_REWARD,
     calcReward,
     createRewardSession,
     rewardSummary,

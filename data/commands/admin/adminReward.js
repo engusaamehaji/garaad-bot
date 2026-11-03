@@ -10,7 +10,7 @@ module.exports = async function adminReward(message, args) {
     const target = message.mentions.users.first();
     if (!target) {
         return message.reply(
-            'Isticmaal:\n' +
+            'Usage:\n' +
             '`?admin reward @user iq [amount]` — IQ\n' +
             '`?admin reward @user xp [amount]` — XP'
         );
@@ -19,7 +19,7 @@ module.exports = async function adminReward(message, args) {
     const rest = args.filter((a) => !/<@!?(\d+)>/.test(a));
     if (rest.length < 2) {
         return message.reply(
-            'Isticmaal:\n' +
+            'Usage:\n' +
             '`?admin reward @user iq [amount]` — IQ\n' +
             '`?admin reward @user xp [amount]` — XP'
         );
@@ -30,7 +30,7 @@ module.exports = async function adminReward(message, args) {
 
     if (!['iq', 'xp'].includes(type) || Number.isNaN(amount) || amount === 0) {
         return message.reply(
-            'Isticmaal:\n' +
+            'Usage:\n' +
             '`?admin reward @user iq [amount]` — IQ\n' +
             '`?admin reward @user xp [amount]` — XP'
         );
@@ -43,7 +43,7 @@ module.exports = async function adminReward(message, args) {
         saveData();
         return message.reply(
             `✅ <@${target.id}> wuxuu helay **${amount > 0 ? '+' : ''}${amount} IQ**. ` +
-            `(Hadda: **${userData[target.id].iq} IQ**)`
+            `(Current: **${userData[target.id].iq} IQ**)`
         );
     }
 
@@ -52,7 +52,7 @@ module.exports = async function adminReward(message, args) {
         saveData();
         return message.reply(
             `✅ <@${target.id}> wuxuu helay **${amount > 0 ? '+' : ''}${amount} XP**. ` +
-            `(Wadarta XP: **${userData[target.id].xp}**)`
+            `(Total XP: **${userData[target.id].xp}**)`
         );
     }
 };

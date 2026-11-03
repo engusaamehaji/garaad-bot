@@ -39,9 +39,9 @@ function ensureRel(userId) {
 // ── ?friend @user ──────────────────────────────────────
 async function friendCmd(message) {
     const target = message.mentions.users.first();
-    if (!target) return message.reply('⚠️ Isticmaal: `?friend @user`');
-    if (target.id === message.author.id) return message.reply('⚠️ Adiga laftiisa saaxiib kama noqon kartid.');
-    if (target.bot) return message.reply('⚠️ Bot saaxiib kama noqon kartid.');
+    if (!target) return message.reply('⚠️ Usage: `?friend @user`');
+    if (target.id === message.author.id) return message.reply('⚠️ You cannot add yourself as a friend.');
+    if (target.bot) return message.reply('⚠️ You cannot add bots as friends.');
 
     checkUser(message.author.id);
     checkUser(target.id);
@@ -49,20 +49,20 @@ async function friendCmd(message) {
     ensureRel(target.id);
 
     const sender   = userData[message.author.id];
-    const receiver = userData[target.id];
+    const recipient = userData[target.id];
 
     if ((sender.friends || []).includes(target.id))
-        return message.reply(`💕 **${target.username}** horay baad saaxiib ugu ahayd.`);
+        return message.reply(`💕 **${target.username}** is already your friend.`);
 
-    if ((receiver.pendingFriendReqs || []).includes(message.author.id))
-        return message.reply(`⏳ Codsiga saaxiibtinimada horay ayaad u dirtay **${target.username}**.`);
+    if ((recipient.pendingFriendReqs || []).includes(message.author.id))
+        return message.reply(`⏳ You already sent a friend request to **${target.username}**.`);
 
-    receiver.pendingFriendReqs.push(message.author.id);
+    recipient.pendingFriendReqs.push(message.author.id);
     saveData();
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`rel_af_${message.author.id}`).setLabel('✅ Aqbal').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(`rel_df_${message.author.id}`).setLabel('❌ Diid').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId(`rel_af_${message.author.id}`).setLabel('✅ Accept').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`rel_df_${message.author.id}`).setLabel('❌ Decline').setStyle(ButtonStyle.Danger),
     );
 
     return message.reply({
@@ -74,7 +74,7 @@ async function friendCmd(message) {
 // ── ?unfriend @user ────────────────────────────────────
 async function unfriendCmd(message) {
     const target = message.mentions.users.first();
-    if (!target) return message.reply('⚠️ Isticmaal: `?unfriend @user`');
+    if (!target) return message.reply('⚠️ Usage: `?unfriend @user`');
 
     checkUser(message.author.id);
     ensureRel(message.author.id);
@@ -82,14 +82,14 @@ async function unfriendCmd(message) {
 
     const d = userData[message.author.id];
     if (!(d.friends || []).includes(target.id))
-        return message.reply(`⚠️ **${target.username}** saaxiibkaaga kuma jiro.`);
+        return message.reply(`⚠️ **${target.username}** is not on your friends list.`);
 
     d.friends = d.friends.filter(id => id !== target.id);
     const td = userData[target.id];
     if (td) td.friends = (td.friends || []).filter(id => id !== message.author.id);
     saveData();
 
-    return message.reply(`💔 **${target.username}** saaxiibyadaada ayaad ka saaray.`);
+    return message.reply(`💔 **${target.username}** was removed from your friends list.`);
 }
 
 // ── ?friends ───────────────────────────────────────────
@@ -99,7 +99,7 @@ async function friendsListCmd(message) {
     const friendIds = userData[message.author.id].friends || [];
 
     if (!friendIds.length)
-        return message.reply('📭 Saaxiib ma lihid weli. `?friend @user` ku bilow.');
+        return message.reply('📭 You do not have any friends yet. `?friend @user` to get started.');
 
     const names = await Promise.all(friendIds.map(async id => {
         try { const u = await message.client.users.fetch(id); return `👤 **${u.username}**`; }
@@ -108,7 +108,7 @@ async function friendsListCmd(message) {
 
     return message.reply({
         embeds: [new EmbedBuilder()
-            .setTitle(`💕 ${message.author.username} — Saaxiibada`)
+            .setTitle(`💕 ${message.author.username} — Friends`)
             .setColor('#e91e8c')
             .setDescription(names.join('\n'))
             .setFooter({ text: `${friendIds.length} saaxiib` })],
@@ -118,9 +118,9 @@ async function friendsListCmd(message) {
 // ── ?propose @user ─────────────────────────────────────
 async function proposeCmd(message) {
     const target = message.mentions.users.first();
-    if (!target) return message.reply('⚠️ Isticmaal: `?propose @user`');
-    if (target.id === message.author.id) return message.reply('⚠️ Adiga laftiisa ma guursan kartid.');
-    if (target.bot) return message.reply('⚠️ Bot ma guursan kartid.');
+    if (!target) return message.reply('⚠️ Usage: `?propose @user`');
+    if (target.id === message.author.id) return message.reply('⚠️ You cannot marry yourself.');
+    if (target.bot) return message.reply('⚠️ You cannot marry a bot.');
 
     checkUser(message.author.id);
     checkUser(target.id);
@@ -128,15 +128,15 @@ async function proposeCmd(message) {
     ensureRel(target.id);
 
     const sender   = userData[message.author.id];
-    const receiver = userData[target.id];
+    const recipient = userData[target.id];
 
     if (sender.relationship?.partnerId)
-        return message.reply('💔 Waa in aad horay guur jaban ka saarto. `?breakup` isticmaal.');
-    if (receiver.relationship?.partnerId)
-        return message.reply(`💔 **${target.username}** horay ayuu guuran yahay.`);
+        return message.reply('💔 You must end your current relationship first. `?breakup` use.');
+    if (recipient.relationship?.partnerId)
+        return message.reply(`💔 **${target.username}** is already married.`);
 
     if (_proposalTimers.has(message.author.id))
-        return message.reply('⏳ Codsi guur ayaad horay u dirtay — sug jawaabta.');
+        return message.reply('⏳ You already sent a proposal. Wait for a response.');
 
     const rings = sender.ownedRings || {};
     const ringType = rings.somali > 0 ? 'somali'
@@ -146,39 +146,39 @@ async function proposeCmd(message) {
         : null;
 
     if (!ringType)
-        return message.reply('💍 Ring ma lihid! `?shop rings` ka iibso.');
+        return message.reply('💍 You do not own a ring. Buy one with `?shop rings`.');
 
-    receiver.pendingProposal = { fromId: message.author.id, fromUsername: message.author.username, ringType };
+    recipient.pendingProposal = { fromId: message.author.id, fromUsername: message.author.username, ringType };
     saveData();
 
     const ring  = RING_DISPLAY[ringType];
     const price = RING_PRICES[ringType];
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`rel_ap_${message.author.id}`).setLabel('💍 Haa, Waan Aqbalayaa!').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(`rel_dp_${message.author.id}`).setLabel('💔 Maya').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId(`rel_ap_${message.author.id}`).setLabel('💍 Haa, Waan I Accept!').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId(`rel_dp_${message.author.id}`).setLabel('💔 No').setStyle(ButtonStyle.Danger),
     );
 
     const proposerAvatarUrl = message.author.displayAvatarURL({ size: 128 });
 
     const embed = new EmbedBuilder()
         .setColor(ring.color)
-        .setTitle('💍 Guurta Codsi')
+        .setTitle('💍 Marriage Proposal')
         .setThumbnail(proposerAvatarUrl)
         .setDescription(
-            `**${message.author.username}** wuxuu **${target.username}** u soo jeedinaayaa guur! 💝\n\n` +
+            `**${message.author.username}** proposed to **${target.username}**! 💝\n\n` +
             `\`\`\`\n` +
             `  ╔══════════════════════════════╗\n` +
             `  ║  ${ring.emoji}  ${ring.label.padEnd(20)}${ring.emoji}  ║\n` +
             `  ║  ✨ ${ring.desc.padEnd(26)}  ║\n` +
-            `  ║  💰 Qiime: ₿${String(price.toLocaleString()).padEnd(18)}║\n` +
+            `  ║  💰 Qiime: 🪙${String(price.toLocaleString()).padEnd(18)}║\n` +
             `  ╚══════════════════════════════╝\n` +
             `\`\`\`\n` +
-            `_Qalbigeyga ku haya... ma aqbali doontaa?_ 💌`
+            `_Will you accept my proposal?_ 💌`
         )
         .addFields(
-            { name: '⏱️ Waqtiga', value: '2 daqiiqo gudahood jawaab', inline: true },
-            { name: '👤 Soo diray', value: message.author.username, inline: true },
+            { name: '⏱️ Time limit', value: 'Reply within 2 minutes', inline: true },
+            { name: '👤 From', value: message.author.username, inline: true },
         )
         .setFooter({ text: `${message.author.username} → ${target.username}  •  ⏳ expires in 2 min` })
         .setTimestamp();
@@ -201,21 +201,21 @@ async function proposeCmd(message) {
         saveData();
 
         const disabledRow = new ActionRowBuilder().addComponents(
-            new ButtonBuilder().setCustomId(`rel_ap_${message.author.id}`).setLabel('💍 Haa, Waan Aqbalayaa!').setStyle(ButtonStyle.Success).setDisabled(true),
-            new ButtonBuilder().setCustomId(`rel_dp_${message.author.id}`).setLabel('💔 Maya').setStyle(ButtonStyle.Danger).setDisabled(true),
+            new ButtonBuilder().setCustomId(`rel_ap_${message.author.id}`).setLabel('💍 Haa, Waan I Accept!').setStyle(ButtonStyle.Success).setDisabled(true),
+            new ButtonBuilder().setCustomId(`rel_dp_${message.author.id}`).setLabel('💔 No').setStyle(ButtonStyle.Danger).setDisabled(true),
         );
 
         await sent.edit({
             embeds: [new EmbedBuilder()
                 .setColor('#7f8c8d')
-                .setTitle('💍 Guurta Codsi — Waqtigu Dhammaaday')
-                .setDescription(`⌛ **${target.username}** waqtiga gudahood kuma jawabin.\nCodsiga waa la joojiyay.`)
+                .setTitle('💍 Marriage Proposal — Waqtigu finished')
+                .setDescription(`⌛ **${target.username}** did not respond in time.\nThe proposal was cancelled.`)
                 .setFooter({ text: `${message.author.username} → ${target.username}  •  Expired` })],
             components: [disabledRow],
         }).catch(() => {});
 
         await message.channel.send(
-            `⌛ <@${message.author.id}> — **${target.username}** waqtiga gudahood kuma jawabin. Codsigii guurka waa la joojiyay.`
+            `⌛ <@${message.author.id}> — **${target.username}** did not respond in time. The proposal was cancelled.`
         ).catch(() => {});
 
     }, 2 * 60 * 1000);
@@ -239,7 +239,7 @@ async function partnerCmd(message) {
     const rel = userData[message.author.id].relationship || {};
 
     if (!rel.partnerId)
-        return message.reply('💔 Partner ma lihid. `?propose @user` isticmaal.');
+        return message.reply('💔 You do not have a partner. `?propose @user` use.');
 
     let partnerName = rel.partnerUsername || `<@${rel.partnerId}>`;
     try { const u = await message.client.users.fetch(rel.partnerId); partnerName = u.username; } catch {}
@@ -256,11 +256,11 @@ async function partnerCmd(message) {
             .setColor('#e91e8c')
             .setDescription(
                 `💕 **Partner:**\n${partnerName} ❤️ ${message.author.username}\n\n` +
-                `📅 **Wada joognaan:**\n${days} Maalmood\n\n` +
+                `📅 **Together for:**\n${days} days\n\n` +
                 `${ringTxt}\n\n` +
                 iAmProposer
-                    ? `_Adiga ring-ka baad bixisay — haddaad jabiso lacag la celin maayo_`
-                    : `_Hadduu partner-kaagu jabiso: ₿${refund.toLocaleString()} BTC ayaad heli kartaa_`
+                    ? `_You paid for the ring. Coins will not be refunded if you end the relationship._`
+                    : `_If your partner ends the relationship: 🪙${refund.toLocaleString()} you may receive Coins_`
             )],
     });
 }
@@ -272,17 +272,17 @@ async function breakupCmd(message) {
     const d = userData[message.author.id];
 
     if (!d.relationship?.partnerId)
-        return message.reply('💔 Partner ma lihid.');
+        return message.reply('💔 You do not have a partner.');
 
     const partnerId   = d.relationship.partnerId;
     const partnerName = d.relationship.partnerUsername || `<@${partnerId}>`;
     const ringType    = d.relationship.ringType;
-    // proposerId = qofkii ring-ka bixiyay (proposer)
+    // proposerId = the player who paid for the ring (proposer)
     const proposerId  = d.relationship.proposerId || null;
 
-    // Adiga jabisay mise partner-kaaga?
-    // Haddaan anigu proposer ahayn → ANIGU jabisay proposer-ka (ring buyer) → refund sii
-    // Haddaan anigu proposer ahay → Anigu jabisay — lacag la celin maayo
+    // Adiga ended the relationship mise your partner?
+    // Nowan anigu proposer ahayn → ANIGU ended the relationship proposer-ka (ring purchaser) → refund sii
+    // Nowan anigu proposer ahay → Anigu ended the relationship — Coins will not be refunded
     const iAmProposer = (proposerId === message.author.id);
 
     // Clear both relationships
@@ -296,21 +296,21 @@ async function breakupCmd(message) {
     let refundMsg = '';
 
     if (!iAmProposer && proposerId && ringType && RING_PRICES[ringType]) {
-        // Adigu (receiver) ayaad jabisay → ring buyer (proposerId) lacag la celiyaa
+        // Adigu (recipient) ayaad ended the relationship → ring purchaser (proposerId) Coins la celiyaa
         const price  = RING_PRICES[ringType];
         const refund = Math.floor(price / 3);
         if (refund > 0) {
             checkEconUser(proposerId);
-            econData[proposerId].btc = (econData[proposerId].btc || 0) + refund;
+            econData[proposerId].coins = (econData[proposerId].coins || 0) + refund;
             saveEcon();
-            refundMsg = `\n💰 <@${proposerId}> — ₿${refund.toLocaleString()} BTC ayaa laguugu celiyay (ring qiimihiisa ÷ 3).`;
+            refundMsg = `\n💰 <@${proposerId}> — 🪙${refund.toLocaleString()} Coins was refunded to you (ring qiimihiisa ÷ 3).`;
         }
     } else {
-        refundMsg = `\n_(Adiga aad jabisay — lacag la celin maayo)_`;
+        refundMsg = `\n_(You ended the relationship — Coins will not be refunded)_`;
     }
 
     saveData();
-    return message.reply(`💔 **${partnerName}** xiriirkii wuu dhammaaday.${refundMsg}`);
+    return message.reply(`💔 **${partnerName}** the relationship has ended.${refundMsg}`);
 }
 
 module.exports = {

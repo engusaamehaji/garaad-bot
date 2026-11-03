@@ -1,6 +1,6 @@
 // =====================================================================
 // AMARKA: ?guess [tiro]
-// Ciyaar qiyaas waddanka ah (calanka iyo magaalo madaxda)
+// Game qiyaas waddanka ah (calanka iyo magaalo madaxda)
 // =====================================================================
 
 const fs = require('fs');
@@ -8,7 +8,7 @@ const path = require('path');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require('discord.js');
 const { activeGames, isUserBusy, userData, saveData } = require('../../src/store');
 const { checkUser, shuffleArray } = require('../../src/utils/helpers');
-const { econData, checkEconUser, saveEcon } = require('../../src/economy/econStore');
+const { econData, checkEconUser, saveEcon, trackEarning } = require('../../src/economy/econStore');
 const { PREFIX } = require('../../src/config');
 
 async function finishGuessGame(message, userId, score, total) {
@@ -21,16 +21,16 @@ async function finishGuessGame(message, userId, score, total) {
     } else if (pct >= 50) {
         comment = '👍 **Wanaagsan!** Wax badan waad ka garatay wadamada.';
     } else {
-        comment = '📚 **Sii dedaal!** Waxaad u baahan tahay inaad wax badan ka barato wadamada.';
+        comment = '📚 **Sii dedaal!** You need inaad wax badan ka barato wadamada.';
     }
 
     const embed = new EmbedBuilder()
-        .setTitle('🏁 Ciyaartii waa dhammaatay!')
+        .setTitle('🏁 Gametii waa dhammaatay!')
         .setDescription(
-            `### Ciyaaryahan: <@${userId}>\n\n` +
+            `### Player: <@${userId}>\n\n` +
             `📊 **Natiijadaada:** **${score} / ${total}** (${pct}%)\n` +
             `${comment}\n\n` +
-            `Qor \`${PREFIX}guess\` mar kale si aad u ciyaarto.`
+            `Qor \`${PREFIX}guess\` mar kale si aad u gameto.`
         )
         .setColor(pct >= 80 ? 0x2ecc71 : pct >= 50 ? 0xf1c40f : 0xe74c3c);
 
@@ -61,7 +61,7 @@ async function askGuessQuestion(message, userId, questions, idx, score) {
             `Guji badhanka hoose ee saxda ah! ⬇️`
         )
         .setColor(0x3498db)
-        .setFooter({ text: `Dhibcahaaga hadda: ${score}/${questions.length} · ⏱️ 18s` });
+        .setFooter({ text: `Pointsaga now: ${score}/${questions.length} · ⏱️ 18s` });
 
     const row = new ActionRowBuilder().addComponents(buttons);
     const sent = await message.channel.send({ embeds: [embed], components: [row] }).catch(() => null);
@@ -102,13 +102,14 @@ async function askGuessQuestion(message, userId, questions, idx, score) {
         if (isRight) {
             newScore++;
             userData[userId].iq = (userData[userId].iq || 0) + 1;
-            econData[userId].btc = (econData[userId].btc || 0) + 15;
+            econData[userId].coins = (econData[userId].coins || 0) + 15;
+            trackEarning(userId, 15);
             saveData();
             saveEcon();
 
-            resultMsg = `✅ **SAXSAC!** Waa **${correctLabel}**.\n🏆 **+1 IQ** | 💰 **+15 BTC**`;
+            resultMsg = `✅ **SAXSAC!** Waa **${correctLabel}**.\n🏆 **+1 IQ** | 💰 **+15 Coins**`;
         } else {
-            resultMsg = `❌ **KHALAD!** Jawaabta saxda ahayd waa **${correctLabel}**.`;
+            resultMsg = `❌ **incorrect!** Jawaabta saxda ahayd waa **${correctLabel}**.`;
         }
 
         const resultEmbed = new EmbedBuilder()
@@ -128,7 +129,7 @@ async function askGuessQuestion(message, userId, questions, idx, score) {
         // Timeout
         const correctLabel = q.correct;
         const toEmbed = new EmbedBuilder()
-            .setDescription(`⏰ **Wakhtigii wuu dhammaaday!**\nJawaabta saxda ahayd waa **${correctLabel}**.`)
+            .setDescription(`⏰ **Wakhtigii wuu finished!**\nJawaabta saxda ahayd waa **${correctLabel}**.`)
             .setColor(0xe74c3c);
 
         await sent.edit({ embeds: [toEmbed], components: [] }).catch(() => {});
@@ -145,7 +146,7 @@ module.exports = async function guessCommand(message, args) {
     // Check if user is already busy
     const busy = isUserBusy(userId);
     if (busy) {
-        return message.reply(`⚠️ Waxaad mar hore ku jirtaa ciyaar **${busy}**! Sug ilaa ay dhammaato.`);
+        return message.reply(`⚠️ You are already in a game **${busy}**! Wait for it to finish.`);
     }
 
     // Load country list
@@ -154,7 +155,7 @@ module.exports = async function guessCommand(message, args) {
     try {
         pool = JSON.parse(fs.readFileSync(file, 'utf8'));
     } catch (e) {
-        return message.reply('⚠️ Faylka su\'aalaha wadamada lama helin.');
+        return message.reply('⚠️ Faylka questions wadamada not found.');
     }
 
     if (pool.length === 0) {
@@ -167,7 +168,7 @@ module.exports = async function guessCommand(message, args) {
         if (!isNaN(input) && input >= 3 && input <= 15) {
             count = input;
         } else {
-            return message.reply('⚠️ Fadlan dooro tiro u dhexaysa **3** ilaa **15** su\'aalood (tusaale: `?guess 5`).');
+            return message.reply('⚠️ Please choose a number between **3** to **15** su\'aalood (e.g.: `?guess 5`).');
         }
     }
 
@@ -181,11 +182,11 @@ module.exports = async function guessCommand(message, args) {
     const introEmbed = new EmbedBuilder()
         .setTitle('🌍 Qiyaas Waddanka (Guess the Country)')
         .setDescription(
-            `Ku soo dhawaada ciyaarta Qiyaas Waddanka! 🏁\n` +
-            `Waxaad heleysaa **${questions.length} su'aalood**.\n` +
-            `Jawaab kasta oo sax ah: **+1 IQ** iyo **+15 BTC** 💰\n` +
-            `Ma jiro wax IQ oo lagaa jarayo haddii aad qaldid.\n\n` +
-            `Ciyaartu waxay bilaabaneysaa hadda! ⬇️`
+            `Ku soo dhawaada the game Qiyaas Waddanka! 🏁\n` +
+            `You will receive **${questions.length} questions**.\n` +
+            `Jawaab kasta oo correct: **+1 IQ** iyo **+15 Coins** 💰\n` +
+            `Ma jiro wax IQ oo lagaa jarayo if aad qaldid.\n\n` +
+            `The game waxay is starting now! ⬇️`
         )
         .setColor(0x2ecc71);
 

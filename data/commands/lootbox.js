@@ -4,7 +4,7 @@
 
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { userData, saveData } = require('../../src/store');
-const { econData, saveEcon }  = require('../../src/economy/econStore');
+const { econData, checkEconUser, saveEcon, trackEarning }  = require('../../src/economy/econStore');
 const { checkUser, checkAndAwardBadges } = require('../../src/utils/helpers');
 const { FRAMES, BADGES, BOOSTERS, LOOT_BOXES, rollLoot } = require('../../src/utils/itemDefs');
 
@@ -12,15 +12,17 @@ const RARITY_COLORS = { Common: '#95a5a6', Rare: '#3498db', Epic: '#9b59b6', Leg
 
 function grantLootReward(userId, result) {
     checkUser(userId);
+    checkEconUser(userId);
     const d  = userData[userId];
     const ec = econData[userId];
 
     let desc = '';
-    if (result.type === 'btc') {
-        const mult = (ec?.boosters?.doubleBtc > Date.now()) ? 2 : 1;
+    if (result.type === 'coins') {
+        const mult = (ec?.boosters?.doubleCoins > Date.now()) ? 2 : 1;
         const amt  = result.key * mult;
-        if (ec) ec.btc = (ec.btc || 0) + amt;
-        desc = `₿ **+${amt.toLocaleString()} BTC**`;
+        if (ec) ec.coins = (ec.coins || 0) + amt;
+        trackEarning(userId, amt);
+        desc = `🪙 **+${amt.toLocaleString()} Coins**`;
         saveEcon();
     } else if (result.type === 'frame') {
         const frame = FRAMES[result.key];
@@ -35,8 +37,8 @@ function grantLootReward(userId, result) {
             d.boosters.doubleIq  = Date.now() + (boost?.duration || 3600000);
         } else if (result.key === 'double_xp') {
             d.boosters.doubleXp  = Date.now() + (boost?.duration || 3600000);
-        } else if (result.key === 'double_btc') {
-            d.boosters.doubleBtc = Date.now() + (boost?.duration || 3600000);
+        } else if (result.key === 'double_coins') {
+            d.boosters.doubleCoins = Date.now() + (boost?.duration || 3600000);
         }
         desc = `⚡ **${boost?.emoji || ''} ${boost?.name || result.key}**`;
     } else if (result.type === 'badge') {
@@ -58,14 +60,14 @@ module.exports = async function openCmd(message, args) {
 
     const type = (args[0] || 'common').toLowerCase();
     if (!['common', 'rare', 'legendary'].includes(type))
-        return message.reply('⚠️ Isticmaal: `?open common`, `?open rare`, ama `?open legendary`');
+        return message.reply('⚠️ Usage: `?open common`, `?open rare`, ama `?open legendary`');
 
     const box = LOOT_BOXES[type];
 
     // Show inventory if no args
     if (!args[0]) {
         const inv = d.lootBoxes || {};
-        const lines = Object.entries(LOOT_BOXES).map(([k, b]) => `${b.emoji} **${b.name}** — **${inv[k] || 0}** qof`);
+        const lines = Object.entries(LOOT_BOXES).map(([k, b]) => `${b.emoji} **${b.name}** — **${inv[k] || 0}** player`);
         return message.reply({
             embeds: [new EmbedBuilder()
                 .setTitle('📦 Sanduuqyadaada — Your Loot Boxes')
@@ -77,7 +79,7 @@ module.exports = async function openCmd(message, args) {
     }
 
     if (!(d.lootBoxes?.[type] > 0))
-        return message.reply(`📦 **${box.emoji} ${box.name}** kuma lihid. Dukaan ka iibso: \`?shop loot\``);
+        return message.reply(`📦 **${box.emoji} ${box.name}** kudo not have. Dukaan ka buy: \`?shop loot\``);
 
     // Deduct box
     d.lootBoxes[type]--;
@@ -88,7 +90,7 @@ module.exports = async function openCmd(message, args) {
         embeds: [new EmbedBuilder()
             .setTitle(`${box.emoji} ${box.name} Waa La Furayayaa...`)
             .setColor(box.color)
-            .setDescription('⏳ Eeg waxa ku jira...\n\n🎲 🎲 🎲')
+            .setDescription('⏳ View waxa ku jira...\n\n🎲 🎲 🎲')
         ]
     });
 
@@ -118,7 +120,7 @@ module.exports = async function openCmd(message, args) {
             .setDescription(`**Abaalmarintaada:**\n\n${rewardDesc}`)
             .addFields(
                 { name: '📦 Sanduuqyo Haray', value: `${box.emoji} ${box.name}: **${d.lootBoxes[type]}** haray`, inline: true },
-                { name: '📋 Guud', value: `Sanduuqyo la furay: **${d.stats.lootOpened}**`, inline: true }
+                { name: '📋 Guud', value: `Sanduuqyo opened: **${d.stats.lootOpened}**`, inline: true }
             )
             .setFooter({ text: 'Garaad Bot • Loot Box System' })
         ]

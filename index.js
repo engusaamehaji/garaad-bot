@@ -16,7 +16,7 @@ require('dotenv').config();
 process.on('warning', w => { if (w.code === 'DEP0180') return; console.warn(w); });
 
 const http = require('http');
-const { Client, GatewayIntentBits, Partials, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, Partials } = require('discord.js');
 
 function getBotToken() {
     return process.env.DISCORD_TOKEN || process.env.DISCORD_BOT_TOKEN || process.env.TOKEN || '';
@@ -29,29 +29,6 @@ function startPortHealthServerIfNeeded() {
     if (!Number.isFinite(port)) return;
 
     const server = http.createServer((req, res) => {
-        // ── top.gg vote webhook ──
-        if (req.method === 'POST' && req.url === '/topgg-vote') {
-            const auth = req.headers.authorization || '';
-            if (process.env.TOPGG_AUTH && auth !== process.env.TOPGG_AUTH) {
-                res.writeHead(401);
-                return res.end('Unauthorized');
-            }
-            let body = '';
-            req.on('data', chunk => { body += chunk; });
-            req.on('end', () => {
-                try {
-                    const data = JSON.parse(body);
-                    if (data.user && data.type === 'upvote') {
-                        const { setPendingVote } = require('./src/economy/voteStore');
-                        setPendingVote(data.user);
-                        console.log(`[Vote] ${data.user} wuu codeeyay top.gg`);
-                    }
-                } catch {}
-                res.writeHead(200);
-                res.end('ok');
-            });
-            return;
-        }
         // ── Health check ──
         res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
         res.end('ok');
@@ -65,7 +42,6 @@ function startPortHealthServerIfNeeded() {
 const setupMessageHandler      = require('./src/handlers/messageHandler');
 const setupInteractionHandler  = require('./src/handlers/interactionHandler');
 const { handleVoiceState }     = require('./src/handlers/voiceMaster');
-const { setupDisTube }         = require('./src/music/disTubeSetup');
 const setupReminderScheduler   = require('./src/handlers/reminderScheduler');
 const setupBankChargeScheduler  = require('./src/handlers/bankChargeScheduler');
 const setupWeeklyLeaderboard    = require('./src/handlers/weeklyLeaderboard');
@@ -80,12 +56,7 @@ const { restoreDuelGames }      = require('./src/games/duel');
 const { connectDB }             = require('./src/db');
 const { loadData, loadConfig }  = require('./src/store');
 const { loadEcon }              = require('./src/economy/econStore');
-const { loadHagbad }            = require('./src/economy/hagbadStore');
-const { restorePredictions }    = require('./src/economy/prediction');
-const { tickMarket }            = require('./src/economy/market');
-const { loadMarketState, startMarketEngine } = require('./src/economy/marketEngine');
 const { loadBanks, loadCompanies } = require('./src/economy/bankStore');
-const { startDiamondDrops } = require('./src/economy/diamondDrops');
 
 // ───── Client ─────
 const client = new Client({
@@ -100,7 +71,6 @@ const client = new Client({
 });
 
 // ───── Handlers ─────
-setupDisTube(client);
 setupMessageHandler(client);
 setupInteractionHandler(client);
 client.on('voiceStateUpdate', handleVoiceState);
@@ -122,19 +92,10 @@ client.once('ready', () => {
     setupAutoUpdate();
     setupBackupScheduler();
     setupQuestionSync();
-    // startDiamondDrops(client); // disabled: automatic channel drops turned off
-    restorePredictions(client);
     restoreTournaments(client).catch(e => console.error('[Tournament] Restore failed:', e.message));
     restoreSoloGames(client).catch(e => console.error('[Solo] Restore failed:', e.message));
     restoreQuizGames(client).catch(e => console.error('[Quiz] Restore failed:', e.message));
     restoreDuelGames(client).catch(e => console.error('[Duel] Restore failed:', e.message));
-
-    // Dynamic market engine (6 states, time-based transitions)
-    startMarketEngine();
-
-    // Market auto-tick: update prices every 60s
-    tickMarket();
-    setInterval(tickMarket, 60 * 1000);
 
     // Bank expiry check — daily
     const { checkAndCloseExpiredBanks } = require('./data/commands/economy/publicBank');
@@ -197,10 +158,8 @@ if (!token) {
     await loadData();
     loadConfig();
     await loadEcon();
-    await loadHagbad();
     loadBanks();
     loadCompanies();
-    await loadMarketState();
         client.login(token).catch((err) => {
             console.error('❌ Login Discord ma guulaysan:', err.message);
             process.exit(1);

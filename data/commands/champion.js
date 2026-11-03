@@ -16,7 +16,7 @@ module.exports = async function championCommand(message) {
     if (champions.length === 0) {
         const embed = new EmbedBuilder()
             .setTitle('🏆 Champions — Garaad Quiz')
-            .setDescription('Wali cidna Champion title ma heysto.\n\nTitle-kan waxaa heli kara kaliya guulaha tartan weyn.')
+            .setDescription('No one has earned the Champion title yet.\n\nTitle-kan waxaa heli kara only major tournament wins.')
             .setColor('#FFD700');
 
         return message.reply({ embeds: [embed] });
@@ -31,15 +31,15 @@ module.exports = async function championCommand(message) {
         .setTitle('🏆 Champions — Garaad Quiz')
         .setDescription(
             `Kuwani waa dadka haysata **Champion 🏆** title-ka:\n\n${list}\n\n` +
-            `*✦ = hadda shaqaynaya*`
+            `*✦ = now shaqaynaya*`
         )
         .setColor('#FFD700')
-        .setFooter({ text: `Wadarta: ${champions.length} Champion` });
+        .setFooter({ text: `Total: ${champions.length} Champion` });
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`close_champion_${userId}`)
-            .setLabel('Iska xir')
+            .setLabel('Iska close')
             .setStyle(ButtonStyle.Danger),
     );
 

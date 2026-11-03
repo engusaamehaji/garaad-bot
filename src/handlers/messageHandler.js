@@ -14,7 +14,7 @@ const helpCmd         = require('../../data/commands/help');
 const profileCmd      = require('../../data/commands/profile');
 
 const topCmd          = require('../../data/commands/top');
-const { topIqCmd, topBtcCmd, topMissionsCmd, topStreakCmd, topFlipsCmd, topDuelsCmd } = require('../../data/commands/top');
+const { topIqCmd, topCoinsCmd } = require('../../data/commands/top');
 const todayCmd        = require('../../data/commands/today');
 const levelCmd        = require('../../data/commands/level');
 const showCmd         = require('../../data/commands/show');
@@ -26,24 +26,19 @@ const quizCmd         = require('../../data/commands/quiz');
 const ciladaCmd       = require('../../data/commands/cilada');
 const adminCmd        = require('../../data/commands/admin/admin');
 const broadcast       = require('../../data/commands/admin/adminBroadcast');
-const djCmd           = require('../../data/commands/admin/adminDj');
 const tournament      = require('../games/tournament');
 const teamDuel        = require('../games/teamDuel');
 
 // ── Economy ──
 
 const jeebCmd         = require('../../data/commands/economy/jeeb');
-const tradeCmd        = require('../../data/commands/economy/trade');
 const robCmd          = require('../../data/commands/economy/rob');
-const cashflipCmd     = require('../../data/commands/economy/cashflip');
-const { minnoCmd }    = require('../../data/commands/minno');
-const slotsCmd        = require('../../data/commands/economy/slots');
+const coinflipCmd     = require('../../data/commands/economy/coinflip');
 const wipeCmd         = require('../../data/commands/admin/wipe');
 const investCmd       = require('../../data/commands/economy/invest');
 const giveCmd         = require('../../data/commands/economy/give');
 const richCmd         = require('../../data/commands/economy/rich');
 const treasuryCmdFn   = require('../../data/commands/economy/treasuryCmd');
-const hagbadCmd       = require('../../data/commands/economy/hagbad');
 
 const shaqoCmd        = require('../../data/commands/economy/shaqo');
 const bankListCmd     = require('../../data/commands/economy/bankList');
@@ -56,42 +51,22 @@ const shopCmd         = require('../../data/commands/shopCmd');
 const { inventoryCmd, equipCmd, sellCmd } = require('../../data/commands/inventory');
 const { friendCmd, unfriendCmd, friendsListCmd, proposeCmd, partnerCmd, breakupCmd } = require('../../data/commands/relationship');
 const personalCmd = require('../../data/commands/personal');
-const qCmd        = require('../../data/commands/q');
 const qcCmd       = require('../../data/commands/qc');
-const guessCmd    = require('../../data/commands/guess');
 const { bankCreateCmd, bankPasswordCmd, bankViewCmd, bankDirectoryCmd, depositAnyCmd, withdrawAnyCmd, allBanksCmd, jbCmd } = require('../../data/commands/economy/personalBank');
 const { createPublicBankCmd, listPublicBanksCmd, topBanksCmd, bankFundCmd, bankDepositCmd, bankWithdrawCmd, bankInfoCmd, bankOwnerCmd, bankHistoryCmd, bankCloseCmd } = require('../../data/commands/economy/publicBank');
-const { getDisTube } = require('../music/disTubeSetup');
-const imposterCmd     = require('../../data/commands/imposter');
 const { joinCmd, leaveCmd: vcLeaveCmd } = require('../../data/commands/join');
 const adminBankCmd    = require('../../data/commands/admin/adminBank');
 const saversCmd       = require('../../data/commands/savers');
 const setupTempVc     = require('../../data/commands/admin/tempVc');
 const { vcSetupCmd, vcRemoveCmd } = require('../handlers/voiceMaster');
-const { diamondSetupCmd, diamondStatusCmd, diamondTakeCmd } = require('../economy/diamondDrops');
 
-
-let _music = null;
-let _musicErr = '';
-function getMusic() {
-    if (!_music) {
-        try {
-            _music = require('../../data/commands/music');
-            _musicErr = '';
-        } catch (e) {
-            _musicErr = e.message;
-            console.error('[Music] Load error:', e.message);
-        }
-    }
-    return _music;
-}
 
 module.exports = function setupMessageHandler(client) {
     const { tempVcCmd } = setupTempVc(client);
 
     // ── Rate limiter: max 6 economy commands per 10s per user ──
     const _econRateMap = new Map();
-    const ECON_CMDS    = new Set(['shaqo','work','jeeb','trade','ecoflip','ef','give','rich','ebank','bank','etitle']);
+    const ECON_CMDS    = new Set(['shaqo','work','jeeb','cf','give','rich','ebank','bank','etitle']);
     function econRateLimited(userId) {
         const now    = Date.now();
         const bucket = _econRateMap.get(userId) || { count: 0, reset: now + 10_000 };
@@ -104,55 +79,22 @@ module.exports = function setupMessageHandler(client) {
     client.on('messageCreate', async (message) => {
         if (message.author.bot)                  return;
 
-        // ── Imposter Night Chat: DM relay between alive Imposters ──
-        if (!message.guild && !message.content.startsWith(PREFIX)) {
-            try {
-                const { games: impGames, isImposter, aliveImposters } = require('../games/imposter');
-                for (const game of impGames.values()) {
-                    if (game.phase !== 'night') continue;
-                    const player = game.players.get(message.author.id);
-                    if (!player || !player.alive || !isImposter(player.role)) continue;
-
-                    const team = aliveImposters(game).filter(([uid]) => uid !== message.author.id);
-                    if (!team.length) {
-                        await message.reply('🗡️ You are the only living Imposter — no one else is in the chat.').catch(() => {});
-                        return;
-                    }
-
-                    let senderName = message.author.username;
-                    try {
-                        const member = await game.guild?.members.fetch(message.author.id);
-                        senderName = member?.nickname || message.author.globalName || message.author.username;
-                    } catch {}
-
-                    for (const [uid] of team) {
-                        try {
-                            const user = await client.users.fetch(uid);
-                            await user.send(`🗡️ **${senderName}:** ${message.content}`).catch(() => {});
-                        } catch {}
-                    }
-                    await message.react('✅').catch(() => {});
-                    return;
-                }
-            } catch (e) { console.error('[ImposterChat] Error:', e.message); }
-        }
-
         if (!message.content.startsWith(PREFIX)) return;
         if (disabledChannels.has(message.channel.id) && !isAdmin(message.author.id))
-            return message.reply('🔕 **Channel-kan bot waa la joojiyay.** Admin kala xiriir.').catch(() => {});
+            return message.reply('🔕 **Channel-kan bot waa la joojiyay.** Admin kala relationship.').catch(() => {});
 
         const args    = message.content.slice(PREFIX.length).trim().split(/ +/g);
         const command = args.shift().toLowerCase();
         const userId  = message.author.id;
 
-        // DM-ka: admin wax walba, players ?caawin kaliya
+        // DM-ka: admin wax walba, players ?caawin only
         if (!message.guild && !isAdmin(userId)) {
-            if (command !== 'caawin' && command !== 'caaawin' && command !== 'help') {
+            if (command !== 'caawin' && command !== 'help') {
                 return message.reply(
-                    `⛔ Amarkan DM-ka kama shaqeeyo.\n\n` +
-                    `📍 Tag **server-kaaga** oo halkaas ku isticmaal, ama ku biir server-kan:\n` +
+                    `⛔ This command cannot be used in DMs.\n\n` +
+                    `📍 Use it in the server, or join here:\n` +
                     `🔗 **https://discord.gg/FyNKRyAKc9**\n\n` +
-                    `_(Haddaad u baahan tahay caawimad, isticmaal \`?caawin\`)_`
+                    `_(For help, use \`?help\`.)_`
                 ).catch(() => {});
             }
         }
@@ -162,12 +104,11 @@ module.exports = function setupMessageHandler(client) {
         if (ECON_CMDS.has(command)) setEconUsername(userId, message.author.username);
 
         if (ECON_CMDS.has(command) && !isAdmin(userId) && econRateLimited(userId))
-            return message.reply('⏳ Aad u dhaqso. Daqiiqad yar sug.').catch(() => {});
+            return message.reply('⏳ Aad u dhaqso. Daqiiqad yar wait.').catch(() => {});
 
         switch (command) {
             // ── Caawinaad ──
             case 'caawin':
-            case 'caaawin':
             case 'help':
                 return helpCmd(message);
 
@@ -176,29 +117,11 @@ module.exports = function setupMessageHandler(client) {
             case 'p':
                 return profileCmd(message);
 
-            case 'q':
-                return qCmd(message);
-
-            case 'qc':
-            case 'quiz_category':
-                return qcCmd(message, args);
-
-            case 'guess':
-            case 'gues':
-            case 'country':
-                return guessCmd(message, args);
-
-
-
             case 'top':
             case 'topiq':
                 return (command === 'topiq') ? topIqCmd(message) : topCmd(message, args);
 
-            case 'topbtc':        return topBtcCmd(message);
-            case 'topmissions':   return topMissionsCmd(message);
-            case 'topstreak':     return topStreakCmd(message);
-            case 'topflips':      return topFlipsCmd(message);
-            case 'topduels':      return topDuelsCmd(message);
+            case 'topcoins':      return topCoinsCmd(message);
 
             case 'today':
                 return todayCmd(message);
@@ -206,15 +129,13 @@ module.exports = function setupMessageHandler(client) {
             case 'level':
                 return levelCmd(message);
 
-            case 'show':
-            case 'cooldown':
-            case 'cooldowns':
+            case 'cd':
                 return showCmd(message);
 
             case 'buy':
                 return buyCmd(message, args);
 
-            // ── Ciyaaraha Aqoonta ──
+            // ── Knowledge Games ──
             case 'solo':
                 return soloCmd(message, args);
 
@@ -235,9 +156,6 @@ module.exports = function setupMessageHandler(client) {
             case 'work':
                 return shaqoCmd(message);
 
-            case 'hagbad':
-                return hagbadCmd(message, args);
-
             case 'jeeb':
                 return jeebCmd(message, args);
 
@@ -245,18 +163,8 @@ module.exports = function setupMessageHandler(client) {
             case 'rob':
                 return robCmd(message);
 
-            case 'trade':
-                return tradeCmd(message, args);
-
-            case 'ecoflip':
-            case 'ef':
-                return cashflipCmd(message, args);
-
-            case 'minno':
-                return minnoCmd(message, args);
-
-            case 'slots':
-                return slotsCmd(message, args);
+            case 'cf':
+                return coinflipCmd(message, args);
 
             case 'wipe':
                 return wipeCmd(message, args);
@@ -332,17 +240,6 @@ module.exports = function setupMessageHandler(client) {
             case 'bh':
                 return bankHistoryCmd(message, args);
 
-            // ── Classic Token Diamond Drop ──
-            case 'take':
-                return diamondTakeCmd(message);
-
-            case 'diamondsetup':
-            case 'diamonddrop':
-                return diamondSetupCmd(message, args, message.client);
-
-            case 'diamondstatus':
-                return diamondStatusCmd(message);
-
             case 'topbanks':
                 return topBanksCmd(message);
 
@@ -397,23 +294,11 @@ module.exports = function setupMessageHandler(client) {
             case 'giveframe':
                 return giveItemCmd(message, args);
 
-            // ── Music ──
-            case 'play': { const m = getMusic(); return m ? m.joinCmd(message, args) : message.reply(`⚠️ Music khalad: \`${_musicErr || 'unknown'}\``); }
-            case 'skip':  { const m = getMusic(); if (m) m.skipMsgCmd(message);  return; }
-            case 'stop':  { const m = getMusic(); if (m) m.stopMsgCmd(message);  return; }
-            case 'leave': { const m = getMusic(); if (m) m.leaveMsgCmd(message); return; }
-            case 'queue': { const m = getMusic(); if (m) m.queueMsgCmd(message); return; }
-
-
-
             // ── Kale ──
             case 'cilada':
             case 'cilad':
             case 'bug':
                 return ciladaCmd(message, args);
-
-            case 'dj':
-                return djCmd(message, args);
 
             case 'admin':
                 return adminCmd(message, args);
@@ -429,7 +314,7 @@ module.exports = function setupMessageHandler(client) {
             case 'servers':
             case 'serverlist': {
                 if (!isAdmin(userId)) {
-                    return message.reply('⛔ Admin kaliya ayaa arki kara servers-ka bot-ku ku jiro.');
+                    return message.reply('⛔ Only admins can view the servers this bot is in.');
                 }
                 return saversCmd(message);
             }
@@ -496,7 +381,7 @@ module.exports = function setupMessageHandler(client) {
                 const chId = args[0] || message.channel.id;
                 disabledChannels.delete(chId);
                 saveConfig();
-                return message.reply(`🔔 Channel \`${chId}\` bot waa la furay.`);
+                return message.reply(`🔔 Channel \`${chId}\` bot waa opened.`);
             }
 
             case 'reminder':
@@ -512,7 +397,7 @@ module.exports = function setupMessageHandler(client) {
                 if (sub === 'on' || sub === 'fur') {
                     d.reminderOptOut = false;
                     require('../store').saveData();
-                    return message.reply('🔔 **Xusuusinta waa la furay.** DM ayaa la soo diri doonaa haddaad maqnaato.');
+                    return message.reply('🔔 **Reminder enabled.** You will receive a DM if you miss it.');
                 }
                 const status = d.reminderOptOut ? '🔕 Joojisan' : '🔔 Firfircoon';
                 return message.reply(`**Xusuusinta:** ${status}\n\`?reminder off\` — Jooji\n\`?reminder on\` — Fur`);
@@ -543,19 +428,6 @@ module.exports = function setupMessageHandler(client) {
                 return vcRemoveCmd(message);
             }
 
-            // ── Imposter (aliases: mafia, mafio) ──
-            case 'imposter':
-            case 'mafia':
-            case 'mafio': {
-                if (args[0] === 'stop' && isAdmin(userId)) {
-                    const { games: impG, cancelGame } = require('../games/imposter');
-                    const g = impG.get(message.guild.id);
-                    if (!g) return message.reply('⚠️ No Find the Imposter game is running.');
-                    cancelGame(message.guild.id);
-                    return message.reply('🛑 Find the Imposter game stopped.');
-                }
-                return imposterCmd(message);
-            }
         }
     });
 };

@@ -20,7 +20,7 @@ function loadConfig() {
             (cfg.disabledChannels || []).forEach(id => disabledChannels.add(id));
         }
     } catch (e) {
-        console.error('[Config] Khalad akhrinaynta botConfig.json:', e.message);
+        console.error('[Config] Incorrect akhrinaynta botConfig.json:', e.message);
     }
 }
 
@@ -28,7 +28,7 @@ function saveConfig() {
     try {
         fs.writeFileSync(CONFIG_PATH, JSON.stringify({ disabledChannels: [...disabledChannels] }, null, 2));
     } catch (e) {
-        console.error('[Config] Khalad keydintiinta botConfig.json:', e.message);
+        console.error('[Config] Incorrect keydintiinta botConfig.json:', e.message);
     }
 }
 
@@ -63,7 +63,7 @@ async function loadData() {
             Object.assign(userData, JSON.parse(fs.readFileSync(DATA_PATH, 'utf8')));
         }
     } catch (e) {
-        console.error('[Store] Khalad akhrinaynta users.json:', e.message);
+        console.error('[Store] Incorrect akhrinaynta users.json:', e.message);
     }
 }
 
@@ -75,7 +75,7 @@ function saveData() {
         if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
         fs.writeFileSync(DATA_PATH, JSON.stringify(userData, null, 2));
     } catch (e) {
-        console.error('[Store] Khalad keydintiinta users.json:', e.message);
+        console.error('[Store] Incorrect keydintiinta users.json:', e.message);
     }
     // Also save to MongoDB (fire-and-forget)
     const { getDB } = require('./db');

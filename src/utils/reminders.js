@@ -8,7 +8,7 @@ const { REMINDER_HOURS }     = require('../config');
 
 const REMINDER_MS = REMINDER_HOURS * 60 * 60 * 1000;
 
-// ───── Calaamadee marka user uu ciyaaray ─────
+// ───── Calaamadee marka user uu gameay ─────
 function markUserPlayed(userId) {
     if (!userId) return;
     checkUser(userId);
@@ -16,7 +16,7 @@ function markUserPlayed(userId) {
     saveData();
 }
 
-// ───── Calaamadee marka DM la diray ─────
+// ───── Calaamadee marka DM sent ─────
 function markReminderSent(userId) {
     checkUser(userId);
     userData[userId].lastReminderSent = Date.now();
@@ -26,7 +26,7 @@ function markReminderSent(userId) {
 // ───── Soo celi liiska user-yada xusuusin loo dirayo ─────
 //
 // Shuruudaha:
-//   1. User-ku waa inuu ciyaaray hore (lastPlayed > 0)
+//   1. User-ku waa inuu gameay hore (lastPlayed > 0)
 //   2. Waa inay dhammeysteen 24 saac iyaga oo aan ?today qaadan
 //   3. Lama dirin DM xusuusin 24 saacadood gudahooda
 //
@@ -38,7 +38,7 @@ function getUsersDueForReminder() {
         const d = userData[userId];
         if (!d) continue;
 
-        // Marna ma uusan ciyaarin
+        // Marna ma uusan gamein
         if (!d.lastPlayed || d.lastPlayed === 0) continue;
 
         // User opted out
@@ -48,7 +48,7 @@ function getUsersDueForReminder() {
         const sinceDaily = now - (d.lastDaily || 0);
         if (sinceDaily < REMINDER_MS) continue;
 
-        // Dhowaan DM la diray (ha-soo-noqno)
+        // Dhowaan DM sent (ha-soo-noqno)
         const sinceReminder = now - (d.lastReminderSent || 0);
         if (sinceReminder < REMINDER_MS) continue;
 

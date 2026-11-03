@@ -76,7 +76,7 @@ module.exports = async function profileCommand(message) {
     const boostLines = [];
     if (bo.doubleIq  > now) boostLines.push(`🧠 Double IQ (${Math.ceil((bo.doubleIq  - now) / 60000)}m)`);
     if (bo.doubleXp  > now) boostLines.push(`⭐ Double XP (${Math.ceil((bo.doubleXp  - now) / 60000)}m)`);
-    if (bo.doubleBtc > now) boostLines.push(`₿ Double BTC (${Math.ceil((bo.doubleBtc - now) / 60000)}m)`);
+    if (bo.doubleCoins > now) boostLines.push(`🪙 Double Coins (${Math.ceil((bo.doubleCoins - now) / 60000)}m)`);
     if (bo.iqShields > 0)  boostLines.push(`🛡️ IQ Shield ×${bo.iqShields}`);
 
     const tierColor = tier.color || '#9b59b6';
@@ -108,7 +108,7 @@ module.exports = async function profileCommand(message) {
         `\`${progressBar(levelPct)}\` ${levelPct}%  *(${currentLevelIq}/${LEVEL_STEP} → Lvl ${level + 1})*\n` +
         `\n` +
         `🏆 **Rank:** #${rank ?? '—'} / ${total}\n` +
-        `💰 **BTC:** ₿${(econ.btc || 0).toLocaleString()}\n` +
+        `💰 **Coins:** 🪙${(econ.coins || 0).toLocaleString()}\n` +
         `🎮 **Games:** ${totalGames}\n` +
         `⚔️ **Duel Wins:** ${s.duelWins || 0}\n` +
         `🎲 **Flips:** ${s.flipsPlayed || 0}\n` +
@@ -130,7 +130,7 @@ module.exports = async function profileCommand(message) {
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`close_profile_${viewerId}`)
-            .setLabel('✖ Xir')
+            .setLabel('✖ Close')
             .setStyle(ButtonStyle.Danger),
     );
 

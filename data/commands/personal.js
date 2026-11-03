@@ -17,7 +17,7 @@ module.exports = async function personalCmd(message) {
         let pName = rel.partnerUsername || `<@${rel.partnerId}>`;
         try { const u = await message.client.users.fetch(rel.partnerId); pName = u.username; } catch {}
         const days = rel.since ? Math.floor((Date.now() - rel.since) / 86400000) : 0;
-        partnerTxt = `${pName} ❤️ ${message.author.username}\n📅 ${days} Maalmood · ${RING_NAMES[rel.ringType] || '💍'}`;
+        partnerTxt = `${pName} ❤️ ${message.author.username}\n📅 ${days} days · ${RING_NAMES[rel.ringType] || '💍'}`;
     }
 
     // Friends count
@@ -33,23 +33,23 @@ module.exports = async function personalCmd(message) {
         .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
         .setDescription(
             `**💕 Partner:**\n${partnerTxt}\n\n` +
-            `**👥 Saaxiibada:** ${friendCount}${pendingIn > 0 ? ` *(${pendingIn} codsi cusub)*` : ''}\n\n` +
+            `**👥 Friends:** ${friendCount}${pendingIn > 0 ? ` *(${pendingIn} new requests)*` : ''}\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n` +
             `**📋 Amarrada:**\n` +
-            `\`?friend @user\` — Saaxiib codsi dir\n` +
-            `\`?unfriend @user\` — Saaxiib ka saar\n` +
-            `\`?friends\` — Saaxiibada list\n` +
-            `\`?propose @user\` — Guur u soo jed\n` +
-            `\`?partner\` — Partner eeg\n` +
-            `\`?breakup\` — Relationship dhamaystir\n\n` +
-            `\`?shop rings\` — Ring iibso`
+            `\`?friend @user\` — Send a friend request\n` +
+            `\`?unfriend @user\` — Remove a friend\n` +
+            `\`?friends\` — Friends list\n` +
+            `\`?propose @user\` — Propose marriage\n` +
+            `\`?partner\` — View your partner\n` +
+            `\`?breakup\` — End the relationship\n\n` +
+            `\`?shop rings\` — Buy a ring`
         )
         .setFooter({ text: 'Garaad Bot • Personal' });
 
     const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId(`rel_view_friends_${userId}`).setLabel('👥 Saaxiibada').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId(`rel_view_friends_${userId}`).setLabel('👥 Friends').setStyle(ButtonStyle.Primary),
         new ButtonBuilder().setCustomId(`rel_view_partner_${userId}`).setLabel('💕 Partner').setStyle(ButtonStyle.Success),
-        new ButtonBuilder().setCustomId(`close_personal_${userId}`).setLabel('✖ Xir').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId(`close_personal_${userId}`).setLabel('✖ Close').setStyle(ButtonStyle.Danger),
     );
 
     return message.reply({ embeds: [embed], components: [row] });

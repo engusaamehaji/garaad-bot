@@ -11,7 +11,7 @@ const MEDALS  = ['🥇', '🥈', '🥉'];
 const CIRCLES = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮'];
 
 function cleanTitle(disp) {
-    if (!disp || disp === 'Bilow' || disp === 'Beginner') return null;
+    if (!disp || disp === 'start' || disp === 'Beginner') return null;
     return disp;
 }
 
@@ -32,7 +32,7 @@ async function buildIqLines(top, client, guild) {
             `┆ ⭐ Level: **${lvl}**\n` +
             `┆ 🎮 Games: **${totalGames}**\n` +
             `┆ ✅ Guulo: **${s.duelWins || 0}**\n` +
-            `┆ ❌ Guuldarro: **${s.duelLosses || 0}**`
+            `┆ ❌ loss: **${s.duelLosses || 0}**`
         );
     }));
     return lines.join('\n\n');
@@ -48,7 +48,7 @@ async function buildTopEmbed(message, title, color, entries, lineBuilder) {
     }));
     const embed = new EmbedBuilder()
         .setTitle(title).setColor(color)
-        .setDescription(lines.join('\n\n') || '_Wali cidna ma jiro_')
+        .setDescription(lines.join('\n\n') || '_No one was not found_')
         .setTimestamp();
     return message.reply({ embeds: [embed] });
 }
@@ -63,14 +63,14 @@ async function topIqCmd(message) {
     );
 }
 
-// ── ?topbtc ───────────────────────────────────────────
-async function topBtcCmd(message) {
+// ── ?topcoins ─────────────────────────────────────────
+async function topCoinsCmd(message) {
     const { econData } = require('../../src/economy/econStore');
     const entries = Object.entries(econData)
-        .filter(([id]) => /^\d{17,19}$/.test(id) && (econData[id].btc || 0) > 0)
-        .sort(([, a], [, b]) => (b.btc || 0) - (a.btc || 0));
-    return buildTopEmbed(message, '💰 Top BTC', '#f39c12', entries,
-        ([id, d], i, name) => `**${name}** — 💰 **₿${Math.floor(d.btc||0).toLocaleString()}**`
+        .filter(([id]) => /^\d{17,19}$/.test(id) && (econData[id].coins || 0) > 0)
+        .sort(([, a], [, b]) => (b.coins || 0) - (a.coins || 0));
+    return buildTopEmbed(message, '💰 Top Coins', '#f39c12', entries,
+        ([id, d], i, name) => `**${name}** — 💰 **🪙${Math.floor(d.coins||0).toLocaleString()}**`
     );
 }
 
@@ -135,11 +135,11 @@ module.exports = async function topCommand(message) {
         const iq  = (ud.iq || 0).toLocaleString();
         const lvl = getLevel(ud.iq || 0);
         userNote  = userRank > 0
-            ? `\n\n━━━━━━━━━━━━━━━━━━━━\n📍 **Kalintaada: #${userRank}** · 🧠 **${iq} IQ** · ⭐ Level **${lvl}** · ✅ **${s.duelWins || 0}** guul`
-            : `\n\n━━━━━━━━━━━━━━━━━━━━\n📍 Wali IQ dhibco kuma lihid`;
+            ? `\n\n━━━━━━━━━━━━━━━━━━━━\n📍 **Your rank: #${userRank}** · 🧠 **${iq} IQ** · ⭐ Level **${lvl}** · ✅ **${s.duelWins || 0}** guul`
+            : `\n\n━━━━━━━━━━━━━━━━━━━━\n📍 Wali IQ points kudo not have`;
     }
 
-    const description = (lines || '_Wali cidna IQ dhibco ma leh_') + userNote;
+    const description = (lines || '_No one IQ points ma leh_') + userNote;
 
     const embed = new EmbedBuilder()
         .setTitle('🏆 TOP 15 — IQ RANKING')
@@ -151,7 +151,7 @@ module.exports = async function topCommand(message) {
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`close_top_${userId}`)
-            .setLabel('Iska xir')
+            .setLabel('Iska close')
             .setStyle(ButtonStyle.Danger),
     );
 
@@ -159,7 +159,7 @@ module.exports = async function topCommand(message) {
 };
 
 module.exports.topIqCmd       = topIqCmd;
-module.exports.topBtcCmd      = topBtcCmd;
+module.exports.topCoinsCmd    = topCoinsCmd;
 module.exports.topMissionsCmd = topMissionsCmd;
 module.exports.topStreakCmd    = topStreakCmd;
 module.exports.topFlipsCmd    = topFlipsCmd;

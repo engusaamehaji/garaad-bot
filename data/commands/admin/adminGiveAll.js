@@ -19,13 +19,13 @@ async function notifyAdmins(client, adminUser, action) {
     }
 }
 
-// ?admin giveallbtc 5000  /  ?admin giveall btc 5000  /  ?admin giveall iq 100
+// ?admin giveall coins 5000  /  ?admin giveall iq 100
 module.exports = async function adminGiveAll(message, args) {
     const asset  = (args[0] || '').toLowerCase();
-    const amount = Number((args[1] || '').replace(/,/g, ''));
+    const amount = Math.floor(Number((args[1] || '').replace(/,/g, '')));
 
-    if ((asset !== 'btc' && asset !== 'iq') || isNaN(amount) || amount <= 0) {
-        return message.reply('⚠️ Usage: `?admin giveall btc 5000`  or  `?admin giveall iq 100`');
+    if ((asset !== 'coins' && asset !== 'iq') || !Number.isFinite(amount) || amount <= 0) {
+        return message.reply('⚠️ Usage: `?admin giveall coins 5000`  or  `?admin giveall iq 100`');
     }
 
     if (asset === 'iq') {
@@ -42,9 +42,9 @@ module.exports = async function adminGiveAll(message, args) {
     const users = Object.keys(econData).filter(k => /^\d{17,19}$/.test(k));
     for (const uid of users) {
         checkEconUser(uid);
-        econData[uid].btc = (econData[uid].btc || 0) + amount;
+        econData[uid].coins = (econData[uid].coins || 0) + amount;
     }
     saveEcon();
-    await notifyAdmins(message.client, message.author, `Give All BTC: +₿ ${fmt(amount)} × ${users.length} players`);
-    return message.reply(`✅ **${users.length}** players each received **₿ ${fmt(amount)}** (total **₿ ${fmt(amount * users.length)}**).`);
+    await notifyAdmins(message.client, message.author, `Give All Coins: +🪙 ${fmt(amount)} × ${users.length} players`);
+    return message.reply(`✅ **${users.length}** players each received **🪙 ${fmt(amount)}** (total **🪙 ${fmt(amount * users.length)}**).`);
 };

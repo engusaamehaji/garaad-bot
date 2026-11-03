@@ -11,7 +11,7 @@ const { checkUser } = require('../../src/utils/helpers');
 const { FRAMES, BADGES, BOOSTERS, LOOT_BOXES } = require('../../src/utils/itemDefs');
 const { ECON_TITLES } = require('./economy/econShop');
 
-function fmtBtc(n) { return n >= 1000 ? `${(n/1000).toFixed(1)}k` : String(n); }
+function fmtCoins(n) { return n >= 1000 ? `${(n/1000).toFixed(1)}k` : String(n); }
 
 // ── ?inventory ──────────────────────────────────────────────────────
 async function inventoryCmd(message) {
@@ -42,7 +42,7 @@ async function inventoryCmd(message) {
     const now = Date.now();
     const boostLines = [];
     const bo = d.boosters || {};
-    if (bo.doubleBtc > now) boostLines.push(`₿ Double BTC — ${Math.ceil((bo.doubleBtc - now) / 60000)} min haray`);
+    if (bo.doubleCoins > now) boostLines.push(`🪙 Double Coins — ${Math.ceil((bo.doubleCoins - now) / 60000)} min remaining`);
     if (bo.iqShields > 0)   boostLines.push(`🛡️ IQ Shield × ${bo.iqShields}`);
 
     const lootLines = Object.entries(LOOT_BOXES)
@@ -98,12 +98,12 @@ async function equipCmd(message, args) {
     const key  = (args[1] || '').toLowerCase();
 
     if (!type || !key)
-        return message.reply('⚠️ Isticmaal: `?equip frame <key>` ama `?equip title <key>`\n\nFrames-kaaga eeg: `?inventory`');
+        return message.reply('⚠️ Usage: `?equip frame <key>` ama `?equip title <key>`\n\nFrames-kaaga eeg: `?inventory`');
 
     if (type === 'frame') {
         if (!d.ownedFrames.includes(key)) {
             const frame = FRAMES[key];
-            return message.reply(`⚠️ **${frame?.name || key}** frame-kaaga kuma jiro. Iibso: \`?shop frames\``);
+            return message.reply(`⚠️ **${frame?.name || key}** frame-kaaga kuwas not found. Buy: \`?shop frames\``);
         }
         d.activeFrame = key;
         saveData();
@@ -113,7 +113,7 @@ async function equipCmd(message, args) {
 
     if (type === 'title') {
         if (!d.ownedTitles.includes(key) && !(ec.econTitles || []).includes(key))
-            return message.reply(`⚠️ **${key}** cinwaankaaga kuma jiro.`);
+            return message.reply(`⚠️ **${key}** cinwaankaaga kuwas not found.`);
         if ((ec.econTitles || []).includes(key)) {
             ec.activeEconTitle = key;
             saveEcon();
@@ -124,7 +124,7 @@ async function equipCmd(message, args) {
         return message.reply(`✅ Cinwaanka **${key}** waa la xidh!`);
     }
 
-    return message.reply('⚠️ Type: `frame` ama `title` kaliya');
+    return message.reply('⚠️ Type: `frame` ama `title` only');
 }
 
 // ── ?sell ─────────────────────────────────────────────────────────────
@@ -138,28 +138,28 @@ async function sellCmd(message, args) {
     const key  = (args[1] || '').toLowerCase();
 
     if (!type || !key)
-        return message.reply('⚠️ Isticmaal: `?sell frame <key>`\n\nInventory-gaaga eeg: `?inventory`');
+        return message.reply('⚠️ Usage: `?sell frame <key>`\n\nInventory-gaaga eeg: `?inventory`');
 
     if (type === 'frame') {
         const frame = FRAMES[key];
-        if (!frame) return message.reply('⚠️ Frame-kaas ma jiro.');
-        if (!d.ownedFrames.includes(key)) return message.reply('⚠️ Frame-kaas inventory-gaaga kuma jiro.');
+        if (!frame) return message.reply('⚠️ Frame not found.');
+        if (!d.ownedFrames.includes(key)) return message.reply('⚠️ Frame-kaas inventory-gaaga kuwas not found.');
         if (d.activeFrame === key) return message.reply('⚠️ Frame-kaas xidhan tahay. Kale xidh marka hore: `?equip frame <other>`');
 
         const price = frame.sellFor || 100;
         d.ownedFrames = d.ownedFrames.filter(f => f !== key);
-        if (ec) { ec.btc = (ec.btc || 0) + price; saveEcon(); }
+        if (ec) { ec.coins = (ec.coins || 0) + price; saveEcon(); }
         saveData();
 
         return message.reply({
             embeds: [new EmbedBuilder()
                 .setColor('#27ae60')
-                .setDescription(`✅ **${frame.emoji} ${frame.name}** la iibiyay!\n💰 **+₿${price.toLocaleString()} BTC**`)
+                .setDescription(`✅ **${frame.emoji} ${frame.name}** la iibiyay!\n💰 **+🪙${price.toLocaleString()} Coins**`)
             ]
         });
     }
 
-    return message.reply('⚠️ Hadda kaliya `?sell frame <key>` ayaa shaqeeya.');
+    return message.reply('⚠️ Now only `?sell frame <key>` ayaa shaqeeya.');
 }
 
 module.exports = { inventoryCmd, equipCmd, sellCmd };

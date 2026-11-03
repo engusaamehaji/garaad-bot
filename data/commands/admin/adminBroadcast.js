@@ -1,5 +1,5 @@
 // =====================================================================
-// SUB-AMARKA: ?admin broadcast [fariin] / ?adall [fariin]
+// SUB-AMARKA: ?admin broadcast [message] / ?adall [message]
 // =====================================================================
 
 const { EmbedBuilder } = require('discord.js');
@@ -9,21 +9,21 @@ module.exports = async function adminBroadcast(message, args) {
     const text = args.join(' ').trim();
 
     if (!text) {
-        return message.reply('⚠️ Fadlan qor fariinta. Tusaale: `?adall Quiz cusub berri 8 PM!`');
+        return message.reply('⚠️ Fadlan qor messageta. Example: `?adall Quiz cusub tomorrow 8 PM!`');
     }
     if (text.length > 1500) {
-        return message.reply('⚠️ Fariin aad u dheer (max 1500 xaraf).');
+        return message.reply('⚠️ Message aad u dheer (max 1500 xaraf).');
     }
 
     const userIds = Object.keys(userData);
     if (userIds.length === 0) {
-        return message.reply('⚠️ Cidna kuma jirto database-ka.');
+        return message.reply('⚠️ Cidna kuwas not found database-ka.');
     }
 
-    const status = await message.reply(`📢 Fariin loo dirayaa **${userIds.length}** user...`);
+    const status = await message.reply(`📢 Message loo dirayaa **${userIds.length}** user...`);
 
     const embed = new EmbedBuilder()
-        .setTitle('📢 Garaad Bot — Fariin Rasmi ah')
+        .setTitle('📢 Garaad Bot — Message Rasmi ah')
         .setDescription(text)
         .setColor('#3498db')
         .setFooter({ text: 'Garaad Bot' })

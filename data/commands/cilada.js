@@ -15,7 +15,7 @@ module.exports = async function ciladaCommand(message, args) {
     if (!description) {
         return message.reply(
             `⚠️ Fadlan sharax cilada.\n` +
-            `**Tusaale:** \`${PREFIX}cilada Bet-ku ma siiyo dhibco markii sax la jawaabay\``
+            `**Example:** \`${PREFIX}cilada Bet-ku ma siiyo points markii correct la jawaabay\``
         );
     }
     if (description.length < 10) {
@@ -62,7 +62,7 @@ module.exports = async function ciladaCommand(message, args) {
 
     // Xaqiijin user-ka
     const userEmbed = new EmbedBuilder()
-        .setTitle('✅ Cilada waa la diray')
+        .setTitle('✅ Cilada waa sent')
         .setDescription(
             `Mahadsanid in aad ina caawisay!\n\n` +
             `**Cilada aad qortay:**\n> ${description.length > 200 ? description.slice(0, 200) + '...' : description}\n\n` +

@@ -1,5 +1,5 @@
 // =====================================================================
-// SUB-AMARKA: ?admin dm @user [fariin]
+// SUB-AMARKA: ?admin dm @user [message]
 // =====================================================================
 
 const { EmbedBuilder } = require('discord.js');
@@ -16,19 +16,19 @@ module.exports = async function adminDm(message, args) {
     }
 
     if (!target) {
-        return message.reply('⚠️ Fadlan tilmaan user iyo fariin. Tusaale: `?admin dm @user Salaan!`');
+        return message.reply('⚠️ Please mention a user iyo message. Example: `?admin dm @user Salaan!`');
     }
 
     const text = args.slice(textStart).join(' ').trim();
     if (!text) {
-        return message.reply('⚠️ Fadlan qor fariinta aad rabto in la diro.');
+        return message.reply('⚠️ Fadlan qor messageta aad rabto in la diro.');
     }
     if (text.length > 1500) {
-        return message.reply('⚠️ Fariin aad u dheer (max 1500 xaraf).');
+        return message.reply('⚠️ Message aad u dheer (max 1500 xaraf).');
     }
 
     const embed = new EmbedBuilder()
-        .setTitle('✉️ Fariin — Garaad Bot')
+        .setTitle('✉️ Message — Garaad Bot')
         .setDescription(text)
         .setColor('#3498db')
         .setFooter({ text: 'Garaad Bot' })
@@ -36,7 +36,7 @@ module.exports = async function adminDm(message, args) {
 
     try {
         await target.send({ embeds: [embed] });
-        return message.reply(`✅ Fariinta waxaa la geyey <@${target.id}>.`);
+        return message.reply(`✅ Messageta waxaa la geyey <@${target.id}>.`);
     } catch (e) {
         return message.reply(`❌ Lama gaarsiin <@${target.id}> — DM-yadiisa way xidhantahay.`);
     }

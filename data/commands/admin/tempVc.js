@@ -14,7 +14,7 @@ function watchVcEmpty(client, channelId, guildId, timeoutMs) {
             if (!channel) { activeTempVCs.delete(channelId); return; }
 
             if (channel.members.size === 0) {
-                await channel.delete('Temp VC — marnaba qof ma joogin').catch(() => {});
+                await channel.delete('Temp VC — marnaba player ma joogin').catch(() => {});
                 activeTempVCs.delete(channelId);
             }
         } catch {}
@@ -27,14 +27,14 @@ function watchVcEmpty(client, channelId, guildId, timeoutMs) {
 module.exports = function setupTempVc(client) {
     async function tempVcCmd(message, args) {
         if (!isAdmin(message.author.id)) {
-            return message.reply('🚫 Admin kaliya ayaa amarkan isticmaali kara.');
+            return message.reply('🚫 Admins only can use this command.');
         }
         if (!message.guild) {
-            return message.reply('⚠️ Amarkan server-ka dhexdiisa kaliya ayaa lagu isticmaali karaa.');
+            return message.reply('⚠️ This command can only be used in a server.');
         }
 
         // ?tvc [name] [minutes]
-        // e.g. ?tvc Ciyaar 60  or  ?tvc 30
+        // e.g. ?tvc Game 60  or  ?tvc 30
         let name    = 'Temp VC';
         let minutes = 60;
 
@@ -67,7 +67,7 @@ module.exports = function setupTempVc(client) {
                 ],
             });
         } catch (err) {
-            return message.reply(`⚠️ VC lama sameysan karin. Bot-ka hubi inuu leeyahay **Manage Channels** permission.\n\`${err.message}\``);
+            return message.reply(`⚠️ Could not create the voice channel. Make sure the bot has **Manage Channels** permission.\n\`${err.message}\``);
         }
 
         const expiresAt = Date.now() + minutes * 60_000;
@@ -78,7 +78,7 @@ module.exports = function setupTempVc(client) {
             if (entry) clearInterval(entry.interval);
             activeTempVCs.delete(vc.id);
             await vc.delete('Temp VC waqtigu dhacay').catch(() => {});
-            message.channel.send(`🗑️ **${name}** temp VC waqtigiisii dhacay oo la tirtiray.`).catch(() => {});
+            message.channel.send(`🗑️ **${name}** temp VC waqtigiisii dhacay oo deleted.`).catch(() => {});
         }, minutes * 60_000);
 
         // Empty-watcher
@@ -87,14 +87,14 @@ module.exports = function setupTempVc(client) {
         activeTempVCs.set(vc.id, { timer: deleteTimer, interval, name, guildId: message.guild.id });
 
         const embed = new EmbedBuilder()
-            .setTitle('🔊 Temp VC Waa La Abuuray')
+            .setTitle('🔊 Temp VC Created')
             .setColor('#3498db')
             .setDescription(
                 `**Channel:** ${vc}\n` +
                 `**Magac:** 🔊 ${name}\n` +
                 `**Waqtiga:** ${minutes} daqiiqo\n` +
-                `**Dhammaanshaha:** <t:${Math.floor(expiresAt / 1000)}:R>\n\n` +
-                `_VC-ga waxaa si toos ah loo tirtiraa marka uu madoobaado ama waqtigu dhaco._`
+                `**Expires:** <t:${Math.floor(expiresAt / 1000)}:R>\n\n` +
+                `_The temporary voice channel is deleted when empty or when its timer expires._`
             )
             .setFooter({ text: `Garaad Admin • ${message.author.username}` });
 

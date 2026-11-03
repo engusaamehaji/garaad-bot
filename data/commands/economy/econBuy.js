@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
-const { econData, checkEconUser, saveEcon, addToTreasury } = require('../../../src/economy/econStore');
+const { econData, checkEconUser, saveEcon, addToTreasury, getSpendableCoins, spendCoins } = require('../../../src/economy/econStore');
 const { SHOP_ITEMS } = require('./econShop');
 
 // Returns null if item not in economy shop (caller falls through to quiz buy)
@@ -17,55 +17,57 @@ module.exports = async function econBuyCmd(message, args) {
         if (d.econTitles.includes(item)) {
             return message.reply({ embeds: [
                 new EmbedBuilder()
-                    .setDescription(`⚠️ **${shopItem.label}** mar hore ayaad haysataa!\nIsticmaal \`?etitle ${item}\` si aad u muujiso.`)
+                    .setDescription(`⚠️ You already own **${shopItem.label}**.\nUse \`?etitle ${item}\` to equip it.`)
                     .setColor('#e67e22'),
             ]});
         }
-        if (d[currency] < shopItem.price) {
+        if (getSpendableCoins(userId) < shopItem.price) {
             return message.reply({ embeds: [
                 new EmbedBuilder()
-                    .setDescription(`⚠️ **${shopItem.price.toLocaleString()} BTC** ayaad u baahan tahay.\nHaysataa: **${(d[currency] || 0).toLocaleString()} BTC**`)
+                    .setDescription(`⚠️ You need **${shopItem.price.toLocaleString()} Coins**.\nYour balance: **${getSpendableCoins(userId).toLocaleString()} Coins**`)
                     .setColor('#e74c3c'),
             ]});
         }
-        d[currency] -= shopItem.price;
+        if (currency === 'coins') spendCoins(userId, shopItem.price);
+        else d[currency] -= shopItem.price;
         d.econTitles.push(item);
         if (!d.activeEconTitle) d.activeEconTitle = item;
         addToTreasury(shopItem.price);
         saveEcon();
         return message.reply({ embeds: [
             new EmbedBuilder()
-                .setTitle(`🏷️ Xirfad La Iibsaday — ${shopItem.label}`)
+                .setTitle(`🏷️ Title Purchased — ${shopItem.label}`)
                 .setColor('#2ecc71')
                 .setDescription(
-                    `✅ **${shopItem.label}** heshay!\n` +
-                    `₿ BTC hadhay: **${(d[currency] || 0).toLocaleString()} BTC**\n\n` +
-                    `Isticmaal **\`?etitle ${item}\`** si aad u muujiso.`
+                    `✅ You purchased **${shopItem.label}**!\n` +
+                    `🪙 Remaining balance: **${getSpendableCoins(userId).toLocaleString()} Coins**\n\n` +
+                    `Use **\`?etitle ${item}\`** to equip it.`
                 )
                 .setFooter({ text: 'Garaad Economy' }),
         ]});
     }
 
-    if (d[currency] < shopItem.price) {
+    if (getSpendableCoins(userId) < shopItem.price) {
         return message.reply({ embeds: [
             new EmbedBuilder()
-                .setDescription(`⚠️ **${shopItem.price.toLocaleString()} BTC** ayaad u baahan tahay.\nHaysataa: **${(d[currency] || 0).toLocaleString()} BTC**`)
+                .setDescription(`⚠️ You need **${shopItem.price.toLocaleString()} Coins**.\nYour balance: **${getSpendableCoins(userId).toLocaleString()} Coins**`)
                 .setColor('#e74c3c'),
         ]});
     }
 
-    d[currency]       -= shopItem.price;
+    if (currency === 'coins') spendCoins(userId, shopItem.price);
+    else d[currency] -= shopItem.price;
     d.inventory[item] += 1;
     saveEcon();
 
     return message.reply({ embeds: [
         new EmbedBuilder()
-            .setTitle(`🛒 Waxaa la Iibsaday — ${shopItem.label}`)
+            .setTitle(`🛒 Purchase Complete — ${shopItem.label}`)
             .setColor('#2ecc71')
             .setDescription(
-                `✅ **${shopItem.label}** heshay!\n` +
-                `₿ BTC hadhay: **${(d[currency] || 0).toLocaleString()} BTC**\n` +
-                `Kaydka: **${d.inventory[item]}x ${shopItem.label}**`
+                `✅ You purchased **${shopItem.label}**!\n` +
+                `🪙 Remaining balance: **${getSpendableCoins(userId).toLocaleString()} Coins**\n` +
+                `Inventory: **${d.inventory[item]}x ${shopItem.label}**`
             )
             .setFooter({ text: 'Garaad Economy' }),
     ]});

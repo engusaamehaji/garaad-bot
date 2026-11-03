@@ -1,8 +1,8 @@
 // =====================================================================
-// CIYAARTA QUIZ KOOX — Garaad Quiz (v2 — Time-Based Scoring)
+// The game QUIZ KOOX — Garaad Quiz (v2 — Time-Based Scoring)
 // • ?quiz [tiro] → Lobby → Dadku waa ku biiraan → Host bilaabaa
-// • Su'aal kasta: DHAMMAAN ciyaartoydu way jawaabi karaan
-// • Dhibco: ku xidhan xawliga — < 5s = 40pts | 18s = 5pts
+// • Su'aal kasta: DHAMMAAN playerdu way jawaabi karaan
+// • points: ku xidhan speed — < 5s = 40pts | 18s = 5pts
 // • Dhammaadka: Leaderboard + badal IQ ama XP
 // =====================================================================
 
@@ -28,7 +28,7 @@ const {
 const { checkEconUser, econData, saveEcon } = require('../economy/econStore');
 const { markUserPlayed }   = require('../utils/reminders');
 const { getAnswerOptions } = require('../utils/questionOptions');
-const { createRewardSession, rewardRow, rewardSummary, POINTS_PER_REWARD, IQ_PER_REWARD, BTC_PER_REWARD } = require('../utils/gameRewards');
+const { createRewardSession, rewardRow, rewardSummary, POINTS_PER_REWARD, IQ_PER_REWARD, COINS_PER_REWARD } = require('../utils/gameRewards');
 const {
     PREFIX,
     QUIZ_MIN_PLAYERS, QUIZ_MAX_PLAYERS,
@@ -36,7 +36,7 @@ const {
     QUIZ_LOBBY_MS, GLOBAL_WAIT_MS, SOLO_FAST_MS,
     SOLO_MAX_SCORE, SOLO_MIN_SCORE,
     HOST_DAILY_LIMIT,
-    QUIZ_POINTS_TO_XP, QUIZ_POINTS_PER_IQ, QUIZ_REPLAY_BTC_PER_IQ,
+    QUIZ_POINTS_TO_XP, QUIZ_POINTS_PER_IQ, QUIZ_REPLAY_COINS_PER_IQ,
 } = require('../config');
 const { saveQuizState, loadAllQuizStates, deleteQuizState } = require('../utils/gamePersist');
 
@@ -44,9 +44,9 @@ function persistQuiz(state) {
     saveQuizState(state.channelId, state).catch(() => {});
 }
 
-// ── Dhibco ku xidhan xawliga (sida solo + tartan) ────────────────────
-// < 5s   → 40 dhibcood (max)
-// 18s    → 5 dhibcood (min)
+// ── points ku xidhan speed (sida solo + tartan) ────────────────────
+// < 5s   → 40 points (max)
+// 18s    → 5 points (min)
 // dhexda → linear
 function calcTimedScore(timeTakenMs) {
     if (timeTakenMs <= SOLO_FAST_MS) return SOLO_MAX_SCORE;
@@ -55,24 +55,24 @@ function calcTimedScore(timeTakenMs) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// ?quiz — Bilow Lobby
+// ?quiz — start Lobby
 // ─────────────────────────────────────────────────────────────────────
 async function startQuizLobby(message, args) {
     const userId    = message.author.id;
     const channelId = message.channel.id;
 
     if (activeQuiz.has(channelId)) {
-        return message.reply('⚠️ Channel-kan mar hore ayaa quiz koox uu ka socda. Sug ilaa uu dhamaado.');
+        return message.reply('⚠️ A group quiz is already active in this channel. Wait for it to finish.');
     }
     if (activeTournament.has(channelId)) {
-        return message.reply('⚠️ Channel-kan tartan ayaa ka socda. Sug ilaa uu dhamaado.');
+        return message.reply('⚠️ A tournament is already active in this channel. Wait for it to finish.');
     }
     const busy = isUserBusy(userId);
     if (busy) {
-        return message.reply(`⚠️ Waxaad mar hore ku jirtaa ciyaar **${busy}**! Sug ilaa ay dhammaato.`);
+        return message.reply(`⚠️ You are already in a game **${busy}**! Wait for it to finish.`);
     }
     if (!canHostQuiz(userId)) {
-        return message.reply(`⚠️ Maalintan waad gaartay xadka **${HOST_DAILY_LIMIT}** ciyaar oo martigeli karto. Sug berri.`);
+        return message.reply(`⚠️ You have reached today's hosting limit of **${HOST_DAILY_LIMIT}** games. Try again tomorrow.`);
     }
 
     // Hel tirada su'aalaha
@@ -81,38 +81,38 @@ async function startQuizLobby(message, args) {
         questionCount = parseInt(args[0]);
         if (isNaN(questionCount) || questionCount < QUIZ_MIN_QUESTIONS || questionCount > QUIZ_MAX_QUESTIONS) {
             return message.reply(
-                `⚠️ Tirada su'aalaha waa inay u dhexeyso **${QUIZ_MIN_QUESTIONS}** iyo **${QUIZ_MAX_QUESTIONS}**.\n` +
-                `Tusaale: \`${PREFIX}quiz 10\``
+                `⚠️ Choose between **${QUIZ_MIN_QUESTIONS}** and **${QUIZ_MAX_QUESTIONS}** questions.\n` +
+                `Example: \`${PREFIX}quiz 10\``
             );
         }
     } else {
         await message.reply(
-            `📊 **${message.author.username}**, imisa su'aalood ayaad rabtaa Quiz koox?\n` +
-            `Qor lambar **${QUIZ_MIN_QUESTIONS}** ilaa **${QUIZ_MAX_QUESTIONS}** (tusaale: \`10\` ama \`20\`).\n` +
-            `_(30 ilbiriqsi ayaad heysataa)_`
+            `📊 **${message.author.username}**, how many questions should the group quiz have?\n` +
+            `Choose a number from **${QUIZ_MIN_QUESTIONS}** to **${QUIZ_MAX_QUESTIONS}** (e.g. \`10\` or \`20\`).\n` +
+            `_(You have 30 seconds.)_`
         );
         const filter    = m => m.author.id === userId && /^\d+$/.test(m.content.trim());
         const collected = await message.channel.awaitMessages({ filter, max: 1, time: 30000 });
         if (collected.size === 0) {
-            return message.channel.send(`⏰ <@${userId}>, wakhti dhammaaday — \`${PREFIX}quiz\` mar kale isku day.`);
+            return message.channel.send(`⏰ <@${userId}>, time expired. Use \`${PREFIX}quiz\` to try again.`);
         }
         questionCount = parseInt(collected.first().content.trim());
         if (questionCount < QUIZ_MIN_QUESTIONS || questionCount > QUIZ_MAX_QUESTIONS) {
             return collected.first().reply(
-                `⚠️ Tirada waa inay u dhexeyso **${QUIZ_MIN_QUESTIONS}** iyo **${QUIZ_MAX_QUESTIONS}**.\n` +
-                `\`${PREFIX}quiz\` mar kale isku day.`
+                `⚠️ The question count must be between **${QUIZ_MIN_QUESTIONS}** and **${QUIZ_MAX_QUESTIONS}**.\n` +
+                `Use \`${PREFIX}quiz\` to try again.`
             );
         }
     }
 
-    // Hubi su'aalo cusub — haddii dhammaadeen, dib u bilow (replay)
+    // Hubi questions cusub — if dhammaadeen, dib u start (replay)
     let available = pickQuestionsForGame(userId, 'quiz', questionCount);
     if (!available || available.length === 0) {
         resetSeenQuizQuestions(userId);
         await message.reply(
-            `🔄 **${message.author.username}**, dhammaan su'aalaha quiz waad arkey — si toos ah ayaa dib loo bilaabay!\n` +
-            `⚠️ **Xasuusnow:** Ciyaarkan cusub **IQ laguma siin doono** — waxaad heshaa **BTC yar** halkii IQ.\n` +
-            `💰 Top 3: **${QUIZ_REPLAY_BTC_PER_IQ} BTC** halkii 90 dhibcood.`
+            `🔄 **${message.author.username}**, you have seen every quiz question. The question set has been reset!\n` +
+            `⚠️ **Note:** Replay games award fewer Coins instead of IQ.\n` +
+            `💰 Top 3 earn **${QUIZ_REPLAY_COINS_PER_IQ} Coins** per 90 points.`
         );
         available = pickQuestionsForGame(userId, 'quiz', questionCount);
         if (!available || available.length === 0) {
@@ -123,8 +123,8 @@ async function startQuizLobby(message, args) {
     }
     if (available.length < questionCount) {
         await message.reply(
-            `📚 **${message.author.username}**, waxaa kuu hadhay **${available.length}** su'aalood cusub kaliya (adigoo codsaday ${questionCount}).\n` +
-            `Quiz-ku wuxuu noqonayaa **${available.length}** su'aalood.`
+            `📚 **${message.author.username}**, only **${available.length}** unseen questions are available (you requested ${questionCount}).\n` +
+            `This quiz will have **${available.length}** questions.`
         );
         questionCount = available.length;
     }
@@ -157,8 +157,8 @@ async function startQuizLobby(message, args) {
         activeQuiz.delete(channelId);
         await lobbyMsg.edit({
             embeds: [new EmbedBuilder()
-                .setTitle('⌛ Lobby waqti dhammaaday')
-                .setDescription('Quiz lobby ayaa joojiyay — waqtigii ayaa dhammaaday inta lagu sugayo ciyaartoyda.')
+                .setTitle('⌛ Quiz Lobby Expired')
+                .setDescription('The quiz lobby was cancelled because no players joined in time.')
                 .setColor('#7f8c8d')],
             components: [],
         }).catch(() => {});
@@ -171,17 +171,17 @@ async function startQuizLobby(message, args) {
 function buildLobbyEmbed(state) {
     const playersText = [...state.players].map((id, i) => `${i + 1}. <@${id}>`).join('\n') || '—';
     return new EmbedBuilder()
-        .setTitle('👥 Quiz Koox — Lobby')
+        .setTitle('👥 Group Quiz — Lobby')
         .setDescription(
             `**Host:** <@${state.hostId}>\n` +
-            `**Su'aalo:** ${state.questionCount}\n` +
-            `**Ciyaartoy:** ${state.players.size} _(ugu yaraan ${QUIZ_MIN_PLAYERS} si la bilaabo)_\n\n` +
-            `Riix **Ku biir** si aad u gasho.\n` +
-            `Marka **${QUIZ_MIN_PLAYERS}** la gaaro, **hostku kaliya** ayaa riixi kara **Bilaw**.\n\n` +
-            `**Ciyaartoyda:**\n${playersText}\n\n` +
-            `⚡ Dhibco: **< 5s = 40pts · 18s = 5pts** (ku xidhan xawliga)\n` +
-            `Dhammaan ciyaartoydu waxay jawaabi karaan — kii ugu dhakhsaha badan helaa!\n\n` +
-            `⏳ Lobby wuxuu joogsan doonaa 3 daqiiqo haddii aan la bilaabin.`
+            `**Questions:** ${state.questionCount}\n` +
+            `**Players:** ${state.players.size} _(at least ${QUIZ_MIN_PLAYERS} to start)_\n\n` +
+            `Click **Join** to enter.\n` +
+            `Once there are **${QUIZ_MIN_PLAYERS}** players, only the host can click **Start**.\n\n` +
+            `**Players:**\n${playersText}\n\n` +
+            `⚡ **Scoring:** < 5s = 40 pts · 18s = 5 pts (based on speed)\n` +
+            `Everyone can answer each question. The fastest correct answer wins!\n\n` +
+            `⏳ The lobby expires after 3 minutes if the game does not start.`
         )
         .setColor('#3498db');
 }
@@ -191,15 +191,15 @@ function buildLobbyButtons(state) {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`quiz_join_${state.channelId}`)
-            .setLabel('Ku biir ✅')
+            .setLabel('Join ✅')
             .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
             .setCustomId(`quiz_leave_${state.channelId}`)
-            .setLabel('Ka bax')
+            .setLabel('Leave')
             .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
             .setCustomId(`quiz_start_${state.channelId}`)
-            .setLabel('Bilaw 🚀')
+            .setLabel('Start 🚀')
             .setStyle(ButtonStyle.Primary)
             .setDisabled(!canStart),
     );
@@ -214,7 +214,7 @@ async function refreshLobby(state) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Bilow Ciyaarta
+// start The game
 // ─────────────────────────────────────────────────────────────────────
 async function beginQuizGame(state) {
     if (state.started) return;
@@ -232,7 +232,7 @@ async function beginQuizGame(state) {
         if (!picked || picked.length === 0) {
             activeQuiz.delete(state.channelId);
             if (state.message) {
-                await state.message.edit({ embeds: [noQuestionsLeftEmbed('Dhammaan ciyaartoyda')], components: [] }).catch(() => {});
+                await state.message.edit({ embeds: [noQuestionsLeftEmbed('Dhammaan players')], components: [] }).catch(() => {});
             }
             return;
         }
@@ -255,13 +255,13 @@ async function beginQuizGame(state) {
             .setTitle('🚀 Quiz Koox — Wuu Bilaabmay!')
             .setDescription(
                 `**Hostka:** <@${state.hostId}>\n` +
-                `**Ciyaartoy:** ${state.players.size}\n` +
+                `**Player:** ${state.players.size}\n` +
                 `**Su'aalo:** ${totalQ}\n` +
                 `**Wakhti:** ${GLOBAL_WAIT_MS / 1000} ilbiriqsi mid kasta\n\n` +
-                `⚡ **Dhibco:** Kii ugu dhakhsaha sax ah badan helaa!\n` +
+                `⚡ **Points:** The fastest correct answer earns the most!\n` +
                 `◾ < 5s → **40 pts** (max)\n` +
                 `◾ 18s  → **5 pts** (min)\n` +
-                `◾ Khalad ama waa dhaafay → **0 pts**`
+                `◾ Incorrect ama waa dhaafay → **0 pts**`
             )
             .setColor('#9b59b6')],
     });
@@ -270,7 +270,7 @@ async function beginQuizGame(state) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Su'aal kasta — dadka oo dhan way jawaabi karaan, dhibco = xawliga
+// Su'aal kasta — dadka oo dhan way jawaabi karaan, points = speed
 // ─────────────────────────────────────────────────────────────────────
 async function sendQuizQuestion(state) {
     if (!activeQuiz.has(state.channelId)) return;
@@ -304,9 +304,9 @@ async function sendQuizQuestion(state) {
         .setTitle(`👥 Quiz Koox — Su'aal ${state.currentQ + 1}/${totalQ}`)
         .setDescription(
             `## ${stripQuestionNumber(q.question)}\n\n` +
-            `⏱️ **${GLOBAL_WAIT_MS / 1000}s** — Dhammaan waxay jawaabi karaan!\n` +
-            `⚡ Kii ugu dhakhsaha sax ah badan helaa dhibco.\n` +
-            `Ciyaartoy: **${state.players.size}**`
+            `⏱️ **${GLOBAL_WAIT_MS / 1000}s** — Everyone can answer!\n` +
+            `⚡ The fastest correct answer earns points.\n` +
+            `Player: **${state.players.size}**`
         )
         .setColor('#9b59b6');
 
@@ -334,7 +334,7 @@ async function sendQuizQuestion(state) {
     collector.on('collect', async interaction => {
         const uid = interaction.user.id;
         if (answeredBy.has(uid)) {
-            return interaction.reply({ content: '⚠️ Mar hore ayaad jawaab bixisay!', flags: MessageFlags.Ephemeral }).catch(() => {});
+            return interaction.reply({ content: '⚠️ You have already answered!', flags: MessageFlags.Ephemeral }).catch(() => {});
         }
         answeredBy.add(uid);
 
@@ -350,7 +350,7 @@ async function sendQuizQuestion(state) {
             userData[uid].iq = (userData[uid].iq || 0) + 1;
             userData[uid].wrongStreak = 0;
             saveData();
-            await interaction.reply({ content: `✅ **Sax!** +**${pts}** dhibcood · **+1 IQ** · ⏱️ ${secs}s`, flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: `✅ **Correct!** +**${pts}** points · **+1 IQ** · ⏱️ ${secs}s`, flags: MessageFlags.Ephemeral }).catch(() => {});
         } else {
             checkUser(uid);
             userData[uid].wrongStreak = (userData[uid].wrongStreak || 0) + 1;
@@ -359,10 +359,10 @@ async function sendQuizQuestion(state) {
                 userData[uid].iq = Math.max(0, (userData[uid].iq || 0) - 1);
                 iqMsg = '**−1 IQ**';
             } else {
-                iqMsg = '_1/2 qalad_';
+                iqMsg = '_1/2 incorrect answers_';
             }
             saveData();
-            await interaction.reply({ content: `❌ **Khalad.** Jawaabta sax ma ahayn · ${iqMsg} · 0 dhibcood`, flags: MessageFlags.Ephemeral }).catch(() => {});
+            await interaction.reply({ content: `❌ **Incorrect.** That was not the right answer · ${iqMsg} · 0 points`, flags: MessageFlags.Ephemeral }).catch(() => {});
         }
 
         if (answeredBy.size >= state.players.size) collector.stop('all_answered');
@@ -384,7 +384,7 @@ async function sendQuizQuestion(state) {
 
         let resultLines = '';
         if (correctEntries.length === 0) {
-            resultLines = `⏰ Cidna si sax ah uma jawaabin.`;
+            resultLines = '⏰ No one answered correctly.';
         } else {
             resultLines = correctEntries.slice(0, 5).map(([id, { pts, timeTakenMs }], i) => {
                 const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '▫️';
@@ -407,9 +407,9 @@ async function sendQuizQuestion(state) {
             .setTitle(`👥 Quiz Koox — Su'aal ${qIndex + 1}/${totalQ}`)
             .setDescription(
                 `## ${stripQuestionNumber(q.question)}\n\n` +
-                `📌 Jawaabta saxda ah: **${correctLabel}**\n\n` +
+                `📌 Correct answer: **${correctLabel}**\n\n` +
                 `**Su'aashaas natiijadeeda:**\n${resultLines}${timeoutLine}\n\n` +
-                `📊 **Dhibcaha guud (top 5):**\n${leaderboard}`
+                `📊 **Points guud (top 5):**\n${leaderboard}`
             )
             .setColor(correctEntries.length > 0 ? '#2ecc71' : '#e74c3c');
 
@@ -459,28 +459,28 @@ async function finishQuiz(state) {
 
     const winner = sorted[0];
     const winnerLine = winner && winner[1] > 0
-        ? `🏆 **Guuleystaha:** <@${winner[0]}> — ${winner[1]} pts`
-        : `🤝 Ciyaartoydu dhibco la'aan ah ayay ku dhammaysteen.`;
+        ? `🏆 **the winner:** <@${winner[0]}> — ${winner[1]} pts`
+        : `🤝 Playerdu points la'aan ah ayay ku dhammaysteen.`;
 
     const embed = new EmbedBuilder()
         .setTitle('🏁 Quiz Koox — Dhamaaday!')
         .setColor('#f1c40f')
         .setDescription(
             `${winnerLine}\n\n` +
-            `**Hostka:** <@${state.hostId}> · **Ciyaartoy:** ${playerCount}\n\n` +
+            `**Hostka:** <@${state.hostId}> · **Player:** ${playerCount}\n\n` +
             `━━━━━━━━━━━━━━━━━━━━\n` +
             `**🏆 Top 3 — Abaalmarinta:**\n${top3Lines}\n` +
             (restLines ? `\n**Kale:**\n${restLines}\n` : '') +
             `━━━━━━━━━━━━━━━━━━━━\n` +
-            `🎁 Doorasho: **IQ** ama **BTC**\n` +
-            `**${POINTS_PER_REWARD} dhibcood = ${IQ_PER_REWARD} IQ ama ${BTC_PER_REWARD} BTC**`
+            `🎁 Choose a reward: **IQ** or **Coins**\n` +
+            `**${POINTS_PER_REWARD} points = ${IQ_PER_REWARD} IQ or ${COINS_PER_REWARD} Coins**`
         )
-        .setFooter({ text: `Garaad Quiz • ${PREFIX}profile — arag dhibcahaaga` });
+        .setFooter({ text: `Garaad Quiz • ${PREFIX}profile — arag pointsaga` });
 
     const exchRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`close_quiz_${state.hostId}`)
-            .setLabel('❌ Iska xir')
+            .setLabel('❌ Iska close')
             .setStyle(ButtonStyle.Danger),
     );
 

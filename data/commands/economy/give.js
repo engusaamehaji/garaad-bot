@@ -1,19 +1,17 @@
 const { EmbedBuilder } = require('discord.js');
-const { econData, checkEconUser, saveEcon } = require('../../../src/economy/econStore');
+const { econData, checkEconUser, saveEcon, recordDailyCoinTransfer, DAILY_COIN_TRANSFER_LIMIT } = require('../../../src/economy/econStore');
 const { fmt, getDisplayName } = require('../../../src/utils/helpers');
 
-const ASSET_LABELS = { btc: '₿ BTC', gold: '🥇 Gold' };
+const ASSET_LABELS = { coins: '🪙 Coins' };
 
 function buildUsageEmbed() {
     return new EmbedBuilder()
+        .setColor('#e74c3c')
         .setDescription(
-            `⚠️ **Qaabka saxda ah:**\n` +
-            `**Option 1:** Qof message-kiisa **reply** ka samee, kadibna qor:\n` +
-            `\`?give 300\` ama \`?give gold 300\`\n\n` +
-            `**Option 2:** Si toos ah user u dir:\n` +
-            `\`?give @user 300\` ama \`?give @user gold 300\``
-        )
-        .setColor('#e74c3c');
+            '⚠️ **Usage**\n' +
+            'Reply to a player, then use `?give <amount>`; or mention them: `?give @user <amount>`.\n' +
+            'Example: `?give @user 300`'
+        );
 }
 
 async function resolveReplyTarget(message) {
@@ -29,83 +27,44 @@ async function resolveReplyTarget(message) {
 
 module.exports = async function giveCmd(message, args) {
     const userId = message.author.id;
-    let target = null;
+    const target = message.mentions.users.first() || await resolveReplyTarget(message);
+    if (!target) return message.reply({ embeds: [buildUsageEmbed()] });
+    if (target.id === userId) return message.reply('⚠️ You cannot send Coins to yourself.');
+    if (target.bot) return message.reply('⚠️ You cannot send Coins to a bot.');
 
-    // Option 1: ?give @user <amount> or ?give @user gold <amount>
-    const mentioned = message.mentions.users.first();
-    if (mentioned) {
-        target = mentioned;
-        args = args.filter(a => !a.startsWith('<@'));
-    } else {
-        // Option 2: reply
-        target = await resolveReplyTarget(message);
-    }
-
-    if (!target) {
+    const values = args.filter(arg => !arg.startsWith('<@'));
+    const amountText = values[0]?.toLowerCase() === 'coins' ? values[1] : values[0];
+    const amount = Number(amountText?.replace(/,/g, ''));
+    if (!/^\d+$/.test((amountText || '').replace(/,/g, '')) || !Number.isSafeInteger(amount) || amount <= 0) {
         return message.reply({ embeds: [buildUsageEmbed()] });
     }
-
-    if (target.id === userId)
-        return message.reply({ embeds: [new EmbedBuilder()
-            .setDescription('⚠️ Adiga nafta lacag uguma diri kartid.')
-            .setColor('#e74c3c')] });
-
-    if (target.bot)
-        return message.reply({ embeds: [new EmbedBuilder()
-            .setDescription('⚠️ Bot-ka lacag uguma diri kartid.')
-            .setColor('#e74c3c')] });
-
-    // Parse asset and amount
-    let asset = 'btc';
-    let amount = NaN;
-
-    const token = (args[0] || '').toLowerCase();
-    if (!token) return message.reply({ embeds: [buildUsageEmbed()] });
-
-    if (token === 'btc') {
-        return message.reply({ embeds: [new EmbedBuilder()
-            .setDescription('⚠️ BTC si toos ah looma diri karo. Isticmaal `?btc send <amount>`.')
-            .setColor('#e74c3c')] });
-    }
-
-    if (token === 'gold') {
-        asset = 'gold';
-        amount = parseInt(args[1], 10);
-    } else if (!isNaN(parseInt(token, 10))) {
-        amount = parseInt(token, 10);
-    } else {
-        return message.reply({ embeds: [buildUsageEmbed()] });
-    }
-
-    if (!Number.isInteger(amount) || amount <= 0)
-        return message.reply({ embeds: [buildUsageEmbed()] });
 
     checkEconUser(userId);
     checkEconUser(target.id);
-
-    const sender   = econData[userId];
+    const sender = econData[userId];
     const receiver = econData[target.id];
+    if ((sender.coins || 0) < amount) {
+        return message.reply(`⚠️ You do not have enough Coins. Wallet balance: **${fmt(sender.coins || 0)} Coins**.`);
+    }
+    const transfer = recordDailyCoinTransfer(userId, amount);
+    if (!transfer.ok) {
+        return message.reply(`⚠️ Daily transfer limit: **${fmt(DAILY_COIN_TRANSFER_LIMIT)} Coins**. Remaining today: **${fmt(transfer.remaining)} Coins**.`);
+    }
 
-    if ((sender[asset] || 0) < amount)
-        return message.reply({ embeds: [new EmbedBuilder()
-            .setDescription(`⚠️ **${fmt(amount)} ${ASSET_LABELS[asset]}** kugu filna ma lihid.`)
-            .setColor('#e74c3c')] });
-
-    sender[asset]   = (sender[asset]   || 0) - amount;
-    receiver[asset] = (receiver[asset] || 0) + amount;
+    sender.coins = (sender.coins || 0) - amount;
+    receiver.coins = (receiver.coins || 0) + amount;
     saveEcon();
 
-    const senderName   = await getDisplayName(message.client, message.guild, userId, message.author);
+    const senderName = await getDisplayName(message.client, message.guild, userId, message.author);
     const receiverName = await getDisplayName(message.client, message.guild, target.id, target);
-
     return message.reply({ embeds: [new EmbedBuilder()
-        .setTitle('💸 Lacagta Waa La Diray!')
+        .setTitle('💸 Coins Sent')
         .setColor('#2ecc71')
-        .setDescription(`**${senderName}** → **${receiverName}**`)
+        .setDescription(`**${senderName}** sent Coins to **${receiverName}**.`)
         .addFields(
-            { name: '💰 Lacagta',        value: `**${fmt(amount)} ${ASSET_LABELS[asset]}**`,     inline: true },
-            { name: '👛 Wallet-kaaga',   value: `**${fmt(sender[asset])} ${ASSET_LABELS[asset]}**`,   inline: true },
-            { name: '👛 Wallet-kooda',   value: `**${fmt(receiver[asset])} ${ASSET_LABELS[asset]}**`,  inline: true },
+            { name: 'Amount', value: `🪙 ${fmt(amount)} Coins`, inline: true },
+            { name: 'Your wallet', value: `🪙 ${fmt(sender.coins)} Coins`, inline: true },
+            { name: 'Their wallet', value: `🪙 ${fmt(receiver.coins)} Coins`, inline: true },
         )
         .setFooter({ text: 'Garaad Economy' })] });
 };

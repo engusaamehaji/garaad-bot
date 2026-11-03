@@ -11,30 +11,30 @@ const { ECON_TITLES } = require('./economy/econShop');
 
 const RARITY_EMOJI = { Common: '⚪', Rare: '🔵', Epic: '🟣', Legendary: '🟡', Mythic: '🔴' };
 
-function fmtBtc(n) {
-    if (n >= 1_000_000) return `${(n/1_000_000).toFixed(1)}M BTC`;
-    if (n >= 1_000)     return `${(n/1_000).toFixed(0)}k BTC`;
-    return `${n} BTC`;
+function fmtCoins(n) {
+    if (n >= 1_000_000) return `${(n/1_000_000).toFixed(1)}M Coins`;
+    if (n >= 1_000)     return `${(n/1_000).toFixed(0)}k Coins`;
+    return `${n} Coins`;
 }
 
 function shopEmbed(section, userId) {
     const d  = userData[userId] || {};
     const ec = econData[userId] || {};
-    const balance = (ec.btc || 0) + (ec.banks?.garaad || 0);
+    const balance = (ec.coins || 0) + (ec.banks?.garaad || 0);
 
     if (section === 'frames') {
         const lines = Object.entries(FRAMES)
             .filter(([, f]) => !f.lootOnly)
             .map(([k, f]) => {
                 const owned = (d.ownedFrames || []).includes(k);
-                return `${RARITY_EMOJI[f.rarity] || '⚪'} ${f.emoji} **${f.name}** — ${fmtBtc(f.price)}${owned ? ' ✅' : ''}`;
+                return `${RARITY_EMOJI[f.rarity] || '⚪'} ${f.emoji} **${f.name}** — ${fmtCoins(f.price)}${owned ? ' ✅' : ''}`;
             });
         return new EmbedBuilder()
             .setTitle('🖼️ Frame Shop')
             .setColor('#9b59b6')
             .setDescription(lines.join('\n'))
-            .addFields({ name: '💰 Haraagaaga', value: `₿ ${balance.toLocaleString()}`, inline: true })
-            .setFooter({ text: 'Iibso: ?buy frame <key>  •  Mythic = Loot Box kaliya' });
+            .addFields({ name: '💰 Haraagaaga', value: `🪙 ${balance.toLocaleString()}`, inline: true })
+            .setFooter({ text: 'Buy: ?buy frame <key>  •  Mythic = Loot Box only' });
     }
 
     if (section === 'boosters') {
@@ -52,41 +52,41 @@ function shopEmbed(section, userId) {
             } else {
                 active = ((d.boosters?.[k.replace('_', '')] || 0) > now ? ' ✅ Active' : '');
             }
-            return `${b.emoji} **${b.name}** — ${fmtBtc(b.price)}\n  ↳ ${b.desc}${active}`;
+            return `${b.emoji} **${b.name}** — ${fmtCoins(b.price)}\n  ↳ ${b.desc}${active}`;
         });
         return new EmbedBuilder()
             .setTitle('⚡ Booster Shop')
             .setColor('#f39c12')
             .setDescription(lines.join('\n\n'))
-            .addFields({ name: '💰 Haraagaaga', value: `₿ ${balance.toLocaleString()}`, inline: true })
-            .setFooter({ text: 'Iibso: ?buy booster <key>' });
+            .addFields({ name: '💰 Haraagaaga', value: `🪙 ${balance.toLocaleString()}`, inline: true })
+            .setFooter({ text: 'Buy: ?buy booster <key>' });
     }
 
     if (section === 'loot') {
         const lootInv = d.lootBoxes || {};
         const lines = Object.entries(LOOT_BOXES).map(([k, b]) => {
-            return `${b.emoji} **${b.name}** — ${fmtBtc(b.price)}\n  ↳ Haysataa: **${lootInv[k] || 0}**`;
+            return `${b.emoji} **${b.name}** — ${fmtCoins(b.price)}\n  ↳ You have: **${lootInv[k] || 0}**`;
         });
         return new EmbedBuilder()
             .setTitle('📦 Loot Box Shop')
             .setColor('#e74c3c')
             .setDescription(lines.join('\n\n'))
-            .addFields({ name: '💰 Haraagaaga', value: `₿ ${balance.toLocaleString()}`, inline: true })
-            .setFooter({ text: 'Iibso: ?buy loot <common|rare|legendary>  •  Fur: ?open <type>' });
+            .addFields({ name: '💰 Haraagaaga', value: `🪙 ${balance.toLocaleString()}`, inline: true })
+            .setFooter({ text: 'Buy: ?buy loot <common|rare|legendary>  •  Fur: ?open <type>' });
     }
 
     if (section === 'rings') {
         const owned = (userData[userId]?.ownedRings) || {};
         const lines = Object.entries(RINGS).map(([k, r]) => {
             const count = owned[k] || 0;
-            return `${r.emoji} **${r.name}** — ₿${r.price.toLocaleString()}${count > 0 ? ` ✅ ×${count}` : ''}`;
+            return `${r.emoji} **${r.name}** — 🪙${r.price.toLocaleString()}${count > 0 ? ` ✅ ×${count}` : ''}`;
         });
         return new EmbedBuilder()
             .setTitle('💍 Ring Shop')
             .setColor('#e91e8c')
             .setDescription(lines.join('\n\n') + `\n\n_Ring waxaa loo baahan yahay ?propose si aad u guursan_`)
-            .addFields({ name: '💰 Haraagaaga', value: `₿ ${balance.toLocaleString()}`, inline: true })
-            .setFooter({ text: 'Iibso: ?buy ring silver  |  diamond  |  royal  |  somali' });
+            .addFields({ name: '💰 Haraagaaga', value: `🪙 ${balance.toLocaleString()}`, inline: true })
+            .setFooter({ text: 'Buy: ?buy ring silver  |  diamond  |  royal  |  somali' });
     }
 
     // Default: main menu
@@ -95,14 +95,14 @@ function shopEmbed(section, userId) {
         .setColor('#9b59b6')
         .setDescription(
             `🖼️ **Frames** — qurxinta profile-kaaga\n` +
-            `⚡ **Boosters** — IQ/XP/BTC 2x\n` +
+            `⚡ **Boosters** — IQ/XP/Coins 2x\n` +
             `📦 **Loot Boxes** — abaalmarintyo random ah\n` +
             `💰 **Economy** — Safety Shield\n` +
             `💍 **Rings** — guurka loogu baahan yahay\n\n` +
-            `Isticmaal badhanka hoose ama:\n` +
+            `Use badhanka hoose ama:\n` +
             `\`?shop frames\` \`?shop boosters\` \`?shop loot\` \`?shop economy\` \`?shop rings\``
         )
-        .addFields({ name: '💰 Haraagaaga', value: `₿ ${balance.toLocaleString()}`, inline: true })
+        .addFields({ name: '💰 Haraagaaga', value: `🪙 ${balance.toLocaleString()}`, inline: true })
         .setFooter({ text: 'Garaad Bot • Shop' });
 }
 
@@ -130,10 +130,10 @@ function shopRows(section) {
     if (section === 'boosters') {
         return [
             new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('shop_buy_booster_double_iq') .setLabel('🧠 Double IQ  3k BTC') .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder().setCustomId('shop_buy_booster_double_xp') .setLabel('⭐ Double XP  2k BTC') .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder().setCustomId('shop_buy_booster_double_btc').setLabel('₿ Double BTC 2.5k BTC').setStyle(ButtonStyle.Success),
-                new ButtonBuilder().setCustomId('shop_buy_booster_iq_shield') .setLabel('🛡️ IQ Shield  1.5k BTC').setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId('shop_buy_booster_double_iq') .setLabel('🧠 Double IQ  3k Coins') .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('shop_buy_booster_double_xp') .setLabel('⭐ Double XP  2k Coins') .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('shop_buy_booster_double_coins').setLabel('🪙 Double Coins 2.5k Coins').setStyle(ButtonStyle.Success),
+                new ButtonBuilder().setCustomId('shop_buy_booster_iq_shield') .setLabel('🛡️ IQ Shield  1.5k Coins').setStyle(ButtonStyle.Danger),
             ),
             new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('shop_back').setLabel('← Back').setStyle(ButtonStyle.Secondary)
@@ -144,9 +144,9 @@ function shopRows(section) {
     if (section === 'loot') {
         return [
             new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('shop_buy_loot_common')   .setLabel('📦 Common  2k BTC')    .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder().setCustomId('shop_buy_loot_rare')     .setLabel('🎁 Rare  5k BTC')      .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder().setCustomId('shop_buy_loot_legendary').setLabel('💎 Legendary  15k BTC').setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId('shop_buy_loot_common')   .setLabel('📦 Common  2k Coins')    .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId('shop_buy_loot_rare')     .setLabel('🎁 Rare  5k Coins')      .setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('shop_buy_loot_legendary').setLabel('💎 Legendary  15k Coins').setStyle(ButtonStyle.Danger),
             ),
             new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('shop_back').setLabel('← Back').setStyle(ButtonStyle.Secondary)
@@ -157,7 +157,7 @@ function shopRows(section) {
     if (section === 'economy') {
         return [
             new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('shop_buy_safety_shield').setLabel('🛡️ Safety Shield  300 BTC').setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('shop_buy_safety_shield').setLabel('🛡️ Safety Shield  300 Coins').setStyle(ButtonStyle.Primary),
             ),
             new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('shop_back').setLabel('← Back').setStyle(ButtonStyle.Secondary)
@@ -168,10 +168,10 @@ function shopRows(section) {
     if (section === 'rings') {
         return [
             new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId('shop_buy_ring_silver') .setLabel('💍 Silver  5k BTC')  .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder().setCustomId('shop_buy_ring_diamond').setLabel('💎 Diamond  15k BTC').setStyle(ButtonStyle.Primary),
-                new ButtonBuilder().setCustomId('shop_buy_ring_royal')  .setLabel('👑 Royal  30k BTC')  .setStyle(ButtonStyle.Danger),
-                new ButtonBuilder().setCustomId('shop_buy_ring_somali') .setLabel('🇸🇴 Somali  50k BTC') .setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId('shop_buy_ring_silver') .setLabel('💍 Silver  5k Coins')  .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder().setCustomId('shop_buy_ring_diamond').setLabel('💎 Diamond  15k Coins').setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('shop_buy_ring_royal')  .setLabel('👑 Royal  30k Coins')  .setStyle(ButtonStyle.Danger),
+                new ButtonBuilder().setCustomId('shop_buy_ring_somali') .setLabel('🇸🇴 Somali  50k Coins') .setStyle(ButtonStyle.Danger),
             ),
             new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('shop_back').setLabel('← Back').setStyle(ButtonStyle.Secondary)

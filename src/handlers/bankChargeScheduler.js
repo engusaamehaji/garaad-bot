@@ -20,13 +20,13 @@ module.exports = function setupBankChargeScheduler(client) {
                 const d = econData[userId];
                 applyInterest(d);
 
-                // Wealth tax: 10% on wallet above ₿1M
-                const wallet = d.btc || 0;
+                // Wealth tax: 10% on wallet above 🪙1M
+                const wallet = d.coins || 0;
                 if (wallet > WEALTH_TAX_THRESHOLD) {
                     const excess = wallet - WEALTH_TAX_THRESHOLD;
                     const tax    = Math.floor(excess * WEALTH_TAX_RATE);
                     if (tax > 0) {
-                        d.btc -= tax;
+                        d.coins -= tax;
                         addToTreasury(tax);
                         taxedPlayers++;
                         totalTaxed += tax;
@@ -36,7 +36,7 @@ module.exports = function setupBankChargeScheduler(client) {
 
             saveEcon();
             if (taxedPlayers > 0)
-                console.log(`[BankCharge] 💸 Wealth tax: ${taxedPlayers} players, ₿${totalTaxed.toLocaleString()} treasury-ga`);
+                console.log(`[BankCharge] 💸 Wealth tax: ${taxedPlayers} players, 🪙${totalTaxed.toLocaleString()} treasury-ga`);
         } catch (err) {
             console.error('[BankCharge] Error:', err.message);
         }

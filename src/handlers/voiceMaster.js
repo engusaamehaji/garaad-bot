@@ -37,10 +37,10 @@ loadConfig();
 async function vcSetupCmd(message, args) {
     const { isAdmin } = require('../utils/admin');
     if (!isAdmin(message.author.id)) {
-        return message.reply('🚫 Admin kaliya ayaa amarkan isticmaali kara.');
+        return message.reply('🚫 Admin only ayaa this command usei kara.');
     }
     if (!message.guild) {
-        return message.reply('⚠️ Server-ka dhexdiisa kaliya.');
+        return message.reply('⚠️ Server-ka inside only.');
     }
 
     const guild = message.guild;
@@ -85,7 +85,7 @@ async function vcSetupCmd(message, args) {
 // ── Teardown command: ?vcremove ──
 async function vcRemoveCmd(message) {
     const { isAdmin } = require('../utils/admin');
-    if (!isAdmin(message.author.id)) return message.reply('🚫 Admin kaliya.');
+    if (!isAdmin(message.author.id)) return message.reply('🚫 Admin only.');
     if (!message.guild) return;
 
     const channelId = joinChannels.get(message.guild.id);
@@ -145,7 +145,7 @@ async function handleVoiceState(oldState, newState) {
                 // Move member to their new channel
                 await member.voice.setChannel(tempVc).catch(() => {});
             } catch (err) {
-                console.error('[VoiceMaster] VC sameysi khalad:', err.message);
+                console.error('[VoiceMaster] VC sameysi incorrect:', err.message);
             }
         }
     }

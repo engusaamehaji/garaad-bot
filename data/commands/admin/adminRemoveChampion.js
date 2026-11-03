@@ -8,7 +8,7 @@ const { checkUser } = require('../../../src/utils/helpers');
 module.exports = async function adminRemoveChampion(message, args) {
     const target = message.mentions.users.first();
     if (!target) {
-        return message.reply('⚠️ Sheeg user-ka: `?admin removechampion @user`');
+        return message.reply('⚠️ Mention a user: `?admin removechampion @user`');
     }
 
     checkUser(target.id);

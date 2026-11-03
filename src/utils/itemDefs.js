@@ -32,8 +32,8 @@ const BADGES = {
     duel_100:    { name: 'Duel Legend',   emoji: '⚡',  desc: 'Win 100 duels' },
     quiz_10:     { name: 'Quiz Player',   emoji: '📝', desc: 'Play 10 quizzes' },
     quiz_champ:  { name: 'Quiz Champion', emoji: '🏅', desc: 'Win 20 quizzes' },
-    rich_100k:   { name: 'Rich',          emoji: '💰', desc: 'Earn 100,000 BTC total' },
-    rich_1m:     { name: 'Millionaire',   emoji: '💎', desc: 'Earn 1,000,000 BTC total' },
+    rich_100k:   { name: 'Rich',          emoji: '💰', desc: 'Earn 100,000 Coins total' },
+    rich_1m:     { name: 'Millionaire',   emoji: '💎', desc: 'Earn 1,000,000 Coins total' },
     legend_rank: { name: 'Legend Tier',   emoji: '👑', desc: 'Reach Legend rank (7000+ IQ)' },
     daily_7:     { name: 'Week Streak',   emoji: '📅', desc: '7 consecutive daily logins' },
     daily_30:    { name: 'Month Streak',  emoji: '🗓️', desc: '30 consecutive daily logins' },
@@ -46,7 +46,7 @@ const BADGES = {
 };
 
 const BOOSTERS = {
-    double_btc: { name: 'Double BTC',  emoji: '₿',  duration: 60 * 60 * 1000, price: 2500, desc: '2x BTC earnings for 1 hour',     sellFor: 800  },
+    double_coins: { name: 'Double Coins',  emoji: '🪙',  duration: 60 * 60 * 1000, price: 2500, desc: '2x Coins earnings for 1 hour',     sellFor: 800  },
     iq_shield:  { name: 'IQ Shield',   emoji: '🛡️', duration: 0,              price: 1500, desc: 'Block next IQ loss (1 use)',      sellFor: 500  },
     safety_shield: { name: 'Safety Shield', emoji: '🔒', duration: 24 * 60 * 60 * 1000, price: 300, desc: 'Rob-ka kaaga ilaaliya 24h', sellFor: 100 },
 };
@@ -60,31 +60,31 @@ const LOOT_BOXES = {
 // Loot table: [itemType, itemKey, weight]
 const LOOT_TABLES = {
     common: [
-        ['btc',     200,          30],
-        ['btc',     500,          20],
-        ['btc',     1000,         10],
+        ['coins',     200,          30],
+        ['coins',     500,          20],
+        ['coins',     1000,         10],
         ['frame',   'basic_blue',  8],
         ['frame',   'basic_green', 8],
         ['frame',   'basic_red',   8],
         ['booster', 'double_xp',   8],
-        ['booster', 'double_btc',  5],
+        ['booster', 'double_coins',  5],
         ['frame',   'gold_ring',   2],
         ['badge',   'loot_opener', 1],
     ],
     rare: [
-        ['btc',     1000,          15],
-        ['btc',     2500,          10],
+        ['coins',     1000,          15],
+        ['coins',     2500,          10],
         ['frame',   'gold_ring',   15],
         ['frame',   'silver_shine',15],
         ['frame',   'neon_purple', 12],
         ['booster', 'double_iq',   12],
-        ['booster', 'double_btc',  10],
+        ['booster', 'double_coins',  10],
         ['frame',   'dragon_fire',  6],
         ['frame',   'ice_crystal',  3],
         ['frame',   'galaxy',       2],
     ],
     legendary: [
-        ['btc',     5000,           10],
+        ['coins',     5000,           10],
         ['frame',   'dragon_fire',  15],
         ['frame',   'ice_crystal',  15],
         ['frame',   'galaxy',       12],

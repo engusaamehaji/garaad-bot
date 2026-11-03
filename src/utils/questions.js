@@ -117,7 +117,7 @@ function clearReplayFlag(userId, flag) {
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Dooro su'aalo aan WELIGOOD la arkin (per-game + global text)
+// Choose su'aalo aan WELIGOOD la arkin (per-game + global text)
 // Su'aal la arkay weligeed dib looma soo celin
 // ─────────────────────────────────────────────────────────────────────
 function pickQuestionsForGame(userId, game, count) {
@@ -196,10 +196,10 @@ function noQuestionsLeftEmbed(username) {
         .setTitle("📚 Su'aalihii waa dhammaadeen")
         .setDescription(
             `**${username}**, su'aalaha aad u baahnayd waad dhameystay.\n\n` +
-            `🔄 **Dib u ciyaar:** Qor \`${PREFIX}quiz 10\` ama \`${PREFIX}solo 10\` — si toos ah ayaa dib loo bilaabayaa!\n` +
-            `💰 Dib-u-ciyaarta: **BTC yar** ayaad heshaa (IQ ma heli doontid).\n\n` +
-            `🎮 Weli waxaad ciyaari kartaa:\n` +
-            `• \`${PREFIX}duel @ciyaaryahan\` — tartan labo qof ah\n` +
+            `🔄 **Dib u game:** Qor \`${PREFIX}quiz 10\` ama \`${PREFIX}solo 10\` — si toos ah ayaa dib loo bilaabayaa!\n` +
+            `💰 Dib-u-the game: **Coins yar** ayaad heshaa (IQ you will not earn).\n\n` +
+            `🎮 Weli you gamei kartaa:\n` +
+            `• \`${PREFIX}duel @player\` — tartan labo player ah\n` +
             `• \`${PREFIX}today\` — abaalmarinta maalinlaha ah`
         )
         .setColor('#95a5a6');

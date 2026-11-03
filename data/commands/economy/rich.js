@@ -1,18 +1,15 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { econData } = require('../../../src/economy/econStore');
+const { banksData } = require('../../../src/economy/bankStore');
+const { getCoinWealthByUser } = require('../../../src/economy/coinWealth');
 const { fmt, getDisplayName } = require('../../../src/utils/helpers');
 
-const BTC_ICON = 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/btc.png';
+const COINS_ICON = 'https://raw.githubusercontent.com/spothq/cryptocurrency-icons/master/128/color/coins.png';
 
 async function buildRichLeaderboard(client, guild, authorId) {
-    const allEntries = Object.entries(econData)
-        .filter(([uid, d]) => /^\d{17,19}$/.test(uid) && d && typeof d === 'object')
-        .map(([uid, d]) => {
-            const bankSum = d.banks ? Object.values(d.banks).reduce((acc, val) => acc + (Number(val) || 0), 0) : 0;
-            const personalBank = d.personalBank?.balance || 0;
-            const total = (Number(d.btc) || 0) + bankSum + personalBank;
-            return { uid, total };
-        })
+    const coinWealth = getCoinWealthByUser(econData, banksData);
+    const allEntries = Object.entries(coinWealth)
+        .map(([uid, total]) => ({ uid, total }))
         .filter(item => item.total > 0)
         .sort((a, b) => b.total - a.total);
 
@@ -24,26 +21,26 @@ async function buildRichLeaderboard(client, guild, authorId) {
     const lines = await Promise.all(top10.map(async ({ uid, total }, index) => {
         const name = await getDisplayName(client, guild, uid);
         const badge = rankBadges[index] || `**${index + 1}.**`;
-        return `${badge} **${name}** — ₿ **${fmt(total)}**`;
+        return `${badge} **${name}** — 🪙 **${fmt(total)}**`;
     }));
 
     const authorIndex = allEntries.findIndex(e => e.uid === authorId);
-    let authorStatusStr = 'Wali ma galin liiska';
+    let authorStatusStr = 'You are not on the leaderboard yet';
     if (authorIndex !== -1) {
         const userTotal = allEntries[authorIndex].total;
-        authorStatusStr = `Rank **#${authorIndex + 1}** ka mid ah ${allEntries.length} • ₿ **${fmt(userTotal)}**`;
+        authorStatusStr = `Rank **#${authorIndex + 1}** of ${allEntries.length} • 🪙 **${fmt(userTotal)}**`;
     }
 
     const embed = new EmbedBuilder()
-        .setTitle('👑 ₿ TOP 10 — Hantiilayaasha ugu Qanisan')
+        .setTitle('👑 🪙 TOP 10 — Richest Players')
         .setColor('#F7931A')
-        .setThumbnail(BTC_ICON)
-        .setDescription(lines.length > 0 ? lines.join('\n\n') : '_Wali xog hantiileyaal ah ma jirto._')
+        .setThumbnail(COINS_ICON)
+        .setDescription(lines.length > 0 ? lines.join('\n\n') : '_No player balances found yet._')
         .addFields(
-            { name: '📊 Total Top 10 Wealth', value: `₿ **${fmt(top10Total)}**`, inline: true },
+            { name: '📊 Total Top 10 Wealth', value: `🪙 **${fmt(top10Total)}**`, inline: true },
             { name: '📍 Your Rank', value: authorStatusStr, inline: true }
         )
-        .setFooter({ text: 'Garaad Economy • BTC Leaderboard • 🔄 Live Data', iconURL: BTC_ICON })
+        .setFooter({ text: 'Garaad Economy • Coins Leaderboard • 🔄 Live Data', iconURL: COINS_ICON })
         .setTimestamp();
 
     const row = new ActionRowBuilder().addComponents(
@@ -53,7 +50,7 @@ async function buildRichLeaderboard(client, guild, authorId) {
             .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
             .setCustomId(`close_rich_${authorId}`)
-            .setLabel('✖ Xir')
+            .setLabel('✖ Close')
             .setStyle(ButtonStyle.Danger)
     );
 

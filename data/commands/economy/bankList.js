@@ -14,7 +14,7 @@ module.exports = async function bankListCmd(message) {
 
     const bankLines = bankEntries.slice(0, 15).map((e, i) => {
         const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}.`;
-        return `${rank} <@${e.uid}> — **₿: ${fmt(e.garaad)}**`;
+        return `${rank} <@${e.uid}> — **🪙: ${fmt(e.garaad)}**`;
     });
 
     const loanEntries = Object.entries(econData)
@@ -28,7 +28,7 @@ module.exports = async function bankListCmd(message) {
     const loanLines = loanEntries.map(e => {
         const urgency = e.daysLeft === 0 ? '🔴' : e.daysLeft === 1 ? '⚠️' : '💳';
         const timeStr = e.daysLeft > 0 ? `${e.daysLeft}d left` : '**OVERDUE**';
-        return `${urgency} <@${e.uid}> — **₿: ${fmt(e.owed)}** | ${timeStr}`;
+        return `${urgency} <@${e.uid}> — **🪙: ${fmt(e.owed)}** | ${timeStr}`;
     });
 
     const embed = new EmbedBuilder()
@@ -38,7 +38,7 @@ module.exports = async function bankListCmd(message) {
     let desc = '';
     if (bankLines.length > 0) {
         desc += `**🏦 Bank Deposits:**\n${bankLines.join('\n')}\n\n`;
-        desc += `💰 **Total deposited:** ₿: ${fmt(grandTotal)}\n\n`;
+        desc += `💰 **Total deposited:** 🪙: ${fmt(grandTotal)}\n\n`;
     } else {
         desc += '_No one has deposited into the bank yet._\n\n';
     }

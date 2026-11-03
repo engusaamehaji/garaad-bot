@@ -1,14 +1,14 @@
 // =====================================================================
-// CIYAARTA SOLO — Garaad Quiz
-// Dhibco: ku xidhan xawliga (5s = max 40, 18s = min 5)
-// Streak: jawaabo sax oo isku xigta → bonus dhibcood
+// The game SOLO — Garaad Quiz
+// points: ku xidhan speed (5s = max 40, 18s = min 5)
+// Streak: jawaabo correct oo isku xigta → bonus points
 // Dhammaadka: IQ leaderboard + goobta aad ku jirtid
 // =====================================================================
 
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { userData, saveData, activeGames } = require('../store');
 const { checkUser, getLevel, stripQuestionNumber } = require('../utils/helpers');
-const { econData, checkEconUser, saveEcon } = require('../economy/econStore');
+const { econData, checkEconUser, saveEcon, trackEarning } = require('../economy/econStore');
 
 const { markSeenForGame, resetSeenSoloQuestions, pickQuestionsForGame } = require('../utils/questions');
 const { markUserPlayed } = require('../utils/reminders');
@@ -23,7 +23,7 @@ const {
     STREAK_BONUS_10,
 } = require('../config');
 const { getAnswerOptions } = require('../utils/questionOptions');
-const { createRewardSession, rewardRow, rewardSummary, POINTS_PER_REWARD, IQ_PER_REWARD, BTC_PER_REWARD } = require('../utils/gameRewards');
+const { createRewardSession, rewardRow, rewardSummary, POINTS_PER_REWARD, IQ_PER_REWARD, COINS_PER_REWARD } = require('../utils/gameRewards');
 const {
     saveSoloState,
     loadSoloState,
@@ -37,9 +37,9 @@ function persistSolo(userId) {
     saveSoloState(userId, game).catch(() => {});
 }
 
-// ── Xisaabi dhibcaha ku xidhan xawliga ──────────────────────────────
-// < 5s   → max 40 dhibcood
-// 18s    → min 5 dhibcood
+// ── Xisaabi points ku xidhan speed ──────────────────────────────
+// < 5s   → max 40 points
+// 18s    → min 5 points
 // dhexda → linear
 function calcTimedScore(timeTakenMs) {
     if (timeTakenMs <= SOLO_FAST_MS) return SOLO_MAX_SCORE;
@@ -74,21 +74,21 @@ function buildLeaderboardEmbed(userId, totalPoints, questionsCount) {
 
     let rankLine = '';
     if (rank > 10) {
-        rankLine = `\n\n📍 **Goobtagaadu waa:** #${rank} / ${total} — **${myIq} IQ**`;
+        rankLine = `\n\n📍 **Your rank:** #${rank} / ${total} — **${myIq} IQ**`;
     }
 
     return new EmbedBuilder()
-        .setTitle('🏆 IQ Leaderboard — Tartanka Guud')
+        .setTitle('🏆 IQ Leaderboard — Leaderboard')
         .setDescription(
-            `**10-ka ugu IQ-da sarreeya:**\n\n${top10 || '_Ma jiraan ciyaaryahanno_'}${rankLine}`
+            `**Top 10 IQ players:**\n\n${top10 || '_No players yet_'}${rankLine}`
         )
         .setColor('#f39c12')
-        .setFooter({ text: `?top — liis buuxa · ?profile — xaaladda kuu gaar ah` });
+        .setFooter({ text: `?top — full leaderboard · ?profile — your stats` });
 }
 
-// ── Dhibcaha yabooh muuji ─────────────────────────────────────────────
+// ── Points yabooh muuji ─────────────────────────────────────────────
 function pointsDisplay(pts, bonus, streak) {
-    let line = `🕐 **+${pts}** dhibcood`;
+    let line = `🕐 **+${pts}** points`;
     if (bonus > 0) {
         line += ` + **+${bonus}** streak bonus (${streak}🔥)`;
     }
@@ -117,29 +117,29 @@ async function sendQuestion(messageOrInteraction, qNumber, currentMsg = null) {
         // Xukun: wanaagsan 90+, fiican 80-89, hoos 80
         let gradeText = '';
         const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
-        if (pct >= 90)      gradeText = '🌟 **Aad u fiican!** (90%+) — Tayada su\'aalaha waa hagaag!';
+        if (pct >= 90)      gradeText = '🌟 **Aad u fiican!** (90%+) — Tayada questions waa hagaag!';
         else if (pct >= 80) gradeText = '✨ **Wanaagsan!** (80%+) — IQ aad u heeshay!';
         else                gradeText = `📈 **${pct}%** — IQ luma, wax ka baadi.`;
 
         const finishEmbed = new EmbedBuilder()
-            .setTitle('🏁 Ciyaarta Waa Dhamaaday!')
+            .setTitle('🏁 Game Over!')
             .setDescription(
-                `### 📊 Natiijadaada — <@${userId}>\n\n` +
-                `✅ Sax: **${correct}** | ❌ Qalad: **${wrong}** | Su'aalo: **${total}** (${pct}%)\n` +
-                `🔥 Streak ugu dheer: **${streak}** sax oo isku xigta\n` +
+                `### 📊 Your results — <@${userId}>\n\n` +
+                `✅ Correct: **${correct}** | ❌ Incorrect: **${wrong}** | Questions: **${total}** (${pct}%)\n` +
+                `🔥 Best streak: **${streak}** correct oo isku xigta\n` +
                 `${gradeText}\n\n` +
-                `🧠 IQ hadda: **${d.iq || 0}** | Heer **${getLevel(d.iq || 0)}**`
+                `🧠 IQ now: **${d.iq || 0}** | Level **${getLevel(d.iq || 0)}**`
             )
             .setColor(pct >= 90 ? '#f39c12' : pct >= 80 ? '#2ecc71' : '#e74c3c');
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId(`solo_replay_${userId}`)
-                .setLabel('🎮 Ciyaar mar kale')
+                .setLabel('🎮 Play Again')
                 .setStyle(ButtonStyle.Success),
             new ButtonBuilder()
                 .setCustomId(`close_solo_${userId}`)
-                .setLabel('Iska xir')
+                .setLabel('Close')
                 .setStyle(ButtonStyle.Danger),
         );
         if (currentMsg) await currentMsg.delete().catch(() => {});
@@ -178,7 +178,7 @@ async function sendQuestion(messageOrInteraction, qNumber, currentMsg = null) {
                  (q.type || '').toLowerCase() === 'bool';
 
     const scoreHint = isTF
-        ? `⏱️ 18s — **5 → 40 dhibcood** (Run / Been)`
+        ? `⏱️ 18s — **5 → 40 points** (Run / Been)`
         : `⏱️ 18s — **< 5s = 40pts · 18s = 5pts**`;
 
     const embed = new EmbedBuilder()
@@ -187,7 +187,7 @@ async function sendQuestion(messageOrInteraction, qNumber, currentMsg = null) {
             `## ${stripQuestionNumber(q.question)}\n\n` +
             `${scoreHint}\n` +
             (streakLine ? `${streakLine}\n` : '') +
-            `🏆 Dhibco hadda: **${game.totalPoints || 0}** pts`
+            `🏆 Current points: **${game.totalPoints || 0}** pts`
         )
         .setColor(streak >= 5 ? '#e67e22' : streak >= 2 ? '#f39c12' : '#0099ff');
 
@@ -230,7 +230,7 @@ async function sendQuestion(messageOrInteraction, qNumber, currentMsg = null) {
         persistSolo(userId);
 
         const timeoutEmbed = EmbedBuilder.from(embed)
-            .setFields({ name: 'Natiijo', value: '⏰ Wakhti dhammaaday — **−1 IQ** · Streak: 0' });
+            .setFields({ name: 'Natiijo', value: '⏰ Wakhti finished — **−1 IQ** · Streak: 0' });
         activeMsg.delete().catch(() => {});
         channel.send({ embeds: [timeoutEmbed], ...replyOpt })
             .then(nm => setTimeout(() => sendQuestion(messageOrInteraction, qNumber + 1, nm), 2000))
@@ -246,7 +246,7 @@ async function handleSoloAnswer(interaction) {
     const result  = parts[4];
 
     if (interaction.user.id !== ownerId) {
-        return interaction.reply({ content: 'Ciyaartaada qoro!', flags: 64 });
+        return interaction.reply({ content: 'This button belongs to another player.', flags: 64 });
     }
 
     checkUser(ownerId);
@@ -257,7 +257,7 @@ async function handleSoloAnswer(interaction) {
         const saved = await loadSoloState(ownerId);
         if (!saved || Date.now() - saved.savedAt > 24 * 60 * 60 * 1000) {
             return interaction.reply({
-                content: '⚠️ Ciyaartii waa dhacday — bot restart ayaa dhacay. Bilow mar kale: `?solo`',
+                content: '⚠️ Gametii waa dhacday — bot restart ayaa dhacay. start mar kale: `?solo`',
                 flags: 64,
             }).catch(() => {});
         }
@@ -287,14 +287,15 @@ async function handleSoloAnswer(interaction) {
     const timeTaken = Date.now() - (interaction.message.createdTimestamp || Date.now());
     let   msg       = '';
 
-    // ── BTC reward yar su'aal kasta (waqtiga la galiyay awgeed) ──
-    const BTC_PER_QUESTION = 10;
+    // ── Coins reward yar su'aal kasta (waqtiga la galiyay awgeed) ──
+    const COINS_PER_QUESTION = 10;
     checkEconUser(ownerId);
-    econData[ownerId].btc = (econData[ownerId].btc || 0) + BTC_PER_QUESTION;
+    econData[ownerId].coins = (econData[ownerId].coins || 0) + COINS_PER_QUESTION;
+    trackEarning(ownerId, COINS_PER_QUESTION);
     saveEcon();
 
     if (result === 'true') {
-        // ── Sax: +1 IQ toos ah ──
+        // ── Correct: +1 IQ toos ah ──
         const pts      = calcTimedScore(Math.min(timeTaken, GLOBAL_WAIT_MS));
         const streak   = (game.currentStreak || 0) + 1;
         const bonus    = getStreakBonus(streak);
@@ -307,9 +308,9 @@ async function handleSoloAnswer(interaction) {
 
         userData[ownerId].stats.soloCorrect++;
         userData[ownerId].iq = (userData[ownerId].iq || 0) + 1;
-        msg = `✅ **SAX!** +1 IQ\n⏱️ ${(timeTaken/1000).toFixed(1)}s | 💰 **+${BTC_PER_QUESTION} BTC**`;
+        msg = `✅ **correct!** +1 IQ\n⏱️ ${(timeTaken/1000).toFixed(1)}s | 💰 **+${COINS_PER_QUESTION} Coins**`;
     } else {
-        // ── Qalad: 2 qalad = -1 IQ ──
+        // ── Incorrect: 2 qalad = -1 IQ ──
         game.currentStreak = 0;
         game.wrongCount    = (game.wrongCount || 0) + 1;
         userData[ownerId].stats.soloWrong++;
@@ -321,7 +322,7 @@ async function handleSoloAnswer(interaction) {
         } else {
             iqMsg = `_1/2 qalad — ${2 - (game.wrongCount % 2)} kale 1 IQ kaa jari doona_`;
         }
-        msg = `❌ **QALAD** — ${iqMsg} | 💰 **+${BTC_PER_QUESTION} BTC** (waqti awgeed)`;
+        msg = `❌ **QALAD** — ${iqMsg} | 💰 **+${COINS_PER_QUESTION} Coins** (waqti awgeed)`;
     }
 
     userData[ownerId].stats.soloPlayed++;
@@ -408,15 +409,15 @@ async function restoreSoloGames(client) {
     if (restored > 0) console.log(`[Solo] ✅ ${restored} solo game(s) restored from database`);
 }
 
-// ── "Ciyaar mar kale" → muuji doorashada tirada su'aalaha ─────────────
+// ── "Play Again" → muuji doorashada tirada su'aalaha ─────────────
 async function handleSoloReplay(interaction) {
     const userId = interaction.customId.replace('solo_replay_', '');
     if (interaction.user.id !== userId) {
-        return interaction.reply({ content: 'Ciyaartaada qoro!', flags: 64 });
+        return interaction.reply({ content: 'This button belongs to another player.', flags: 64 });
     }
     const busy = require('../store').isUserBusy(userId);
     if (busy) {
-        return interaction.reply({ content: `⚠️ Waxaad ku jirtaa ciyaar **${busy}**!`, flags: 64 });
+        return interaction.reply({ content: `⚠️ You are already playing **${busy}**!`, flags: 64 });
     }
 
     // Muuji 4 baadhan oo tirada su'aalaha ah
@@ -440,13 +441,13 @@ async function handleSoloReplay(interaction) {
     );
 
     return interaction.reply({
-        content: `🎮 **Imisa su'aalood ayaad rabtaa?** Dooro hoos:`,
+        content: `🎮 **Imisa questions ayaad rabtaa?** Choose below:`,
         components: [countRow],
         flags: 64,
     });
 }
 
-// ── Qofku doortay tirada su'aalaha → bilow ciyaarta ───────────────────
+// ── Qofku doortay tirada su'aalaha → start the game ───────────────────
 async function handleSoloReplayCount(interaction) {
     // customId: solo_replaycount_<count>_<userId>
     const parts  = interaction.customId.split('_');
@@ -455,18 +456,18 @@ async function handleSoloReplayCount(interaction) {
     const userId = parts[3];
 
     if (interaction.user.id !== userId) {
-        return interaction.reply({ content: 'Ciyaartaada qoro!', flags: 64 });
+        return interaction.reply({ content: 'This button belongs to another player.', flags: 64 });
     }
     const busy = require('../store').isUserBusy(userId);
     if (busy) {
-        return interaction.reply({ content: `⚠️ Waxaad ku jirtaa ciyaar **${busy}**!`, flags: 64 });
+        return interaction.reply({ content: `⚠️ You are already playing **${busy}**!`, flags: 64 });
     }
 
     resetSeenSoloQuestions(userId);
     const picked = pickQuestionsForGame(userId, 'solo', count);
     if (!picked || picked.length === 0) {
         return interaction.reply({
-            content: '⚠️ Su\'aalo ma jiraan — sug admin inuu ku daro.',
+            content: '⚠️ Su\'aalo none found — ask an admin to add some.',
             flags: 64,
         });
     }
@@ -480,9 +481,9 @@ async function handleSoloReplayCount(interaction) {
     });
 
     // Tirtir baadhanada doorashada
-    await interaction.update({ content: `✅ **${count} su'aalood** la doortay — bilaabaysa! 🎯`, components: [] }).catch(() => {});
+    await interaction.update({ content: `✅ **${count} questions** selected — starting! 🎯`, components: [] }).catch(() => {});
     await interaction.followUp({
-        content: `🔄 **Dib-u-ciyaar** bilaabatay — **${picked.length}** su'aalood. IQ ma heli doontid, BTC kaliya! 💰`,
+        content: `🔄 **Replay** bilaabatay — **${picked.length}** questions. IQ you will not earn, Coins only! 💰`,
     }).catch(() => {});
 
     const fakeMsg = {
