@@ -109,7 +109,7 @@ function isUserBusy(userId) {
     try {
         const { activeNumberGames } = require('./games/numberGuess');
         for (const state of activeNumberGames.values()) {
-            if (state.p1 === userId || state.p2 === userId) return 'tito';
+            if (state.p1 === userId || state.p2 === userId) return 'tiro';
         }
     } catch {}
     try {

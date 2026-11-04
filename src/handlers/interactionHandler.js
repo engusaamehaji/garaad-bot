@@ -48,11 +48,8 @@ module.exports = function setupInteractionHandler(client) {
         if (interaction.isModalSubmit()) {
             const { saveData } = require('../utils/helpers');
 
-            if (interaction.customId.startsWith('tito_pick_modal_')) {
+            if (interaction.customId.startsWith('tiro_pick_modal_')) {
                 return require('../games/numberGuess').handlePickSubmit(interaction);
-            }
-            if (interaction.customId.startsWith('tito_guess_modal_')) {
-                return require('../games/numberGuess').handleGuessSubmit(interaction);
             }
 
             // ── Treasury modals (admins only) ──
@@ -1346,11 +1343,8 @@ module.exports = function setupInteractionHandler(client) {
 
         const id = interaction.customId;
 
-        if (id.startsWith('tito_pick_')) {
+        if (id.startsWith('tiro_pick_')) {
             return require('../games/numberGuess').handlePickButton(interaction);
-        }
-        if (id.startsWith('tito_guess_')) {
-            return require('../games/numberGuess').handleGuessButton(interaction);
         }
         if (id.startsWith('miino_tile_') || id.startsWith('miino_cash_') || id.startsWith('miino_diff_')) {
             return require('../games/minesweeper').handleMiinoButton(interaction);

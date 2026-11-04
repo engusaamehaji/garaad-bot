@@ -42,11 +42,11 @@ function pickEmbed(state) {
 function pickRow(state) {
     return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-            .setCustomId(`tito_pick_${state.channelId}_${state.p1}`)
+            .setCustomId(`tiro_pick_${state.channelId}_${state.p1}`)
             .setLabel('Ciyaaryahan 1 — Dooro tiro')
             .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
-            .setCustomId(`tito_pick_${state.channelId}_${state.p2}`)
+            .setCustomId(`tiro_pick_${state.channelId}_${state.p2}`)
             .setLabel('Ciyaaryahan 2 — Dooro tiro')
             .setStyle(ButtonStyle.Primary),
     );
@@ -59,19 +59,10 @@ function guessEmbed(state) {
         .setColor('#3498db')
         .setDescription(
             `<@${state.currentTurn}>, waa wareeggaaga. Qiyaas tirada qarsoon ee <@${state.currentTurn === state.p1 ? state.p2 : state.p1}> doortay.\n\n` +
-            `Riix badhanka hoose, kadib geli tiro **1 ilaa 100**. Qiyaastaadu waa qarsoodi; tilmaanta **ka weyn/ka yar** chat-ka ayaa lagu sheegi doonaa.` +
+            `Tiradaada **1 ilaa 100** si toos ah ugu qor chat-ka. Qiyaastaadu way muuqanaysaa; tilmaanta **ka weyn/ka yar** ayaa isla markiiba lagu siinayaa.` +
             lastChanceLine
         )
         .setFooter({ text: `Qiyaasta ${state.guessCounts[state.currentTurn] + 1}aad` });
-}
-
-function guessRow(state) {
-    return new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId(`tito_guess_${state.channelId}_${state.currentTurn}_${state.turnNumber}`)
-            .setLabel('Qiyaas tiro 🔢')
-            .setStyle(ButtonStyle.Primary),
-    );
 }
 
 async function finishGame(state, message, content) {
@@ -104,7 +95,7 @@ async function startTurns(state) {
     state.found = { [state.p1]: false, [state.p2]: false };
     state.lastChanceTurn = false;
     state.turnNumber = 1;
-    await state.prompt.edit({ embeds: [guessEmbed(state)], components: [guessRow(state)] }).catch(() => {});
+    await state.prompt.edit({ embeds: [guessEmbed(state)], components: [] }).catch(() => {});
     state.timeout = setTimeout(() => {
         const winnerId = state.currentTurn === state.p1 ? state.p2 : state.p1;
         finishGame(state, state, `⏰ <@${state.currentTurn}> waqtigii wuu dhammaaday. 🏆 <@${winnerId}> ayaa guuleystay.`);
@@ -122,7 +113,7 @@ async function handlePickButton(interaction) {
     if (current !== null)
         return interaction.reply({ content: 'Tiradaadii hore ayaad dooratay.', flags: MessageFlags.Ephemeral });
 
-    return interaction.showModal(createNumberModal(`tito_pick_modal_${channelId}_${ownerId}`, 'Dooro tiro qarsoodi ah', 'Tiro u dhexeysa 1 iyo 100'));
+    return interaction.showModal(createNumberModal(`tiro_pick_modal_${channelId}_${ownerId}`, 'Dooro tiro qarsoodi ah', 'Tiro u dhexeysa 1 iyo 100'));
 }
 
 async function handlePickSubmit(interaction) {
@@ -149,71 +140,62 @@ async function handlePickSubmit(interaction) {
     }
 }
 
-async function handleGuessButton(interaction) {
-    const [, , channelId, ownerId, turnText] = interaction.customId.split('_');
-    const state = activeNumberGames.get(channelId);
-    const turnNumber = Number(turnText);
-    if (!state || state.phase !== 'playing' || state.turnNumber !== turnNumber)
-        return interaction.reply({ content: 'Wareeggan wuu dhammaaday; eeg badhanka hadda muuqda.', flags: MessageFlags.Ephemeral });
-    if (interaction.user.id !== ownerId || ownerId !== state.currentTurn)
-        return interaction.reply({ content: 'Hadda ciyaaryahanka kale ayaa qiyaasaya.', flags: MessageFlags.Ephemeral });
-
-    return interaction.showModal(createNumberModal(`tito_guess_modal_${channelId}_${ownerId}_${turnNumber}`, 'Qiyaas tirada qarsoon', 'Tiro u dhexeysa 1 iyo 100'));
+async function handleChatGuess(message) {
+    if (!message.guild || message.author.bot) return false;
+    const state = activeNumberGames.get(message.channel.id);
+    if (!state || state.phase !== 'playing' || state.currentTurn !== message.author.id) return false;
+    const raw = message.content.trim();
+    if (!/^\d{1,3}$/.test(raw)) return false;
+    if (Number(raw) < 1 || Number(raw) > 100) {
+        await message.reply('Geli tiro dhan oo u dhexeysa **1 iyo 100**.');
+        return true;
+    }
+    await processGuess(state, message, message.author.id, raw);
+    return true;
 }
 
-async function handleGuessSubmit(interaction) {
-    const [, , , channelId, ownerId, turnText] = interaction.customId.split('_');
-    const state = activeNumberGames.get(channelId);
-    const turnNumber = Number(turnText);
-    if (!state || state.phase !== 'playing' || state.turnNumber !== turnNumber || state.currentTurn !== ownerId || interaction.user.id !== ownerId)
-        return interaction.reply({ content: 'Wareeggan wuu dhammaaday ama qiyaastu adiga kuma khusayso.', flags: MessageFlags.Ephemeral });
-
-    const raw = interaction.fields.getTextInputValue('number').trim();
-    if (!/^\d{1,3}$/.test(raw) || Number(raw) < 1 || Number(raw) > 100)
-        return interaction.reply({ content: 'Geli tiro dhan oo u dhexeysa 1 iyo 100.', flags: MessageFlags.Ephemeral });
-
+async function processGuess(state, message, ownerId, raw) {
     const guess = Number(raw);
     const targetNumber = ownerId === state.p1 ? state.player2Number : state.player1Number;
     state.guessCounts[ownerId]++;
     clearTimeout(state.timeout);
-    await interaction.reply({ content: '✅ Qiyaastaadu si qarsoodi ah ayay u dirtay.', flags: MessageFlags.Ephemeral });
 
     if (guess === targetNumber) {
         state.found[ownerId] = true;
         const otherId = ownerId === state.p1 ? state.p2 : state.p1;
         if (state.found[otherId])
-            return finishGame(state, interaction, `🤝 Labadiinuba waad heshay tiradii qarsoon. Ciyaartu barbaro ayay ku dhammaatay.`);
+            return finishGame(state, message, `🤝 Labadiinuba waad heshay tiradii qarsoon. Ciyaartu barbaro ayay ku dhammaatay.`);
         if (state.guessCounts[otherId] >= state.guessCounts[ownerId])
-            return finishGame(state, interaction, `🏆 <@${ownerId}> ayaa helay tiradii qarsoon oo guuleystay!`);
+            return finishGame(state, message, `🏆 <@${ownerId}> ayaa helay tiradii qarsoon oo guuleystay!`);
 
         state.currentTurn = otherId;
         state.lastChanceTurn = true;
         state.turnNumber++;
-        await interaction.channel.send(`🎯 <@${ownerId}> wuxuu helay tiradii qarsoon! <@${otherId}> wuxuu haystaa hal fursad oo ugu dambaysa.`).catch(() => {});
+        await message.channel.send(`🎯 <@${ownerId}> wuxuu helay tiradii qarsoon! <@${otherId}> wuxuu haystaa hal fursad oo ugu dambaysa.`).catch(() => {});
     } else {
         const otherId = ownerId === state.p1 ? state.p2 : state.p1;
         const hint = guess < targetNumber ? 'tirada qarsoon way **ka weyn tahay** ⬆️' : 'tirada qarsoon way **ka yar tahay** ⬇️';
-        await interaction.channel.send(`🔎 <@${ownerId}>: ${hint}`).catch(() => {});
+        await message.channel.send(`🔎 <@${ownerId}> guessed **${guess}** — ${hint}`).catch(() => {});
         if (state.lastChanceTurn) {
             const winnerId = state.found[otherId] ? otherId : null;
             const result = winnerId ? `🏆 <@${winnerId}> ayaa guuleystay.` : 'Ciyaartu way dhammaatay; guuleyste ma jiro.';
-            return finishGame(state, interaction, result);
+            return finishGame(state, message, result);
         }
         state.currentTurn = otherId;
         state.turnNumber++;
     }
 
-    await state.prompt.edit({ embeds: [guessEmbed(state)], components: [guessRow(state)] }).catch(() => {});
+    await state.prompt.edit({ embeds: [guessEmbed(state)], components: [] }).catch(() => {});
     state.timeout = setTimeout(() => {
         const winnerId = state.currentTurn === state.p1 ? state.p2 : state.p1;
         finishGame(state, state, `⏰ <@${state.currentTurn}> waqtigii wuu dhammaaday. 🏆 <@${winnerId}> ayaa guuleystay.`);
     }, TURN_TIMEOUT_MS);
 }
 
-async function titoCommand(message) {
+async function tiroCommand(message) {
     const issuerId = message.author.id;
     const target = message.mentions.users.first();
-    if (!target) return message.reply('Isticmaal: `?tito @user`');
+    if (!target) return message.reply('Isticmaal: `?tiro @user`');
     if (target.bot) return message.reply('Bot lama ciyaari kartid.');
     if (target.id === issuerId) return message.reply('Naftaada lama casuumi kartid.');
     if (activeNumberGames.has(message.channel.id)) return message.reply('Channel-kan ciyaar tiro-qiyaas ah ayaa socota.');
@@ -225,8 +207,8 @@ async function titoCommand(message) {
 
     const state = { channelId: message.channel.id, p1: issuerId, p2: target.id, phase: 'pending' };
     activeNumberGames.set(state.channelId, state);
-    const acceptId = `accept_tito_${issuerId}_${target.id}`;
-    const declineId = `decline_tito_${issuerId}_${target.id}`;
+    const acceptId = `accept_tiro_${issuerId}_${target.id}`;
+    const declineId = `decline_tiro_${issuerId}_${target.id}`;
     const sent = await message.reply({
         content: `${target}`,
         embeds: [new EmbedBuilder()
@@ -274,10 +256,9 @@ async function titoCommand(message) {
 }
 
 module.exports = {
-    titoCommand,
+    tiroCommand,
     activeNumberGames,
     handlePickButton,
     handlePickSubmit,
-    handleGuessButton,
-    handleGuessSubmit,
+    handleChatGuess,
 };

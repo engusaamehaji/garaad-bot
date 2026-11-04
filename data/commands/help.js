@@ -19,7 +19,7 @@ function helpRow(userId, active) {
     );
 }
 
-const GAME_LABELS = { solo: '🎯 Solo', duel: '⚔️ Duel', quiz: '📝 Quiz', tito: '🎯 Qabso Tiro', miino: '💣 Miino', tournament: '🏆 Tournament' };
+const GAME_LABELS = { solo: '🎯 Solo', duel: '⚔️ Duel', quiz: '📝 Quiz', tiro: '🎯 Qabso Tiro', miino: '💣 Miino', tournament: '🏆 Tournament' };
 
 function buildEduEmbed(userId) {
     const activeGame = userId ? isUserBusy(userId) : null;
@@ -35,7 +35,7 @@ function buildEduEmbed(userId) {
             `\n**Games**\n` +
             `\`${PREFIX}solo\` — Answer questions to earn IQ\n` +
             `\`${PREFIX}duel @user\` — Challenge a player\n` +
-            `\`${PREFIX}tito @user\` — Choose secret numbers and guess each other's\n` +
+            `\`${PREFIX}tiro @user\` — Choose secret numbers privately; guess in chat\n` +
             `\`${PREFIX}miino\` / \`${PREFIX}miino @user\` — Play solo or challenge someone in Miino\n` +
             `\`${PREFIX}fti <players>\` — Find the Imposter (3–25 players)\n` +
             `\`${PREFIX}duel 2v2\` — Start a team duel\n` +

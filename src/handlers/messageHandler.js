@@ -59,7 +59,7 @@ const adminBankCmd    = require('../../data/commands/admin/adminBank');
 const saversCmd       = require('../../data/commands/savers');
 const setupTempVc     = require('../../data/commands/admin/tempVc');
 const { vcSetupCmd, vcRemoveCmd } = require('../handlers/voiceMaster');
-const { titoCommand } = require('../games/numberGuess');
+const { tiroCommand, handleChatGuess } = require('../games/numberGuess');
 const { miinoCommand } = require('../games/minesweeper');
 const { findImposterCommand } = require('../games/findImposter');
 
@@ -81,6 +81,8 @@ module.exports = function setupMessageHandler(client) {
 
     client.on('messageCreate', async (message) => {
         if (message.author.bot)                  return;
+
+        if (await handleChatGuess(message)) return;
 
         if (!message.content.startsWith(PREFIX)) return;
         if (disabledChannels.has(message.channel.id) && !isAdmin(message.author.id))
@@ -145,8 +147,8 @@ module.exports = function setupMessageHandler(client) {
             case 'duel':
                 return duelCmd(message, args);
 
-            case 'tito':
-                return titoCommand(message);
+            case 'tiro':
+                return tiroCommand(message);
 
             case 'miino':
                 return miinoCommand(message);
