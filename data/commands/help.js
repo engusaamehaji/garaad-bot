@@ -19,7 +19,7 @@ function helpRow(userId, active) {
     );
 }
 
-const GAME_LABELS = { solo: '🎯 Solo', duel: '⚔️ Duel', quiz: '📝 Quiz', tournament: '🏆 Tournament' };
+const GAME_LABELS = { solo: '🎯 Solo', duel: '⚔️ Duel', quiz: '📝 Quiz', tiro: '🔢 Number Guess', tournament: '🏆 Tournament' };
 
 function buildEduEmbed(userId) {
     const activeGame = userId ? isUserBusy(userId) : null;
@@ -35,6 +35,7 @@ function buildEduEmbed(userId) {
             `\n**Games**\n` +
             `\`${PREFIX}solo\` — Answer questions to earn IQ\n` +
             `\`${PREFIX}duel @user\` — Challenge a player\n` +
+            `\`${PREFIX}tiro @user\` — Fair 1–100 number guessing game\n` +
             `\`${PREFIX}duel 2v2\` — Start a team duel\n` +
             `\`${PREFIX}quiz\` — Join a group quiz\n\n` +
             `**Profile & Rewards**\n` +

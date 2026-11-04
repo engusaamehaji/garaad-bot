@@ -106,6 +106,12 @@ function isUserBusy(userId) {
             if (state.phase === 'playing' && ([...state.teams[1], ...state.teams[2]]).includes(userId)) return 'tduel';
         }
     } catch {}
+    try {
+        const { activeNumberGames } = require('./games/numberGuess');
+        for (const state of activeNumberGames.values()) {
+            if (state.p1 === userId || state.p2 === userId) return 'tiro';
+        }
+    } catch {}
     return null;
 }
 
