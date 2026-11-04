@@ -48,6 +48,10 @@ module.exports = function setupInteractionHandler(client) {
         if (interaction.isModalSubmit()) {
             const { saveData } = require('../utils/helpers');
 
+            if (interaction.customId.startsWith('tiro_guess_modal_')) {
+                return require('../games/numberGuess').handleNumberGuessSubmit(interaction);
+            }
+
             // ── Treasury modals (admins only) ──
             if (interaction.customId.startsWith('trs_m_')) {
                 const ownerId = interaction.customId.split('_').slice(3).join('_');
@@ -1338,6 +1342,10 @@ module.exports = function setupInteractionHandler(client) {
         if (!interaction.isButton()) return;
 
         const id = interaction.customId;
+
+        if (id.startsWith('tiro_guess_')) {
+            return require('../games/numberGuess').handleNumberGuessButton(interaction);
+        }
 
         function buildPlayersPageRow(page, totalPages, ownerId) {
             return new ActionRowBuilder().addComponents(

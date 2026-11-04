@@ -1,4 +1,13 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const {
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+    MessageFlags,
+} = require('discord.js');
 const { isUserBusy } = require('../store');
 
 const activeNumberGames = new Map(); // channelId -> pending or active game
@@ -25,16 +34,28 @@ function gameEmbed(state) {
         .setDescription(
             `Players: <@${state.p1}> and <@${state.p2}>\n` +
             `I have chosen a secret number from **1 to 100**.\n\n` +
-            `Each round, both players must type one whole number from **1 to 100** in chat. ` +
-            `After both guesses, I will say **higher** or **lower**. First to guess the secret wins.\n\n` +
+            `Each round, both players click **Enter Guess** and privately submit a whole number from **1 to 100**. ` +
+            `I will say **higher** or **lower** without revealing either guess. First to guess the secret wins.\n\n` +
             `You have **60 seconds** to enter each guess.`
         )
         .setFooter({ text: `Round ${state.round}` });
 }
 
-function finishGame(channel, state, collector, reason) {
+function guessRow(state) {
+    return new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId(`tiro_guess_${state.channelId}_${state.round}`)
+            .setLabel('Enter Guess 🔢')
+            .setStyle(ButtonStyle.Primary),
+    );
+}
+
+async function finishGame(channel, state, reason) {
     if (activeNumberGames.get(channel.id) !== state) return;
+    clearTimeout(state.timeout);
     activeNumberGames.delete(channel.id);
+    state.phase = 'ended';
+    await state.prompt?.edit({ components: [] }).catch(() => {});
 
     if (reason === 'winner') {
         return channel.send(
@@ -65,69 +86,111 @@ function finishGame(channel, state, collector, reason) {
     return channel.send('⏰ The number game ended because neither player guessed in time. No winner this round.').catch(() => {});
 }
 
-function startGuessing(channel, state) {
+async function startGuessing(channel, state) {
     state.phase = 'playing';
+    state.channel = channel;
+    state.channelId = channel.id;
     state.secret = Math.floor(Math.random() * 100) + 1;
     state.round = 1;
     state.guesses = new Map();
+    state.prompt = await channel.send({ embeds: [gameEmbed(state)], components: [guessRow(state)] }).catch(() => null);
+    if (!state.prompt) return finishGame(channel, state, 'cancelled');
+    state.timeout = setTimeout(() => {
+        finishGame(state.channel, state, 'timeout').catch(() => {});
+    }, GUESS_TIMEOUT_MS);
+}
 
-    channel.send({ embeds: [gameEmbed(state)] }).catch(() => {});
+async function handleNumberGuessButton(interaction) {
+    const [, , channelId, roundText] = interaction.customId.split('_');
+    const round = Number(roundText);
+    const state = activeNumberGames.get(channelId);
 
-    const collector = channel.createMessageCollector({
-        filter: message => message.author.id === state.p1 || message.author.id === state.p2,
-        time: GUESS_TIMEOUT_MS,
-    });
+    if (!state || state.phase !== 'playing' || state.round !== round) {
+        return interaction.reply({ content: 'This guessing round has ended. Use the current button.', flags: MessageFlags.Ephemeral });
+    }
+    if (interaction.user.id !== state.p1 && interaction.user.id !== state.p2) {
+        return interaction.reply({ content: 'You are not a player in this number game.', flags: MessageFlags.Ephemeral });
+    }
+    if (state.guesses.has(interaction.user.id)) {
+        return interaction.reply({ content: 'Your guess is already submitted for this round.', flags: MessageFlags.Ephemeral });
+    }
 
-    collector.on('collect', async message => {
-        const raw = message.content.trim();
-        if (!/^\d+$/.test(raw)) return;
+    const modal = new ModalBuilder()
+        .setCustomId(`tiro_guess_modal_${channelId}_${round}_${interaction.user.id}`)
+        .setTitle('Private Number Guess');
+    const numberInput = new TextInputBuilder()
+        .setCustomId('number')
+        .setLabel('Enter a whole number from 1 to 100')
+        .setStyle(TextInputStyle.Short)
+        .setMinLength(1)
+        .setMaxLength(3)
+        .setPlaceholder('1–100')
+        .setRequired(true);
+    modal.addComponents(new ActionRowBuilder().addComponents(numberInput));
+    return interaction.showModal(modal);
+}
 
-        const guess = Number(raw);
-        if (guess < 1 || guess > 100) {
-            await message.reply('Choose a whole number from **1 to 100**.').catch(() => {});
-            return;
-        }
-        if (state.guesses.has(message.author.id)) {
-            await message.reply('You already guessed this round. Wait for the other player.').catch(() => {});
-            return;
-        }
+async function handleNumberGuessSubmit(interaction) {
+    const parts = interaction.customId.split('_');
+    const channelId = parts[3];
+    const round = Number(parts[4]);
+    const ownerId = parts[5];
+    const state = activeNumberGames.get(channelId);
 
-        state.guesses.set(message.author.id, guess);
-        collector.resetTimer({ time: GUESS_TIMEOUT_MS });
+    if (interaction.user.id !== ownerId) {
+        return interaction.reply({ content: 'This private guess form belongs to another player.', flags: MessageFlags.Ephemeral });
+    }
+    if (!state || state.phase !== 'playing' || state.round !== round) {
+        return interaction.reply({ content: 'This guessing round has ended. Open the current guess button.', flags: MessageFlags.Ephemeral });
+    }
+    if (state.guesses.has(ownerId)) {
+        return interaction.reply({ content: 'Your guess is already submitted for this round.', flags: MessageFlags.Ephemeral });
+    }
 
-        if (state.guesses.size < 2) {
-            await message.reply('Guess received. Waiting for the other player.').catch(() => {});
-            return;
-        }
+    const raw = interaction.fields.getTextInputValue('number').trim();
+    if (!/^\d{1,3}$/.test(raw) || Number(raw) < 1 || Number(raw) > 100) {
+        return interaction.reply({ content: 'Enter a whole number from 1 to 100.', flags: MessageFlags.Ephemeral });
+    }
 
-        const p1Guess = state.guesses.get(state.p1);
-        const p2Guess = state.guesses.get(state.p2);
-        const p1Correct = p1Guess === state.secret;
-        const p2Correct = p2Guess === state.secret;
+    const guess = Number(raw);
+    state.guesses.set(ownerId, guess);
+    clearTimeout(state.timeout);
+    state.timeout = setTimeout(() => {
+        finishGame(state.channel, state, 'timeout').catch(() => {});
+    }, GUESS_TIMEOUT_MS);
 
-        if (p1Correct && p2Correct) {
-            collector.stop('tie');
-            return;
-        }
-        if (p1Correct || p2Correct) {
-            state.winnerId = p1Correct ? state.p1 : state.p2;
-            collector.stop('winner');
-            return;
-        }
+    await interaction.reply({ content: 'Your guess was submitted privately.', flags: MessageFlags.Ephemeral });
+    if (state.guesses.size < 2) return;
 
-        const hint = value => value < state.secret ? 'secret is **higher** ⬆️' : 'secret is **lower** ⬇️';
-        const roundResult =
-            `🔎 **Round ${state.round} results**\n` +
-            `<@${state.p1}> guessed **${p1Guess}** — ${hint(p1Guess)}\n` +
-            `<@${state.p2}> guessed **${p2Guess}** — ${hint(p2Guess)}\n\n` +
-            `Both players, enter your next guess from **1 to 100**.`;
+    clearTimeout(state.timeout);
+    const p1Guess = state.guesses.get(state.p1);
+    const p2Guess = state.guesses.get(state.p2);
+    const p1Correct = p1Guess === state.secret;
+    const p2Correct = p2Guess === state.secret;
+    const channel = state.channel;
 
-        state.round++;
-        state.guesses.clear();
-        await channel.send(roundResult).catch(() => {});
-    });
+    if (p1Correct && p2Correct) {
+        return finishGame(channel, state, 'tie');
+    }
+    if (p1Correct || p2Correct) {
+        state.winnerId = p1Correct ? state.p1 : state.p2;
+        return finishGame(channel, state, 'winner');
+    }
 
-    collector.on('end', (_collected, reason) => finishGame(channel, state, collector, reason));
+    const hint = value => value < state.secret ? 'the secret is **higher** ⬆️' : 'the secret is **lower** ⬇️';
+    await channel.send(
+        `🔎 **Round ${state.round} results**\n` +
+        `<@${state.p1}>: ${hint(p1Guess)}\n` +
+        `<@${state.p2}>: ${hint(p2Guess)}\n\n` +
+        `Both players, submit your next guess privately.`
+    ).catch(() => {});
+
+    state.round++;
+    state.guesses.clear();
+    await state.prompt.edit({ embeds: [gameEmbed(state)], components: [guessRow(state)] }).catch(() => {});
+    state.timeout = setTimeout(() => {
+        finishGame(state.channel, state, 'timeout').catch(() => {});
+    }, GUESS_TIMEOUT_MS);
 }
 
 async function numberGuessCommand(message) {
@@ -188,7 +251,7 @@ async function numberGuessCommand(message) {
         state.phase = 'playing';
         challengeCollector.stop('accepted');
         await interaction.update({ content: `✅ <@${target.id}> accepted!`, embeds: [], components: [] }).catch(() => {});
-        startGuessing(message.channel, state);
+        startGuessing(message.channel, state).catch(() => finishGame(message.channel, state, 'cancelled'));
     });
 
     challengeCollector.on('end', async (_collected, reason) => {
@@ -199,4 +262,9 @@ async function numberGuessCommand(message) {
     });
 }
 
-module.exports = { numberGuessCommand, activeNumberGames };
+module.exports = {
+    numberGuessCommand,
+    activeNumberGames,
+    handleNumberGuessButton,
+    handleNumberGuessSubmit,
+};
