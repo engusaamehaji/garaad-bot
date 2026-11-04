@@ -123,6 +123,11 @@ function isUserBusy(userId) {
         const game = getBusyGame(userId);
         if (game) return game;
     } catch {}
+    try {
+        const { getBusyGame } = require('./games/sheeko');
+        const game = getBusyGame(userId);
+        if (game) return game;
+    } catch {}
     return null;
 }
 

@@ -51,6 +51,9 @@ module.exports = function setupInteractionHandler(client) {
             if (interaction.customId.startsWith('tiro_pick_modal_')) {
                 return require('../games/numberGuess').handlePickSubmit(interaction);
             }
+            if (interaction.customId.startsWith('sheeko_modal_')) {
+                return require('../games/sheeko').handleSheekoModal(interaction);
+            }
 
             // ── Treasury modals (admins only) ──
             if (interaction.customId.startsWith('trs_m_')) {
@@ -1351,6 +1354,9 @@ module.exports = function setupInteractionHandler(client) {
         }
         if (id.startsWith('fti_join_') || id.startsWith('fti_leave_') || id.startsWith('fti_start_') || id.startsWith('fti_close_') || id.startsWith('fti_role_') || id.startsWith('fti_vote_')) {
             return require('../games/findImposter').handleFindImposterButton(interaction);
+        }
+        if (id.startsWith('sheeko_')) {
+            return require('../games/sheeko').handleSheekoButton(interaction);
         }
 
         function buildPlayersPageRow(page, totalPages, ownerId) {

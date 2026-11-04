@@ -62,6 +62,8 @@ const { vcSetupCmd, vcRemoveCmd } = require('../handlers/voiceMaster');
 const { tiroCommand, handleChatGuess } = require('../games/numberGuess');
 const { miinoCommand } = require('../games/minesweeper');
 const { findImposterCommand } = require('../games/findImposter');
+const slotsCmd = require('../games/slots');
+const { sheekoCommand } = require('../games/sheeko');
 
 
 module.exports = function setupMessageHandler(client) {
@@ -69,7 +71,7 @@ module.exports = function setupMessageHandler(client) {
 
     // ── Rate limiter: max 6 economy commands per 10s per user ──
     const _econRateMap = new Map();
-    const ECON_CMDS    = new Set(['shaqo','work','jeeb','cf','give','rich','ebank','bank','etitle']);
+    const ECON_CMDS    = new Set(['shaqo','work','jeeb','cf','slots','give','rich','ebank','bank','etitle']);
     function econRateLimited(userId) {
         const now    = Date.now();
         const bucket = _econRateMap.get(userId) || { count: 0, reset: now + 10_000 };
@@ -155,6 +157,12 @@ module.exports = function setupMessageHandler(client) {
 
             case 'find':
                 return findImposterCommand(message, args);
+
+            case 'slots':
+                return slotsCmd(message, args);
+
+            case 'sheeko':
+                return sheekoCommand(message);
 
             case 'quiz':
                 // ?quiz category <cat> → redirect to qcCmd
