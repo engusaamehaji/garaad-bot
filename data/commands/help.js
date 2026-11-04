@@ -13,6 +13,10 @@ function helpRow(userId, active) {
             .setLabel('💰 Economy')
             .setStyle(active === 'eco' ? ButtonStyle.Success : ButtonStyle.Secondary),
         new ButtonBuilder()
+            .setCustomId(`help_games_${userId}`)
+            .setLabel('🎮 Games')
+            .setStyle(active === 'games' ? ButtonStyle.Success : ButtonStyle.Secondary),
+        new ButtonBuilder()
             .setCustomId(`close_help_${userId}`)
             .setLabel('✖ Close')
             .setStyle(ButtonStyle.Danger),
@@ -28,18 +32,10 @@ function buildEduEmbed(userId) {
         : '\n⚪ **No active game**\n';
 
     return new EmbedBuilder()
-        .setTitle('🎓 Education & Games')
+        .setTitle('🎓 Education & Rewards')
         .setColor('#2ecc71')
         .setDescription(
             statusLine +
-            `\n**Games**\n` +
-            `\`${PREFIX}solo\` — Answer questions to earn IQ\n` +
-            `\`${PREFIX}duel @user\` — Challenge a player\n` +
-            `\`${PREFIX}tiro @user\` — Choose secret numbers privately; guess in chat\n` +
-            `\`${PREFIX}miino\` / \`${PREFIX}miino @user\` — Play solo or challenge someone in Miino\n` +
-            `\`${PREFIX}find [players]\` — Find the Imposter (3–25 players; default 10)\n` +
-            `\`${PREFIX}duel 2v2\` — Start a team duel\n` +
-            `\`${PREFIX}quiz\` — Join a group quiz\n\n` +
             `**Profile & Rewards**\n` +
             `\`${PREFIX}profile\` — View your stats and profile\n` +
             `\`${PREFIX}top\` — View the IQ leaderboard\n` +
@@ -52,6 +48,27 @@ function buildEduEmbed(userId) {
             `\`${PREFIX}champion\` — View the current champion`
         )
         .setFooter({ text: `Prefix: ${PREFIX} • ⚙️ Admin commands are restricted` });
+}
+
+function buildGamesEmbed(userId) {
+    const activeGame = userId ? isUserBusy(userId) : null;
+    const statusLine = activeGame
+        ? `🟢 **Playing now:** ${GAME_LABELS[activeGame] || activeGame}\n\n`
+        : '⚪ **No active game**\n\n';
+    return new EmbedBuilder()
+        .setTitle('🎮 Games')
+        .setColor('#5865f2')
+        .setDescription(
+            statusLine +
+            `\`${PREFIX}solo\` — Answer questions to earn IQ\n` +
+            `\`${PREFIX}duel @user\` — Challenge a player\n` +
+            `\`${PREFIX}duel 2v2\` — Start a team duel\n` +
+            `\`${PREFIX}tiro @user\` — Choose secret numbers; guess in chat\n` +
+            `\`${PREFIX}miino\` / \`${PREFIX}miino @user\` — Play Miino solo or challenge a player\n` +
+            `\`${PREFIX}find [players]\` — Find the Imposter (3–25 players; default 10)\n` +
+            `\`${PREFIX}quiz\` — Join a group quiz`
+        )
+        .setFooter({ text: `Prefix: ${PREFIX} • Use the buttons to view other command groups.` });
 }
 
 function buildEcoEmbed() {
@@ -105,5 +122,6 @@ module.exports = async function helpCommand(message) {
 
 module.exports.buildEduEmbed  = buildEduEmbed;
 module.exports.buildEcoEmbed  = buildEcoEmbed;
+module.exports.buildGamesEmbed = buildGamesEmbed;
 module.exports.buildShopEmbed = buildShopEmbed;
 module.exports.helpRow        = helpRow;
