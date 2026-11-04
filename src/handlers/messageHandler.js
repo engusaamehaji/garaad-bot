@@ -59,7 +59,8 @@ const adminBankCmd    = require('../../data/commands/admin/adminBank');
 const saversCmd       = require('../../data/commands/savers');
 const setupTempVc     = require('../../data/commands/admin/tempVc');
 const { vcSetupCmd, vcRemoveCmd } = require('../handlers/voiceMaster');
-const { numberGuessCommand } = require('../games/numberGuess');
+const { titoCommand } = require('../games/numberGuess');
+const { miinoCommand } = require('../games/minesweeper');
 
 
 module.exports = function setupMessageHandler(client) {
@@ -143,8 +144,11 @@ module.exports = function setupMessageHandler(client) {
             case 'duel':
                 return duelCmd(message, args);
 
-            case 'tiro':
-                return numberGuessCommand(message);
+            case 'tito':
+                return titoCommand(message);
+
+            case 'miino':
+                return miinoCommand(message);
 
             case 'quiz':
                 // ?quiz category <cat> → redirect to qcCmd

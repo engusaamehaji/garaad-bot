@@ -109,7 +109,13 @@ function isUserBusy(userId) {
     try {
         const { activeNumberGames } = require('./games/numberGuess');
         for (const state of activeNumberGames.values()) {
-            if (state.p1 === userId || state.p2 === userId) return 'tiro';
+            if (state.p1 === userId || state.p2 === userId) return 'tito';
+        }
+    } catch {}
+    try {
+        const { activeMinesweeperGames } = require('./games/minesweeper');
+        for (const state of activeMinesweeperGames.values()) {
+            if (state.p1 === userId || state.p2 === userId) return 'miino';
         }
     } catch {}
     return null;
