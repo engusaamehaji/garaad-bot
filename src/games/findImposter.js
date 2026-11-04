@@ -101,20 +101,9 @@ async function createLobby(message, maxPlayers) {
 }
 
 async function findImposterCommand(message, args = []) {
-    let maxPlayers = Number(args[0]);
-    if (!args[0]) {
-        await message.reply('🎭 How many players should the lobby hold? Choose a number from **3 to 25**.');
-        const collected = await message.channel.awaitMessages({
-            filter: (reply) => reply.author.id === message.author.id,
-            max: 1,
-            time: 30_000,
-        }).catch(() => null);
-        const answer = collected?.first()?.content?.trim();
-        if (!answer || !/^\d+$/.test(answer)) return message.reply('⌛ Lobby setup ended. Start again with `?fti <players>` (3–25).');
-        maxPlayers = Number(answer);
-    }
+    const maxPlayers = args[0] ? Number(args[0]) : 10;
     if (!Number.isInteger(maxPlayers) || maxPlayers < MIN_PLAYERS || maxPlayers > MAX_PLAYERS) {
-        return message.reply('⚠️ Usage: `?fti <players>` — choose a lobby size from **3 to 25**.');
+        return message.reply('⚠️ Usage: `?find [players]` — choose a lobby size from **3 to 25**.');
     }
     return createLobby(message, maxPlayers);
 }

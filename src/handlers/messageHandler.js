@@ -153,7 +153,7 @@ module.exports = function setupMessageHandler(client) {
             case 'miino':
                 return miinoCommand(message);
 
-            case 'fti':
+            case 'find':
                 return findImposterCommand(message, args);
 
             case 'quiz':
