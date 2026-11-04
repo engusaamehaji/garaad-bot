@@ -1355,6 +1355,9 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('miino_tile_') || id.startsWith('miino_cash_') || id.startsWith('miino_diff_')) {
             return require('../games/minesweeper').handleMiinoButton(interaction);
         }
+        if (id.startsWith('fti_join_') || id.startsWith('fti_leave_') || id.startsWith('fti_start_') || id.startsWith('fti_close_') || id.startsWith('fti_role_') || id.startsWith('fti_vote_')) {
+            return require('../games/findImposter').handleFindImposterButton(interaction);
+        }
 
         function buildPlayersPageRow(page, totalPages, ownerId) {
             return new ActionRowBuilder().addComponents(

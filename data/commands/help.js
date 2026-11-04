@@ -37,6 +37,7 @@ function buildEduEmbed(userId) {
             `\`${PREFIX}duel @user\` — Challenge a player\n` +
             `\`${PREFIX}tito @user\` — Choose secret numbers and guess each other's\n` +
             `\`${PREFIX}miino\` / \`${PREFIX}miino @user\` — Play solo or challenge someone in Miino\n` +
+            `\`${PREFIX}fti <players>\` — Find the Imposter (3–25 players)\n` +
             `\`${PREFIX}duel 2v2\` — Start a team duel\n` +
             `\`${PREFIX}quiz\` — Join a group quiz\n\n` +
             `**Profile & Rewards**\n` +

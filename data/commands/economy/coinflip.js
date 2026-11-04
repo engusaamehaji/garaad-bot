@@ -19,12 +19,12 @@ const SIDES = {
 };
 
 module.exports = async function coinflipCmd(message, args) {
-    const usage = 'Usage: `?cf <coins> <m|x>`\nExample: `?cf 200 x` or `?cf 500 m`\n`m` = Heads · `x` = Tails';
-    const amountText = args[0] || '';
-    const amount = Number(amountText);
-    const side = (args[1] || '').toLowerCase();
+    const usage = 'Usage: `?cf <coins> <x|m>`\nExamples: `?cf 50 x` · `?cf 50 m` · `?cf x 50`\n`x` = Tails · `m` = Heads';
+    const side = args.map((arg) => arg.toLowerCase()).find((arg) => SIDES[arg]);
+    const amountText = args.find((arg) => /^\d[\d,]*$/.test(arg)) || '';
+    const amount = Number(amountText.replace(/,/g, ''));
 
-    if (!/^\d+$/.test(amountText) || !SIDES[side]) return message.reply(`⚠️ ${usage}`);
+    if (!amountText || !Number.isSafeInteger(amount) || !SIDES[side]) return message.reply(`⚠️ ${usage}`);
     if (amount < MIN_BET) return message.reply(`⚠️ Minimum bet: **${fmt(MIN_BET)} Coins**.\n${usage}`);
     if (amount > MAX_BET) return message.reply(`⚠️ Maximum bet: **${fmt(MAX_BET)} Coins**.\n${usage}`);
 

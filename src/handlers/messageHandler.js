@@ -61,6 +61,7 @@ const setupTempVc     = require('../../data/commands/admin/tempVc');
 const { vcSetupCmd, vcRemoveCmd } = require('../handlers/voiceMaster');
 const { titoCommand } = require('../games/numberGuess');
 const { miinoCommand } = require('../games/minesweeper');
+const { findImposterCommand } = require('../games/findImposter');
 
 
 module.exports = function setupMessageHandler(client) {
@@ -149,6 +150,9 @@ module.exports = function setupMessageHandler(client) {
 
             case 'miino':
                 return miinoCommand(message);
+
+            case 'fti':
+                return findImposterCommand(message, args);
 
             case 'quiz':
                 // ?quiz category <cat> → redirect to qcCmd

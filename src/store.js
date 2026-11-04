@@ -118,6 +118,11 @@ function isUserBusy(userId) {
             if (state.p1 === userId || state.p2 === userId) return 'miino';
         }
     } catch {}
+    try {
+        const { getBusyGame } = require('./games/findImposter');
+        const game = getBusyGame(userId);
+        if (game) return game;
+    } catch {}
     return null;
 }
 
