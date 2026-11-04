@@ -14,8 +14,12 @@ function helpRow(userId, active) {
             .setStyle(active === 'eco' ? ButtonStyle.Success : ButtonStyle.Secondary),
         new ButtonBuilder()
             .setCustomId(`help_games_${userId}`)
-            .setLabel('🎮 Games')
+            .setLabel('🎲 Other Games')
             .setStyle(active === 'games' ? ButtonStyle.Success : ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId(`help_player_${userId}`)
+            .setLabel('👤 Player')
+            .setStyle(active === 'player' ? ButtonStyle.Success : ButtonStyle.Secondary),
         new ButtonBuilder()
             .setCustomId(`close_help_${userId}`)
             .setLabel('✖ Close')
@@ -32,20 +36,15 @@ function buildEduEmbed(userId) {
         : '\n⚪ **No active game**\n';
 
     return new EmbedBuilder()
-        .setTitle('🎓 Education & Rewards')
+        .setTitle('🎓 Education')
         .setColor('#2ecc71')
         .setDescription(
             statusLine +
-            `**Profile & Rewards**\n` +
-            `\`${PREFIX}profile\` — View your stats and profile\n` +
-            `\`${PREFIX}top\` — View the IQ leaderboard\n` +
-            `\`${PREFIX}today\` — Claim daily Coins and IQ\n` +
-            `\`${PREFIX}missions\` — View and claim missions\n` +
-            `\`${PREFIX}cd\` — Check your cooldowns\n\n` +
-            `**More**\n` +
-            `\`${PREFIX}personal\`, \`${PREFIX}propose @user\`, \`${PREFIX}partner\`, \`${PREFIX}breakup\` — Relationship commands\n` +
-            `\`${PREFIX}cilada [message]\` — Report a problem\n` +
-            `\`${PREFIX}champion\` — View the current champion`
+            `**Learning Games**\n` +
+            `\`${PREFIX}solo\` — Answer questions and earn IQ\n` +
+            `\`${PREFIX}quiz\` — Join a group quiz\n` +
+            `\`${PREFIX}duel @user\` — Challenge a player to a quiz duel\n` +
+            `\`${PREFIX}duel 2v2\` — Start a team quiz duel`
         )
         .setFooter({ text: `Prefix: ${PREFIX} • ⚙️ Admin commands are restricted` });
 }
@@ -56,17 +55,36 @@ function buildGamesEmbed(userId) {
         ? `🟢 **Playing now:** ${GAME_LABELS[activeGame] || activeGame}\n\n`
         : '⚪ **No active game**\n\n';
     return new EmbedBuilder()
-        .setTitle('🎮 Games')
+        .setTitle('🎲 Other Games')
         .setColor('#5865f2')
         .setDescription(
             statusLine +
-            `\`${PREFIX}solo\` — Answer questions to earn IQ\n` +
-            `\`${PREFIX}duel @user\` — Challenge a player\n` +
-            `\`${PREFIX}duel 2v2\` — Start a team duel\n` +
             `\`${PREFIX}tiro @user\` — Choose secret numbers; guess in chat\n` +
             `\`${PREFIX}miino\` / \`${PREFIX}miino @user\` — Play Miino solo or challenge a player\n` +
-            `\`${PREFIX}find [players]\` — Find the Imposter (3–25 players; default 10)\n` +
-            `\`${PREFIX}quiz\` — Join a group quiz`
+            `\`${PREFIX}find [players]\` — Find the Imposter (3–25 players; default 10)`
+        )
+        .setFooter({ text: `Prefix: ${PREFIX} • Use the buttons to view other command groups.` });
+}
+
+function buildPlayerEmbed(userId) {
+    const activeGame = userId ? isUserBusy(userId) : null;
+    const statusLine = activeGame
+        ? `🟢 **Playing now:** ${GAME_LABELS[activeGame] || activeGame}\n\n`
+        : '⚪ **No active game**\n\n';
+    return new EmbedBuilder()
+        .setTitle('👤 Player Commands')
+        .setColor('#3498db')
+        .setDescription(
+            statusLine +
+            `\`${PREFIX}p\` / \`${PREFIX}profile\` — View your profile and stats\n` +
+            `\`${PREFIX}today\` — Claim daily Coins and IQ\n` +
+            `\`${PREFIX}top\` / \`${PREFIX}topiq\` — View the IQ leaderboard\n` +
+            `\`${PREFIX}missions\` — View and claim missions\n` +
+            `\`${PREFIX}cd\` — Check your cooldowns\n\n` +
+            `**More**\n` +
+            `\`${PREFIX}personal\`, \`${PREFIX}propose @user\`, \`${PREFIX}partner\`, \`${PREFIX}breakup\` — Relationship commands\n` +
+            `\`${PREFIX}cilada [message]\` — Report a problem\n` +
+            `\`${PREFIX}champion\` — View the current champion`
         )
         .setFooter({ text: `Prefix: ${PREFIX} • Use the buttons to view other command groups.` });
 }
@@ -79,7 +97,6 @@ function buildEcoEmbed() {
             `**Wallet & Earnings**\n` +
             `\`${PREFIX}jeeb\` — Deposit wallet Coins into Garaad Bank and view balances\n` +
             `\`${PREFIX}work\` (\`${PREFIX}shaqo\`) — Earn Coins every 8 hours\n` +
-            `\`${PREFIX}today\` — Claim daily Coins and IQ\n` +
             `\`${PREFIX}rich\` — View the richest players\n\n` +
             `**Banks**\n` +
             `\`${PREFIX}bank\` — Open the bank menu · \`${PREFIX}banks\` — List banks\n` +
@@ -90,9 +107,8 @@ function buildEcoEmbed() {
             `\`${PREFIX}cf <coins> <m|x>\` — Coinflip (m = heads, x = tails)\n` +
             `\`${PREFIX}rob @user\` — Try to rob a player\n` +
             `\`${PREFIX}give @user <amount>\` — Send Coins to a player\n\n` +
-            `**Other**\n` +
-            `\`${PREFIX}etitle\` — Manage your economy title · \`${PREFIX}khaznad\` — Admin treasury panel\n` +
-            `\`${PREFIX}bp <password>\` — Set a bank password`
+            `**Admin**\n` +
+            `\`${PREFIX}khaznad\` — Manage the Coins treasury (admins only)`
         )
         .setFooter({ text: 'All wallet, bank, and reward balances use Coins.' });
 }
@@ -123,5 +139,6 @@ module.exports = async function helpCommand(message) {
 module.exports.buildEduEmbed  = buildEduEmbed;
 module.exports.buildEcoEmbed  = buildEcoEmbed;
 module.exports.buildGamesEmbed = buildGamesEmbed;
+module.exports.buildPlayerEmbed = buildPlayerEmbed;
 module.exports.buildShopEmbed = buildShopEmbed;
 module.exports.helpRow        = helpRow;
