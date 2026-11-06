@@ -11,6 +11,7 @@ Bot tartan aqoon (Af-Soomaali) oo ku salaysan **IQ**, **XP**, iyo **dhibcaha tar
 | `?solo` | Ciyaar kaligiis — sax **+3 IQ**, qalad/waqtiga **−1 IQ** |
 | `?duel @user` | Labadu dhigaan **5 IQ**; guuleystaha **+10 IQ**; barbaro: dib u celinta dhigga |
 | `?td` | Ka dooro **Su’aal**, **Xujo** ama **Random**; su’aasha/hawshu waxay ku muuqataa qoraal cad oo bold ah |
+| `?sec @user` | Fur private thread adiga iyo qofka la xushay; farriinta ku qor thread-ka, ma aha channel-ka guud |
 | `?quiz` | Tartanka kooxda; dhibcaha laga helay waxaa lagu darayaa kayd — `?exchange` |
 | `?exchange xp` / `?exchange iq` | Badal dhibcaha tartanka (1 dhibic = 5 XP ama 1 IQ — `src/config.js`) |
 | `?shop` / `?buy` | Darajooyin lagu iibsanayo **XP** oo keliya |
@@ -83,6 +84,8 @@ garaad-bot/
 Habaynta (prefix, dhibcaha tartanka, duel IQ, iwm.) waxay ku jiraan `src/config.js`.
 
 Kaydka cusub waxa ku jira **550 su'aalood oo xisaab ah oo Solo ah** iyo **400 su'aalood oo taxane-tiro ah oo Duel ah**. Ciyaarta `?td` waxay leedahay su'aalo iyo hawlo Af-Soomaali ah; Dare kuma jiraan xujooyin xisaabeed.
+
+Private threads waxaa arki kara xubnaha lagu daray iyo maamulka server-ka ee leh **Manage Threads**.
 
 ---
 

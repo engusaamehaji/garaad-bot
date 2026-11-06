@@ -65,6 +65,7 @@ const { findImposterCommand } = require('../games/findImposter');
 const slotsCmd = require('../games/slots');
 const { sheekoCommand } = require('../games/sheeko');
 const { truthOrDareCommand } = require('../games/truthOrDare');
+const { secretChatCommand } = require('../games/secretChat');
 
 
 module.exports = function setupMessageHandler(client) {
@@ -167,6 +168,9 @@ module.exports = function setupMessageHandler(client) {
 
             case 'td':
                 return truthOrDareCommand(message);
+
+            case 'sec':
+                return secretChatCommand(message);
 
             case 'quiz':
                 // ?quiz category <cat> → redirect to qcCmd
