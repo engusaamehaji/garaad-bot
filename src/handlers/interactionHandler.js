@@ -1346,6 +1346,9 @@ module.exports = function setupInteractionHandler(client) {
 
         const id = interaction.customId;
 
+        if (id.startsWith('sec_accept_') || id.startsWith('sec_decline_')) {
+            return require('../games/secretChat').handleSecretChatButton(interaction);
+        }
         if (id.startsWith('tiro_pick_')) {
             return require('../games/numberGuess').handlePickButton(interaction);
         }

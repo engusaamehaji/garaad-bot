@@ -65,7 +65,8 @@ const { findImposterCommand } = require('../games/findImposter');
 const slotsCmd = require('../games/slots');
 const { sheekoCommand } = require('../games/sheeko');
 const { truthOrDareCommand } = require('../games/truthOrDare');
-const { secretChatCommand } = require('../games/secretChat');
+const { secretChatCommand, handleSecretChatMessage } = require('../games/secretChat');
+const takeCmd = require('../../data/commands/economy/take');
 
 
 module.exports = function setupMessageHandler(client) {
@@ -73,7 +74,7 @@ module.exports = function setupMessageHandler(client) {
 
     // ── Rate limiter: max 6 economy commands per 10s per user ──
     const _econRateMap = new Map();
-    const ECON_CMDS    = new Set(['shaqo','work','jeeb','cf','slots','give','rich','ebank','bank','etitle']);
+    const ECON_CMDS    = new Set(['shaqo','work','jeeb','cf','slots','give','rich','ebank','bank','etitle','take']);
     function econRateLimited(userId) {
         const now    = Date.now();
         const bucket = _econRateMap.get(userId) || { count: 0, reset: now + 10_000 };
@@ -86,15 +87,18 @@ module.exports = function setupMessageHandler(client) {
     client.on('messageCreate', async (message) => {
         if (message.author.bot)                  return;
 
+        if (await handleSecretChatMessage(message)) return;
         if (await handleChatGuess(message)) return;
 
         if (!message.content.startsWith(PREFIX)) return;
-        if (disabledChannels.has(message.channel.id) && !isAdmin(message.author.id))
-            return message.reply('🔕 **Channel-kan bot waa la joojiyay.** Admin kala relationship.').catch(() => {});
 
         const args    = message.content.slice(PREFIX.length).trim().split(/ +/g);
         const command = args.shift().toLowerCase();
         const userId  = message.author.id;
+
+        if (command === 'sec') return secretChatCommand(message);
+        if (disabledChannels.has(message.channel.id) && !isAdmin(message.author.id))
+            return message.reply('🔕 **Channel-kan bot waa la joojiyay.** Admin kala relationship.').catch(() => {});
 
         // DM-ka: admin wax walba, players ?caawin only
         if (!message.guild && !isAdmin(userId)) {
@@ -169,9 +173,6 @@ module.exports = function setupMessageHandler(client) {
             case 'td':
                 return truthOrDareCommand(message);
 
-            case 'sec':
-                return secretChatCommand(message);
-
             case 'quiz':
                 // ?quiz category <cat> → redirect to qcCmd
                 if (args[0] && args[0].toLowerCase() === 'category') {
@@ -185,6 +186,9 @@ module.exports = function setupMessageHandler(client) {
             case 'shaqo':
             case 'work':
                 return shaqoCmd(message);
+
+            case 'take':
+                return takeCmd(message);
 
             case 'jeeb':
                 return jeebCmd(message, args);

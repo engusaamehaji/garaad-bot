@@ -64,7 +64,7 @@ function buildGamesEmbed(userId) {
             `\`${PREFIX}find [players]\` — Find the Imposter (3–25 players; default 10)\n` +
             `\`${PREFIX}sheeko\` — Tell 2 truths and 1 lie; others guess the lie\n` +
             `\`${PREFIX}td\` — Riix Su’aal, Xujo ama Random\n` +
-            `\`${PREFIX}sec @user\` — Fur private thread adiga iyo qofka aad dooratay oo keliya\n` +
+            `\`${PREFIX}sec @user\` — Ku bilow private DM chat (qofku waa inuu aqbalaa)\n` +
             `\`${PREFIX}slots <coins>\` — Slot machine; bet 10–50,000 Coins`
         )
         .setFooter({ text: `Prefix: ${PREFIX} • Use the buttons to view other command groups.` });
@@ -101,6 +101,7 @@ function buildEcoEmbed() {
             `**Wallet & Earnings**\n` +
             `\`${PREFIX}jeeb\` — Deposit wallet Coins into Garaad Bank and view balances\n` +
             `\`${PREFIX}work\` (\`${PREFIX}shaqo\`) — Earn Coins every 8 hours\n` +
+            `\`${PREFIX}take\` — Claim 100–300 Coins, 10–30 XP, and 1–3 IQ every 6 hours\n` +
             `\`${PREFIX}rich\` — View the richest players\n\n` +
             `**Banks**\n` +
             `\`${PREFIX}bank\` — Open the bank menu · \`${PREFIX}banks\` — List banks\n` +
