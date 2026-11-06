@@ -64,6 +64,7 @@ const { miinoCommand } = require('../games/minesweeper');
 const { findImposterCommand } = require('../games/findImposter');
 const slotsCmd = require('../games/slots');
 const { sheekoCommand } = require('../games/sheeko');
+const { truthOrDareCommand } = require('../games/truthOrDare');
 
 
 module.exports = function setupMessageHandler(client) {
@@ -163,6 +164,9 @@ module.exports = function setupMessageHandler(client) {
 
             case 'sheeko':
                 return sheekoCommand(message);
+
+            case 'td':
+                return truthOrDareCommand(message);
 
             case 'quiz':
                 // ?quiz category <cat> → redirect to qcCmd

@@ -1358,6 +1358,9 @@ module.exports = function setupInteractionHandler(client) {
         if (id.startsWith('sheeko_')) {
             return require('../games/sheeko').handleSheekoButton(interaction);
         }
+        if (id.startsWith('truthdare_')) {
+            return require('../games/truthOrDare').handleTruthOrDareButton(interaction);
+        }
 
         function buildPlayersPageRow(page, totalPages, ownerId) {
             return new ActionRowBuilder().addComponents(

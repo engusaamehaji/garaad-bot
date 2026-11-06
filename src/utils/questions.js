@@ -20,12 +20,10 @@ function loadQuestionsFromDisk() {
     for (const game of GAMES) {
         try {
             const cacheFile = path.join(CACHE_QUESTIONS_DIR, `${game}.json`);
-            if (fs.existsSync(cacheFile)) {
-                questionsByGame[game] = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
-            } else {
-                const file = path.join(QUESTIONS_DIR, `${game}.json`);
-                questionsByGame[game] = JSON.parse(fs.readFileSync(file, 'utf8'));
-            }
+            const file = path.join(QUESTIONS_DIR, `${game}.json`);
+            const bundled = JSON.parse(fs.readFileSync(file, 'utf8'));
+            const cached = fs.existsSync(cacheFile) ? JSON.parse(fs.readFileSync(cacheFile, 'utf8')) : [];
+            questionsByGame[game] = Array.isArray(cached) && cached.length > bundled.length ? cached : bundled;
         } catch (e) {
             console.warn(`[Questions] Faylka ${game}.json lama helin — poolka madhan yahay`);
             questionsByGame[game] = [];

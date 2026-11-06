@@ -27,7 +27,7 @@ function helpRow(userId, active) {
     );
 }
 
-const GAME_LABELS = { solo: '🎯 Solo', duel: '⚔️ Duel', quiz: '📝 Quiz', tiro: '🎯 Qabso Tiro', miino: '💣 Miino', sheeko: '🎭 Sheeko Been ah', tournament: '🏆 Tournament' };
+const GAME_LABELS = { solo: '🎯 Solo', duel: '⚔️ Duel', quiz: '📝 Quiz', tiro: '🎯 Qabso Tiro', miino: '💣 Miino', sheeko: '🎭 Sheeko Been ah', td: '🎭 Su’aal ama Xujo', tournament: '🏆 Tournament' };
 
 function buildEduEmbed(userId) {
     const activeGame = userId ? isUserBusy(userId) : null;
@@ -63,6 +63,7 @@ function buildGamesEmbed(userId) {
             `\`${PREFIX}miino\` / \`${PREFIX}miino @user\` — Play Miino solo or challenge a player\n` +
             `\`${PREFIX}find [players]\` — Find the Imposter (3–25 players; default 10)\n` +
             `\`${PREFIX}sheeko\` — Tell 2 truths and 1 lie; others guess the lie\n` +
+            `\`${PREFIX}td\` — Riix Run si aad su’aal u hesho, Xujo si aad hawl u hesho, ama Random\n` +
             `\`${PREFIX}slots <coins>\` — Slot machine; bet 10–50,000 Coins`
         )
         .setFooter({ text: `Prefix: ${PREFIX} • Use the buttons to view other command groups.` });

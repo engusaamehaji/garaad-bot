@@ -498,5 +498,5505 @@
     "question": "Soomaalida hidde ahaan waxay u isticmaali jireen Caano iyo Hilib cuntada ugu muhiimsan.",
     "type": "tf",
     "correct": true
+  },
+  {
+    "question": "Waxaa jiray 11 geel, waxaana lagu daray 7 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "18",
+      "19",
+      "17",
+      "21"
+    ],
+    "correct": "18"
+  },
+  {
+    "question": "50 geel ayaa jiray; 10 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "41",
+      "39",
+      "43",
+      "40"
+    ],
+    "correct": "40"
+  },
+  {
+    "question": "Waxaa jira 2 kooxood, koox walbana 3 geel ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "5",
+      "9",
+      "6",
+      "7"
+    ],
+    "correct": "6"
+  },
+  {
+    "question": "10 geel ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "8",
+      "5",
+      "6",
+      "4"
+    ],
+    "correct": "5"
+  },
+  {
+    "question": "Xisaabi wadarta 14 iyo 9.",
+    "options": [
+      "23",
+      "24",
+      "22",
+      "26"
+    ],
+    "correct": "23"
+  },
+  {
+    "question": "Xisaabi: 55 laga jaray 11 waa imisa?",
+    "options": [
+      "45",
+      "43",
+      "47",
+      "44"
+    ],
+    "correct": "44"
+  },
+  {
+    "question": "Xisaabi: 3 lagu dhuftay 5 waa imisa?",
+    "options": [
+      "14",
+      "18",
+      "15",
+      "16"
+    ],
+    "correct": "15"
+  },
+  {
+    "question": "Xisaabi: 24 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "11",
+      "8",
+      "9",
+      "7"
+    ],
+    "correct": "8"
+  },
+  {
+    "question": "Haddii 17 buug lagu daro 11 kale, wadartu waa imisa?",
+    "options": [
+      "28",
+      "29",
+      "27",
+      "31"
+    ],
+    "correct": "28"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 60 buug; 12 ayaa baxay. Maxaa haray?",
+    "options": [
+      "49",
+      "47",
+      "51",
+      "48"
+    ],
+    "correct": "48"
+  },
+  {
+    "question": "4 jeer 7 waa imisa?",
+    "options": [
+      "27",
+      "31",
+      "28",
+      "29"
+    ],
+    "correct": "28"
+  },
+  {
+    "question": "Haddii 44 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "14",
+      "11",
+      "12",
+      "10"
+    ],
+    "correct": "11"
+  },
+  {
+    "question": "Waxaa jiray 20 ukun, waxaana lagu daray 13 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "33",
+      "34",
+      "32",
+      "36"
+    ],
+    "correct": "33"
+  },
+  {
+    "question": "65 ukun ayaa jiray; 13 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "53",
+      "51",
+      "55",
+      "52"
+    ],
+    "correct": "52"
+  },
+  {
+    "question": "Waxaa jira 5 kooxood, koox walbana 9 ukun ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "44",
+      "48",
+      "45",
+      "46"
+    ],
+    "correct": "45"
+  },
+  {
+    "question": "70 ukun ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "17",
+      "14",
+      "15",
+      "13"
+    ],
+    "correct": "14"
+  },
+  {
+    "question": "Xisaabi wadarta 23 iyo 15.",
+    "options": [
+      "38",
+      "39",
+      "37",
+      "41"
+    ],
+    "correct": "38"
+  },
+  {
+    "question": "Xisaabi: 70 laga jaray 14 waa imisa?",
+    "options": [
+      "57",
+      "55",
+      "59",
+      "56"
+    ],
+    "correct": "56"
+  },
+  {
+    "question": "Xisaabi: 6 lagu dhuftay 11 waa imisa?",
+    "options": [
+      "65",
+      "69",
+      "66",
+      "67"
+    ],
+    "correct": "66"
+  },
+  {
+    "question": "Xisaabi: 102 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "20",
+      "17",
+      "18",
+      "16"
+    ],
+    "correct": "17"
+  },
+  {
+    "question": "Haddii 26 koob oo biyo ah lagu daro 17 kale, wadartu waa imisa?",
+    "options": [
+      "43",
+      "44",
+      "42",
+      "46"
+    ],
+    "correct": "43"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 75 koob oo biyo ah; 15 ayaa baxay. Maxaa haray?",
+    "options": [
+      "61",
+      "59",
+      "63",
+      "60"
+    ],
+    "correct": "60"
+  },
+  {
+    "question": "7 jeer 13 waa imisa?",
+    "options": [
+      "90",
+      "94",
+      "91",
+      "92"
+    ],
+    "correct": "91"
+  },
+  {
+    "question": "Haddii 140 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "23",
+      "20",
+      "21",
+      "19"
+    ],
+    "correct": "20"
+  },
+  {
+    "question": "Waxaa jiray 29 kiilo oo bariis ah, waxaana lagu daray 19 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "48",
+      "49",
+      "47",
+      "51"
+    ],
+    "correct": "48"
+  },
+  {
+    "question": "80 kiilo oo bariis ah ayaa jiray; 16 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "65",
+      "63",
+      "67",
+      "64"
+    ],
+    "correct": "64"
+  },
+  {
+    "question": "Waxaa jira 8 kooxood, koox walbana 15 kiilo oo bariis ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "119",
+      "123",
+      "120",
+      "121"
+    ],
+    "correct": "120"
+  },
+  {
+    "question": "184 kiilo oo bariis ah ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "26",
+      "23",
+      "24",
+      "22"
+    ],
+    "correct": "23"
+  },
+  {
+    "question": "Xisaabi wadarta 32 iyo 21.",
+    "options": [
+      "53",
+      "54",
+      "52",
+      "56"
+    ],
+    "correct": "53"
+  },
+  {
+    "question": "Xisaabi: 85 laga jaray 17 waa imisa?",
+    "options": [
+      "69",
+      "67",
+      "71",
+      "68"
+    ],
+    "correct": "68"
+  },
+  {
+    "question": "Xisaabi: 9 lagu dhuftay 17 waa imisa?",
+    "options": [
+      "152",
+      "156",
+      "153",
+      "154"
+    ],
+    "correct": "153"
+  },
+  {
+    "question": "Xisaabi: 234 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "29",
+      "26",
+      "27",
+      "25"
+    ],
+    "correct": "26"
+  },
+  {
+    "question": "Haddii 35 qalin lagu daro 23 kale, wadartu waa imisa?",
+    "options": [
+      "58",
+      "59",
+      "57",
+      "61"
+    ],
+    "correct": "58"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 90 qalin; 18 ayaa baxay. Maxaa haray?",
+    "options": [
+      "73",
+      "71",
+      "75",
+      "72"
+    ],
+    "correct": "72"
+  },
+  {
+    "question": "10 jeer 19 waa imisa?",
+    "options": [
+      "189",
+      "193",
+      "190",
+      "191"
+    ],
+    "correct": "190"
+  },
+  {
+    "question": "Haddii 290 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "32",
+      "29",
+      "30",
+      "28"
+    ],
+    "correct": "29"
+  },
+  {
+    "question": "Waxaa jiray 38 moos, waxaana lagu daray 25 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "63",
+      "64",
+      "62",
+      "66"
+    ],
+    "correct": "63"
+  },
+  {
+    "question": "95 moos ayaa jiray; 19 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "77",
+      "75",
+      "79",
+      "76"
+    ],
+    "correct": "76"
+  },
+  {
+    "question": "Waxaa jira 11 kooxood, koox walbana 21 moos ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "230",
+      "234",
+      "231",
+      "232"
+    ],
+    "correct": "231"
+  },
+  {
+    "question": "64 moos ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "35",
+      "32",
+      "33",
+      "31"
+    ],
+    "correct": "32"
+  },
+  {
+    "question": "Xisaabi wadarta 41 iyo 27.",
+    "options": [
+      "68",
+      "69",
+      "67",
+      "71"
+    ],
+    "correct": "68"
+  },
+  {
+    "question": "Xisaabi: 100 laga jaray 20 waa imisa?",
+    "options": [
+      "81",
+      "79",
+      "83",
+      "80"
+    ],
+    "correct": "80"
+  },
+  {
+    "question": "Xisaabi: 12 lagu dhuftay 23 waa imisa?",
+    "options": [
+      "275",
+      "279",
+      "276",
+      "277"
+    ],
+    "correct": "276"
+  },
+  {
+    "question": "Xisaabi: 105 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "38",
+      "35",
+      "36",
+      "34"
+    ],
+    "correct": "35"
+  },
+  {
+    "question": "Haddii 44 ari lagu daro 29 kale, wadartu waa imisa?",
+    "options": [
+      "73",
+      "74",
+      "72",
+      "76"
+    ],
+    "correct": "73"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 105 ari; 21 ayaa baxay. Maxaa haray?",
+    "options": [
+      "85",
+      "83",
+      "87",
+      "84"
+    ],
+    "correct": "84"
+  },
+  {
+    "question": "2 jeer 25 waa imisa?",
+    "options": [
+      "49",
+      "53",
+      "50",
+      "51"
+    ],
+    "correct": "50"
+  },
+  {
+    "question": "Haddii 152 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "41",
+      "38",
+      "39",
+      "37"
+    ],
+    "correct": "38"
+  },
+  {
+    "question": "Waxaa jiray 47 buug, waxaana lagu daray 31 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "78",
+      "79",
+      "77",
+      "81"
+    ],
+    "correct": "78"
+  },
+  {
+    "question": "110 buug ayaa jiray; 22 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "89",
+      "87",
+      "91",
+      "88"
+    ],
+    "correct": "88"
+  },
+  {
+    "question": "Waxaa jira 3 kooxood, koox walbana 27 buug ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "80",
+      "84",
+      "81",
+      "82"
+    ],
+    "correct": "81"
+  },
+  {
+    "question": "205 buug ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "44",
+      "41",
+      "42",
+      "40"
+    ],
+    "correct": "41"
+  },
+  {
+    "question": "Xisaabi wadarta 50 iyo 33.",
+    "options": [
+      "83",
+      "84",
+      "82",
+      "86"
+    ],
+    "correct": "83"
+  },
+  {
+    "question": "Xisaabi: 115 laga jaray 23 waa imisa?",
+    "options": [
+      "93",
+      "91",
+      "95",
+      "92"
+    ],
+    "correct": "92"
+  },
+  {
+    "question": "Xisaabi: 4 lagu dhuftay 29 waa imisa?",
+    "options": [
+      "115",
+      "119",
+      "116",
+      "117"
+    ],
+    "correct": "116"
+  },
+  {
+    "question": "Xisaabi: 264 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "47",
+      "44",
+      "45",
+      "43"
+    ],
+    "correct": "44"
+  },
+  {
+    "question": "Haddii 53 geed lagu daro 35 kale, wadartu waa imisa?",
+    "options": [
+      "88",
+      "89",
+      "87",
+      "91"
+    ],
+    "correct": "88"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 120 geed; 24 ayaa baxay. Maxaa haray?",
+    "options": [
+      "97",
+      "95",
+      "99",
+      "96"
+    ],
+    "correct": "96"
+  },
+  {
+    "question": "5 jeer 31 waa imisa?",
+    "options": [
+      "154",
+      "158",
+      "155",
+      "156"
+    ],
+    "correct": "155"
+  },
+  {
+    "question": "Haddii 329 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "50",
+      "47",
+      "48",
+      "46"
+    ],
+    "correct": "47"
+  },
+  {
+    "question": "Waxaa jiray 56 koob oo biyo ah, waxaana lagu daray 37 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "93",
+      "94",
+      "92",
+      "96"
+    ],
+    "correct": "93"
+  },
+  {
+    "question": "125 koob oo biyo ah ayaa jiray; 25 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "101",
+      "99",
+      "103",
+      "100"
+    ],
+    "correct": "100"
+  },
+  {
+    "question": "Waxaa jira 6 kooxood, koox walbana 33 koob oo biyo ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "197",
+      "201",
+      "198",
+      "199"
+    ],
+    "correct": "198"
+  },
+  {
+    "question": "400 koob oo biyo ah ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "53",
+      "50",
+      "51",
+      "49"
+    ],
+    "correct": "50"
+  },
+  {
+    "question": "Xisaabi wadarta 59 iyo 39.",
+    "options": [
+      "98",
+      "99",
+      "97",
+      "101"
+    ],
+    "correct": "98"
+  },
+  {
+    "question": "Xisaabi: 130 laga jaray 26 waa imisa?",
+    "options": [
+      "105",
+      "103",
+      "107",
+      "104"
+    ],
+    "correct": "104"
+  },
+  {
+    "question": "Xisaabi: 7 lagu dhuftay 35 waa imisa?",
+    "options": [
+      "244",
+      "248",
+      "245",
+      "246"
+    ],
+    "correct": "245"
+  },
+  {
+    "question": "Xisaabi: 477 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "56",
+      "53",
+      "54",
+      "52"
+    ],
+    "correct": "53"
+  },
+  {
+    "question": "Haddii 62 kubbad lagu daro 41 kale, wadartu waa imisa?",
+    "options": [
+      "103",
+      "104",
+      "102",
+      "106"
+    ],
+    "correct": "103"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 135 kubbad; 27 ayaa baxay. Maxaa haray?",
+    "options": [
+      "109",
+      "107",
+      "111",
+      "108"
+    ],
+    "correct": "108"
+  },
+  {
+    "question": "8 jeer 37 waa imisa?",
+    "options": [
+      "295",
+      "299",
+      "296",
+      "297"
+    ],
+    "correct": "296"
+  },
+  {
+    "question": "Haddii 560 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "59",
+      "56",
+      "57",
+      "55"
+    ],
+    "correct": "56"
+  },
+  {
+    "question": "Waxaa jiray 65 qalin, waxaana lagu daray 43 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "108",
+      "109",
+      "107",
+      "111"
+    ],
+    "correct": "108"
+  },
+  {
+    "question": "140 qalin ayaa jiray; 28 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "113",
+      "111",
+      "115",
+      "112"
+    ],
+    "correct": "112"
+  },
+  {
+    "question": "Waxaa jira 9 kooxood, koox walbana 39 qalin ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "350",
+      "354",
+      "351",
+      "352"
+    ],
+    "correct": "351"
+  },
+  {
+    "question": "118 qalin ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "62",
+      "59",
+      "60",
+      "58"
+    ],
+    "correct": "59"
+  },
+  {
+    "question": "Xisaabi wadarta 68 iyo 45.",
+    "options": [
+      "113",
+      "114",
+      "112",
+      "116"
+    ],
+    "correct": "113"
+  },
+  {
+    "question": "Xisaabi: 145 laga jaray 29 waa imisa?",
+    "options": [
+      "117",
+      "115",
+      "119",
+      "116"
+    ],
+    "correct": "116"
+  },
+  {
+    "question": "Xisaabi: 10 lagu dhuftay 41 waa imisa?",
+    "options": [
+      "409",
+      "413",
+      "410",
+      "411"
+    ],
+    "correct": "410"
+  },
+  {
+    "question": "Xisaabi: 186 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "65",
+      "62",
+      "63",
+      "61"
+    ],
+    "correct": "62"
+  },
+  {
+    "question": "Haddii 71 geel lagu daro 47 kale, wadartu waa imisa?",
+    "options": [
+      "118",
+      "119",
+      "117",
+      "121"
+    ],
+    "correct": "118"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 150 geel; 10 ayaa baxay. Maxaa haray?",
+    "options": [
+      "141",
+      "139",
+      "143",
+      "140"
+    ],
+    "correct": "140"
+  },
+  {
+    "question": "11 jeer 43 waa imisa?",
+    "options": [
+      "472",
+      "476",
+      "473",
+      "474"
+    ],
+    "correct": "473"
+  },
+  {
+    "question": "Haddii 260 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "68",
+      "65",
+      "66",
+      "64"
+    ],
+    "correct": "65"
+  },
+  {
+    "question": "Waxaa jiray 74 ari, waxaana lagu daray 49 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "123",
+      "124",
+      "122",
+      "126"
+    ],
+    "correct": "123"
+  },
+  {
+    "question": "155 ari ayaa jiray; 11 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "145",
+      "143",
+      "147",
+      "144"
+    ],
+    "correct": "144"
+  },
+  {
+    "question": "Waxaa jira 12 kooxood, koox walbana 45 ari ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "539",
+      "543",
+      "540",
+      "541"
+    ],
+    "correct": "540"
+  },
+  {
+    "question": "340 ari ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "71",
+      "68",
+      "69",
+      "67"
+    ],
+    "correct": "68"
+  },
+  {
+    "question": "Xisaabi wadarta 77 iyo 51.",
+    "options": [
+      "128",
+      "129",
+      "127",
+      "131"
+    ],
+    "correct": "128"
+  },
+  {
+    "question": "Xisaabi: 160 laga jaray 12 waa imisa?",
+    "options": [
+      "149",
+      "147",
+      "151",
+      "148"
+    ],
+    "correct": "148"
+  },
+  {
+    "question": "Xisaabi: 2 lagu dhuftay 47 waa imisa?",
+    "options": [
+      "93",
+      "97",
+      "94",
+      "95"
+    ],
+    "correct": "94"
+  },
+  {
+    "question": "Xisaabi: 426 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "74",
+      "71",
+      "72",
+      "70"
+    ],
+    "correct": "71"
+  },
+  {
+    "question": "Haddii 80 ukun lagu daro 53 kale, wadartu waa imisa?",
+    "options": [
+      "133",
+      "134",
+      "132",
+      "136"
+    ],
+    "correct": "133"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 165 ukun; 13 ayaa baxay. Maxaa haray?",
+    "options": [
+      "153",
+      "151",
+      "155",
+      "152"
+    ],
+    "correct": "152"
+  },
+  {
+    "question": "3 jeer 49 waa imisa?",
+    "options": [
+      "146",
+      "150",
+      "147",
+      "148"
+    ],
+    "correct": "147"
+  },
+  {
+    "question": "Haddii 518 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "77",
+      "74",
+      "75",
+      "73"
+    ],
+    "correct": "74"
+  },
+  {
+    "question": "Waxaa jiray 83 geed, waxaana lagu daray 55 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "138",
+      "139",
+      "137",
+      "141"
+    ],
+    "correct": "138"
+  },
+  {
+    "question": "170 geed ayaa jiray; 14 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "157",
+      "155",
+      "159",
+      "156"
+    ],
+    "correct": "156"
+  },
+  {
+    "question": "Waxaa jira 4 kooxood, koox walbana 51 geed ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "203",
+      "207",
+      "204",
+      "205"
+    ],
+    "correct": "204"
+  },
+  {
+    "question": "616 geed ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "80",
+      "77",
+      "78",
+      "76"
+    ],
+    "correct": "77"
+  },
+  {
+    "question": "Xisaabi wadarta 86 iyo 57.",
+    "options": [
+      "143",
+      "144",
+      "142",
+      "146"
+    ],
+    "correct": "143"
+  },
+  {
+    "question": "Xisaabi: 175 laga jaray 15 waa imisa?",
+    "options": [
+      "161",
+      "159",
+      "163",
+      "160"
+    ],
+    "correct": "160"
+  },
+  {
+    "question": "Xisaabi: 5 lagu dhuftay 53 waa imisa?",
+    "options": [
+      "264",
+      "268",
+      "265",
+      "266"
+    ],
+    "correct": "265"
+  },
+  {
+    "question": "Xisaabi: 720 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "83",
+      "80",
+      "81",
+      "79"
+    ],
+    "correct": "80"
+  },
+  {
+    "question": "Haddii 89 kiilo oo bariis ah lagu daro 59 kale, wadartu waa imisa?",
+    "options": [
+      "148",
+      "149",
+      "147",
+      "151"
+    ],
+    "correct": "148"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 180 kiilo oo bariis ah; 16 ayaa baxay. Maxaa haray?",
+    "options": [
+      "165",
+      "163",
+      "167",
+      "164"
+    ],
+    "correct": "164"
+  },
+  {
+    "question": "6 jeer 55 waa imisa?",
+    "options": [
+      "329",
+      "333",
+      "330",
+      "331"
+    ],
+    "correct": "330"
+  },
+  {
+    "question": "Haddii 830 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "86",
+      "83",
+      "84",
+      "82"
+    ],
+    "correct": "83"
+  },
+  {
+    "question": "Waxaa jiray 92 kubbad, waxaana lagu daray 61 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "153",
+      "154",
+      "152",
+      "156"
+    ],
+    "correct": "153"
+  },
+  {
+    "question": "185 kubbad ayaa jiray; 17 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "169",
+      "167",
+      "171",
+      "168"
+    ],
+    "correct": "168"
+  },
+  {
+    "question": "Waxaa jira 7 kooxood, koox walbana 57 kubbad ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "398",
+      "402",
+      "399",
+      "400"
+    ],
+    "correct": "399"
+  },
+  {
+    "question": "172 kubbad ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "89",
+      "86",
+      "87",
+      "85"
+    ],
+    "correct": "86"
+  },
+  {
+    "question": "Xisaabi wadarta 95 iyo 63.",
+    "options": [
+      "158",
+      "159",
+      "157",
+      "161"
+    ],
+    "correct": "158"
+  },
+  {
+    "question": "Xisaabi: 190 laga jaray 18 waa imisa?",
+    "options": [
+      "173",
+      "171",
+      "175",
+      "172"
+    ],
+    "correct": "172"
+  },
+  {
+    "question": "Xisaabi: 8 lagu dhuftay 59 waa imisa?",
+    "options": [
+      "471",
+      "475",
+      "472",
+      "473"
+    ],
+    "correct": "472"
+  },
+  {
+    "question": "Xisaabi: 267 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "92",
+      "89",
+      "90",
+      "88"
+    ],
+    "correct": "89"
+  },
+  {
+    "question": "Haddii 98 moos lagu daro 65 kale, wadartu waa imisa?",
+    "options": [
+      "163",
+      "164",
+      "162",
+      "166"
+    ],
+    "correct": "163"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 195 moos; 19 ayaa baxay. Maxaa haray?",
+    "options": [
+      "177",
+      "175",
+      "179",
+      "176"
+    ],
+    "correct": "176"
+  },
+  {
+    "question": "9 jeer 61 waa imisa?",
+    "options": [
+      "548",
+      "552",
+      "549",
+      "550"
+    ],
+    "correct": "549"
+  },
+  {
+    "question": "Haddii 368 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "95",
+      "92",
+      "93",
+      "91"
+    ],
+    "correct": "92"
+  },
+  {
+    "question": "Waxaa jiray 101 geel, waxaana lagu daray 67 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "168",
+      "169",
+      "167",
+      "171"
+    ],
+    "correct": "168"
+  },
+  {
+    "question": "200 geel ayaa jiray; 20 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "181",
+      "179",
+      "183",
+      "180"
+    ],
+    "correct": "180"
+  },
+  {
+    "question": "Waxaa jira 10 kooxood, koox walbana 63 geel ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "629",
+      "633",
+      "630",
+      "631"
+    ],
+    "correct": "630"
+  },
+  {
+    "question": "475 geel ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "98",
+      "95",
+      "96",
+      "94"
+    ],
+    "correct": "95"
+  },
+  {
+    "question": "Xisaabi wadarta 104 iyo 69.",
+    "options": [
+      "173",
+      "174",
+      "172",
+      "176"
+    ],
+    "correct": "173"
+  },
+  {
+    "question": "Xisaabi: 205 laga jaray 21 waa imisa?",
+    "options": [
+      "185",
+      "183",
+      "187",
+      "184"
+    ],
+    "correct": "184"
+  },
+  {
+    "question": "Xisaabi: 11 lagu dhuftay 65 waa imisa?",
+    "options": [
+      "714",
+      "718",
+      "715",
+      "716"
+    ],
+    "correct": "715"
+  },
+  {
+    "question": "Xisaabi: 588 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "101",
+      "98",
+      "99",
+      "97"
+    ],
+    "correct": "98"
+  },
+  {
+    "question": "Haddii 107 buug lagu daro 71 kale, wadartu waa imisa?",
+    "options": [
+      "178",
+      "179",
+      "177",
+      "181"
+    ],
+    "correct": "178"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 210 buug; 22 ayaa baxay. Maxaa haray?",
+    "options": [
+      "189",
+      "187",
+      "191",
+      "188"
+    ],
+    "correct": "188"
+  },
+  {
+    "question": "12 jeer 67 waa imisa?",
+    "options": [
+      "803",
+      "807",
+      "804",
+      "805"
+    ],
+    "correct": "804"
+  },
+  {
+    "question": "Haddii 707 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "104",
+      "101",
+      "102",
+      "100"
+    ],
+    "correct": "101"
+  },
+  {
+    "question": "Waxaa jiray 110 ukun, waxaana lagu daray 73 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "183",
+      "184",
+      "182",
+      "186"
+    ],
+    "correct": "183"
+  },
+  {
+    "question": "215 ukun ayaa jiray; 23 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "193",
+      "191",
+      "195",
+      "192"
+    ],
+    "correct": "192"
+  },
+  {
+    "question": "Waxaa jira 2 kooxood, koox walbana 69 ukun ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "137",
+      "141",
+      "138",
+      "139"
+    ],
+    "correct": "138"
+  },
+  {
+    "question": "832 ukun ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "107",
+      "104",
+      "105",
+      "103"
+    ],
+    "correct": "104"
+  },
+  {
+    "question": "Xisaabi wadarta 113 iyo 75.",
+    "options": [
+      "188",
+      "189",
+      "187",
+      "191"
+    ],
+    "correct": "188"
+  },
+  {
+    "question": "Xisaabi: 220 laga jaray 24 waa imisa?",
+    "options": [
+      "197",
+      "195",
+      "199",
+      "196"
+    ],
+    "correct": "196"
+  },
+  {
+    "question": "Xisaabi: 3 lagu dhuftay 71 waa imisa?",
+    "options": [
+      "212",
+      "216",
+      "213",
+      "214"
+    ],
+    "correct": "213"
+  },
+  {
+    "question": "Xisaabi: 963 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "110",
+      "107",
+      "108",
+      "106"
+    ],
+    "correct": "107"
+  },
+  {
+    "question": "Haddii 116 koob oo biyo ah lagu daro 77 kale, wadartu waa imisa?",
+    "options": [
+      "193",
+      "194",
+      "192",
+      "196"
+    ],
+    "correct": "193"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 225 koob oo biyo ah; 25 ayaa baxay. Maxaa haray?",
+    "options": [
+      "201",
+      "199",
+      "203",
+      "200"
+    ],
+    "correct": "200"
+  },
+  {
+    "question": "4 jeer 73 waa imisa?",
+    "options": [
+      "291",
+      "295",
+      "292",
+      "293"
+    ],
+    "correct": "292"
+  },
+  {
+    "question": "Haddii 1100 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "113",
+      "110",
+      "111",
+      "109"
+    ],
+    "correct": "110"
+  },
+  {
+    "question": "Waxaa jiray 119 kiilo oo bariis ah, waxaana lagu daray 79 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "198",
+      "199",
+      "197",
+      "201"
+    ],
+    "correct": "198"
+  },
+  {
+    "question": "230 kiilo oo bariis ah ayaa jiray; 26 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "205",
+      "203",
+      "207",
+      "204"
+    ],
+    "correct": "204"
+  },
+  {
+    "question": "Waxaa jira 5 kooxood, koox walbana 75 kiilo oo bariis ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "374",
+      "378",
+      "375",
+      "376"
+    ],
+    "correct": "375"
+  },
+  {
+    "question": "226 kiilo oo bariis ah ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "116",
+      "113",
+      "114",
+      "112"
+    ],
+    "correct": "113"
+  },
+  {
+    "question": "Xisaabi wadarta 122 iyo 81.",
+    "options": [
+      "203",
+      "204",
+      "202",
+      "206"
+    ],
+    "correct": "203"
+  },
+  {
+    "question": "Xisaabi: 235 laga jaray 27 waa imisa?",
+    "options": [
+      "209",
+      "207",
+      "211",
+      "208"
+    ],
+    "correct": "208"
+  },
+  {
+    "question": "Xisaabi: 6 lagu dhuftay 77 waa imisa?",
+    "options": [
+      "461",
+      "465",
+      "462",
+      "463"
+    ],
+    "correct": "462"
+  },
+  {
+    "question": "Xisaabi: 348 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "119",
+      "116",
+      "117",
+      "115"
+    ],
+    "correct": "116"
+  },
+  {
+    "question": "Haddii 125 qalin lagu daro 83 kale, wadartu waa imisa?",
+    "options": [
+      "208",
+      "209",
+      "207",
+      "211"
+    ],
+    "correct": "208"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 240 qalin; 28 ayaa baxay. Maxaa haray?",
+    "options": [
+      "213",
+      "211",
+      "215",
+      "212"
+    ],
+    "correct": "212"
+  },
+  {
+    "question": "7 jeer 79 waa imisa?",
+    "options": [
+      "552",
+      "556",
+      "553",
+      "554"
+    ],
+    "correct": "553"
+  },
+  {
+    "question": "Haddii 476 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "122",
+      "119",
+      "120",
+      "118"
+    ],
+    "correct": "119"
+  },
+  {
+    "question": "Waxaa jiray 128 moos, waxaana lagu daray 85 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "213",
+      "214",
+      "212",
+      "216"
+    ],
+    "correct": "213"
+  },
+  {
+    "question": "245 moos ayaa jiray; 29 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "217",
+      "215",
+      "219",
+      "216"
+    ],
+    "correct": "216"
+  },
+  {
+    "question": "Waxaa jira 8 kooxood, koox walbana 81 moos ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "647",
+      "651",
+      "648",
+      "649"
+    ],
+    "correct": "648"
+  },
+  {
+    "question": "610 moos ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "125",
+      "122",
+      "123",
+      "121"
+    ],
+    "correct": "122"
+  },
+  {
+    "question": "Xisaabi wadarta 131 iyo 87.",
+    "options": [
+      "218",
+      "219",
+      "217",
+      "221"
+    ],
+    "correct": "218"
+  },
+  {
+    "question": "Xisaabi: 250 laga jaray 10 waa imisa?",
+    "options": [
+      "241",
+      "239",
+      "243",
+      "240"
+    ],
+    "correct": "240"
+  },
+  {
+    "question": "Xisaabi: 9 lagu dhuftay 83 waa imisa?",
+    "options": [
+      "746",
+      "750",
+      "747",
+      "748"
+    ],
+    "correct": "747"
+  },
+  {
+    "question": "Xisaabi: 750 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "128",
+      "125",
+      "126",
+      "124"
+    ],
+    "correct": "125"
+  },
+  {
+    "question": "Haddii 134 ari lagu daro 89 kale, wadartu waa imisa?",
+    "options": [
+      "223",
+      "224",
+      "222",
+      "226"
+    ],
+    "correct": "223"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 255 ari; 11 ayaa baxay. Maxaa haray?",
+    "options": [
+      "245",
+      "243",
+      "247",
+      "244"
+    ],
+    "correct": "244"
+  },
+  {
+    "question": "10 jeer 85 waa imisa?",
+    "options": [
+      "849",
+      "853",
+      "850",
+      "851"
+    ],
+    "correct": "850"
+  },
+  {
+    "question": "Haddii 896 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "131",
+      "128",
+      "129",
+      "127"
+    ],
+    "correct": "128"
+  },
+  {
+    "question": "Waxaa jiray 137 buug, waxaana lagu daray 91 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "228",
+      "229",
+      "227",
+      "231"
+    ],
+    "correct": "228"
+  },
+  {
+    "question": "260 buug ayaa jiray; 12 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "249",
+      "247",
+      "251",
+      "248"
+    ],
+    "correct": "248"
+  },
+  {
+    "question": "Waxaa jira 11 kooxood, koox walbana 87 buug ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "956",
+      "960",
+      "957",
+      "958"
+    ],
+    "correct": "957"
+  },
+  {
+    "question": "1048 buug ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "134",
+      "131",
+      "132",
+      "130"
+    ],
+    "correct": "131"
+  },
+  {
+    "question": "Xisaabi wadarta 140 iyo 93.",
+    "options": [
+      "233",
+      "234",
+      "232",
+      "236"
+    ],
+    "correct": "233"
+  },
+  {
+    "question": "Xisaabi: 265 laga jaray 13 waa imisa?",
+    "options": [
+      "253",
+      "251",
+      "255",
+      "252"
+    ],
+    "correct": "252"
+  },
+  {
+    "question": "Xisaabi: 12 lagu dhuftay 89 waa imisa?",
+    "options": [
+      "1067",
+      "1071",
+      "1068",
+      "1069"
+    ],
+    "correct": "1068"
+  },
+  {
+    "question": "Xisaabi: 1206 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "137",
+      "134",
+      "135",
+      "133"
+    ],
+    "correct": "134"
+  },
+  {
+    "question": "Haddii 143 geed lagu daro 95 kale, wadartu waa imisa?",
+    "options": [
+      "238",
+      "239",
+      "237",
+      "241"
+    ],
+    "correct": "238"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 270 geed; 14 ayaa baxay. Maxaa haray?",
+    "options": [
+      "257",
+      "255",
+      "259",
+      "256"
+    ],
+    "correct": "256"
+  },
+  {
+    "question": "2 jeer 91 waa imisa?",
+    "options": [
+      "181",
+      "185",
+      "182",
+      "183"
+    ],
+    "correct": "182"
+  },
+  {
+    "question": "Haddii 1370 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "140",
+      "137",
+      "138",
+      "136"
+    ],
+    "correct": "137"
+  },
+  {
+    "question": "Waxaa jiray 146 koob oo biyo ah, waxaana lagu daray 97 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "243",
+      "244",
+      "242",
+      "246"
+    ],
+    "correct": "243"
+  },
+  {
+    "question": "275 koob oo biyo ah ayaa jiray; 15 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "261",
+      "259",
+      "263",
+      "260"
+    ],
+    "correct": "260"
+  },
+  {
+    "question": "Waxaa jira 3 kooxood, koox walbana 93 koob oo biyo ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "278",
+      "282",
+      "279",
+      "280"
+    ],
+    "correct": "279"
+  },
+  {
+    "question": "280 koob oo biyo ah ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "143",
+      "140",
+      "141",
+      "139"
+    ],
+    "correct": "140"
+  },
+  {
+    "question": "Xisaabi wadarta 149 iyo 99.",
+    "options": [
+      "248",
+      "249",
+      "247",
+      "251"
+    ],
+    "correct": "248"
+  },
+  {
+    "question": "Xisaabi: 280 laga jaray 16 waa imisa?",
+    "options": [
+      "265",
+      "263",
+      "267",
+      "264"
+    ],
+    "correct": "264"
+  },
+  {
+    "question": "Xisaabi: 4 lagu dhuftay 95 waa imisa?",
+    "options": [
+      "379",
+      "383",
+      "380",
+      "381"
+    ],
+    "correct": "380"
+  },
+  {
+    "question": "Xisaabi: 429 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "146",
+      "143",
+      "144",
+      "142"
+    ],
+    "correct": "143"
+  },
+  {
+    "question": "Haddii 152 kubbad lagu daro 101 kale, wadartu waa imisa?",
+    "options": [
+      "253",
+      "254",
+      "252",
+      "256"
+    ],
+    "correct": "253"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 285 kubbad; 17 ayaa baxay. Maxaa haray?",
+    "options": [
+      "269",
+      "267",
+      "271",
+      "268"
+    ],
+    "correct": "268"
+  },
+  {
+    "question": "5 jeer 97 waa imisa?",
+    "options": [
+      "484",
+      "488",
+      "485",
+      "486"
+    ],
+    "correct": "485"
+  },
+  {
+    "question": "Haddii 584 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "149",
+      "146",
+      "147",
+      "145"
+    ],
+    "correct": "146"
+  },
+  {
+    "question": "Waxaa jiray 155 qalin, waxaana lagu daray 103 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "258",
+      "259",
+      "257",
+      "261"
+    ],
+    "correct": "258"
+  },
+  {
+    "question": "290 qalin ayaa jiray; 18 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "273",
+      "271",
+      "275",
+      "272"
+    ],
+    "correct": "272"
+  },
+  {
+    "question": "Waxaa jira 6 kooxood, koox walbana 99 qalin ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "593",
+      "597",
+      "594",
+      "595"
+    ],
+    "correct": "594"
+  },
+  {
+    "question": "745 qalin ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "152",
+      "149",
+      "150",
+      "148"
+    ],
+    "correct": "149"
+  },
+  {
+    "question": "Xisaabi wadarta 158 iyo 105.",
+    "options": [
+      "263",
+      "264",
+      "262",
+      "266"
+    ],
+    "correct": "263"
+  },
+  {
+    "question": "Xisaabi: 295 laga jaray 19 waa imisa?",
+    "options": [
+      "277",
+      "275",
+      "279",
+      "276"
+    ],
+    "correct": "276"
+  },
+  {
+    "question": "Xisaabi: 7 lagu dhuftay 101 waa imisa?",
+    "options": [
+      "706",
+      "710",
+      "707",
+      "708"
+    ],
+    "correct": "707"
+  },
+  {
+    "question": "Xisaabi: 912 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "155",
+      "152",
+      "153",
+      "151"
+    ],
+    "correct": "152"
+  },
+  {
+    "question": "Haddii 161 geel lagu daro 107 kale, wadartu waa imisa?",
+    "options": [
+      "268",
+      "269",
+      "267",
+      "271"
+    ],
+    "correct": "268"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 300 geel; 20 ayaa baxay. Maxaa haray?",
+    "options": [
+      "281",
+      "279",
+      "283",
+      "280"
+    ],
+    "correct": "280"
+  },
+  {
+    "question": "8 jeer 103 waa imisa?",
+    "options": [
+      "823",
+      "827",
+      "824",
+      "825"
+    ],
+    "correct": "824"
+  },
+  {
+    "question": "Haddii 1085 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "158",
+      "155",
+      "156",
+      "154"
+    ],
+    "correct": "155"
+  },
+  {
+    "question": "Waxaa jiray 164 ari, waxaana lagu daray 109 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "273",
+      "274",
+      "272",
+      "276"
+    ],
+    "correct": "273"
+  },
+  {
+    "question": "305 ari ayaa jiray; 21 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "285",
+      "283",
+      "287",
+      "284"
+    ],
+    "correct": "284"
+  },
+  {
+    "question": "Waxaa jira 9 kooxood, koox walbana 105 ari ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "944",
+      "948",
+      "945",
+      "946"
+    ],
+    "correct": "945"
+  },
+  {
+    "question": "1264 ari ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "161",
+      "158",
+      "159",
+      "157"
+    ],
+    "correct": "158"
+  },
+  {
+    "question": "Xisaabi wadarta 167 iyo 111.",
+    "options": [
+      "278",
+      "279",
+      "277",
+      "281"
+    ],
+    "correct": "278"
+  },
+  {
+    "question": "Xisaabi: 310 laga jaray 22 waa imisa?",
+    "options": [
+      "289",
+      "287",
+      "291",
+      "288"
+    ],
+    "correct": "288"
+  },
+  {
+    "question": "Xisaabi: 10 lagu dhuftay 107 waa imisa?",
+    "options": [
+      "1069",
+      "1073",
+      "1070",
+      "1071"
+    ],
+    "correct": "1070"
+  },
+  {
+    "question": "Xisaabi: 1449 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "164",
+      "161",
+      "162",
+      "160"
+    ],
+    "correct": "161"
+  },
+  {
+    "question": "Haddii 170 ukun lagu daro 113 kale, wadartu waa imisa?",
+    "options": [
+      "283",
+      "284",
+      "282",
+      "286"
+    ],
+    "correct": "283"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 315 ukun; 23 ayaa baxay. Maxaa haray?",
+    "options": [
+      "293",
+      "291",
+      "295",
+      "292"
+    ],
+    "correct": "292"
+  },
+  {
+    "question": "11 jeer 109 waa imisa?",
+    "options": [
+      "1198",
+      "1202",
+      "1199",
+      "1200"
+    ],
+    "correct": "1199"
+  },
+  {
+    "question": "Haddii 1640 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "167",
+      "164",
+      "165",
+      "163"
+    ],
+    "correct": "164"
+  },
+  {
+    "question": "Waxaa jiray 173 geed, waxaana lagu daray 115 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "288",
+      "289",
+      "287",
+      "291"
+    ],
+    "correct": "288"
+  },
+  {
+    "question": "320 geed ayaa jiray; 24 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "297",
+      "295",
+      "299",
+      "296"
+    ],
+    "correct": "296"
+  },
+  {
+    "question": "Waxaa jira 12 kooxood, koox walbana 111 geed ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1331",
+      "1335",
+      "1332",
+      "1333"
+    ],
+    "correct": "1332"
+  },
+  {
+    "question": "334 geed ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "170",
+      "167",
+      "168",
+      "166"
+    ],
+    "correct": "167"
+  },
+  {
+    "question": "Xisaabi wadarta 176 iyo 117.",
+    "options": [
+      "293",
+      "294",
+      "292",
+      "296"
+    ],
+    "correct": "293"
+  },
+  {
+    "question": "Xisaabi: 325 laga jaray 25 waa imisa?",
+    "options": [
+      "301",
+      "299",
+      "303",
+      "300"
+    ],
+    "correct": "300"
+  },
+  {
+    "question": "Xisaabi: 2 lagu dhuftay 113 waa imisa?",
+    "options": [
+      "225",
+      "229",
+      "226",
+      "227"
+    ],
+    "correct": "226"
+  },
+  {
+    "question": "Xisaabi: 510 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "173",
+      "170",
+      "171",
+      "169"
+    ],
+    "correct": "170"
+  },
+  {
+    "question": "Haddii 179 kiilo oo bariis ah lagu daro 119 kale, wadartu waa imisa?",
+    "options": [
+      "298",
+      "299",
+      "297",
+      "301"
+    ],
+    "correct": "298"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 330 kiilo oo bariis ah; 26 ayaa baxay. Maxaa haray?",
+    "options": [
+      "305",
+      "303",
+      "307",
+      "304"
+    ],
+    "correct": "304"
+  },
+  {
+    "question": "3 jeer 115 waa imisa?",
+    "options": [
+      "344",
+      "348",
+      "345",
+      "346"
+    ],
+    "correct": "345"
+  },
+  {
+    "question": "Haddii 692 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "176",
+      "173",
+      "174",
+      "172"
+    ],
+    "correct": "173"
+  },
+  {
+    "question": "Waxaa jiray 182 kubbad, waxaana lagu daray 121 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "303",
+      "304",
+      "302",
+      "306"
+    ],
+    "correct": "303"
+  },
+  {
+    "question": "335 kubbad ayaa jiray; 27 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "309",
+      "307",
+      "311",
+      "308"
+    ],
+    "correct": "308"
+  },
+  {
+    "question": "Waxaa jira 4 kooxood, koox walbana 117 kubbad ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "467",
+      "471",
+      "468",
+      "469"
+    ],
+    "correct": "468"
+  },
+  {
+    "question": "880 kubbad ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "179",
+      "176",
+      "177",
+      "175"
+    ],
+    "correct": "176"
+  },
+  {
+    "question": "Xisaabi wadarta 185 iyo 123.",
+    "options": [
+      "308",
+      "309",
+      "307",
+      "311"
+    ],
+    "correct": "308"
+  },
+  {
+    "question": "Xisaabi: 340 laga jaray 28 waa imisa?",
+    "options": [
+      "313",
+      "311",
+      "315",
+      "312"
+    ],
+    "correct": "312"
+  },
+  {
+    "question": "Xisaabi: 5 lagu dhuftay 119 waa imisa?",
+    "options": [
+      "594",
+      "598",
+      "595",
+      "596"
+    ],
+    "correct": "595"
+  },
+  {
+    "question": "Xisaabi: 1074 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "182",
+      "179",
+      "180",
+      "178"
+    ],
+    "correct": "179"
+  },
+  {
+    "question": "Haddii 188 moos lagu daro 125 kale, wadartu waa imisa?",
+    "options": [
+      "313",
+      "314",
+      "312",
+      "316"
+    ],
+    "correct": "313"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 345 moos; 29 ayaa baxay. Maxaa haray?",
+    "options": [
+      "317",
+      "315",
+      "319",
+      "316"
+    ],
+    "correct": "316"
+  },
+  {
+    "question": "6 jeer 121 waa imisa?",
+    "options": [
+      "725",
+      "729",
+      "726",
+      "727"
+    ],
+    "correct": "726"
+  },
+  {
+    "question": "Haddii 1274 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "185",
+      "182",
+      "183",
+      "181"
+    ],
+    "correct": "182"
+  },
+  {
+    "question": "Waxaa jiray 191 geel, waxaana lagu daray 127 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "318",
+      "319",
+      "317",
+      "321"
+    ],
+    "correct": "318"
+  },
+  {
+    "question": "350 geel ayaa jiray; 10 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "341",
+      "339",
+      "343",
+      "340"
+    ],
+    "correct": "340"
+  },
+  {
+    "question": "Waxaa jira 7 kooxood, koox walbana 123 geel ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "860",
+      "864",
+      "861",
+      "862"
+    ],
+    "correct": "861"
+  },
+  {
+    "question": "1480 geel ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "188",
+      "185",
+      "186",
+      "184"
+    ],
+    "correct": "185"
+  },
+  {
+    "question": "Xisaabi wadarta 194 iyo 129.",
+    "options": [
+      "323",
+      "324",
+      "322",
+      "326"
+    ],
+    "correct": "323"
+  },
+  {
+    "question": "Xisaabi: 355 laga jaray 11 waa imisa?",
+    "options": [
+      "345",
+      "343",
+      "347",
+      "344"
+    ],
+    "correct": "344"
+  },
+  {
+    "question": "Xisaabi: 8 lagu dhuftay 125 waa imisa?",
+    "options": [
+      "999",
+      "1003",
+      "1000",
+      "1001"
+    ],
+    "correct": "1000"
+  },
+  {
+    "question": "Xisaabi: 1692 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "191",
+      "188",
+      "189",
+      "187"
+    ],
+    "correct": "188"
+  },
+  {
+    "question": "Haddii 197 buug lagu daro 131 kale, wadartu waa imisa?",
+    "options": [
+      "328",
+      "329",
+      "327",
+      "331"
+    ],
+    "correct": "328"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 360 buug; 12 ayaa baxay. Maxaa haray?",
+    "options": [
+      "349",
+      "347",
+      "351",
+      "348"
+    ],
+    "correct": "348"
+  },
+  {
+    "question": "9 jeer 127 waa imisa?",
+    "options": [
+      "1142",
+      "1146",
+      "1143",
+      "1144"
+    ],
+    "correct": "1143"
+  },
+  {
+    "question": "Haddii 1910 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "194",
+      "191",
+      "192",
+      "190"
+    ],
+    "correct": "191"
+  },
+  {
+    "question": "Waxaa jiray 200 ukun, waxaana lagu daray 133 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "333",
+      "334",
+      "332",
+      "336"
+    ],
+    "correct": "333"
+  },
+  {
+    "question": "365 ukun ayaa jiray; 13 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "353",
+      "351",
+      "355",
+      "352"
+    ],
+    "correct": "352"
+  },
+  {
+    "question": "Waxaa jira 10 kooxood, koox walbana 129 ukun ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1289",
+      "1293",
+      "1290",
+      "1291"
+    ],
+    "correct": "1290"
+  },
+  {
+    "question": "388 ukun ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "197",
+      "194",
+      "195",
+      "193"
+    ],
+    "correct": "194"
+  },
+  {
+    "question": "Xisaabi wadarta 203 iyo 135.",
+    "options": [
+      "338",
+      "339",
+      "337",
+      "341"
+    ],
+    "correct": "338"
+  },
+  {
+    "question": "Xisaabi: 370 laga jaray 14 waa imisa?",
+    "options": [
+      "357",
+      "355",
+      "359",
+      "356"
+    ],
+    "correct": "356"
+  },
+  {
+    "question": "Xisaabi: 11 lagu dhuftay 131 waa imisa?",
+    "options": [
+      "1440",
+      "1444",
+      "1441",
+      "1442"
+    ],
+    "correct": "1441"
+  },
+  {
+    "question": "Xisaabi: 591 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "200",
+      "197",
+      "198",
+      "196"
+    ],
+    "correct": "197"
+  },
+  {
+    "question": "Haddii 206 koob oo biyo ah lagu daro 137 kale, wadartu waa imisa?",
+    "options": [
+      "343",
+      "344",
+      "342",
+      "346"
+    ],
+    "correct": "343"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 375 koob oo biyo ah; 15 ayaa baxay. Maxaa haray?",
+    "options": [
+      "361",
+      "359",
+      "363",
+      "360"
+    ],
+    "correct": "360"
+  },
+  {
+    "question": "12 jeer 133 waa imisa?",
+    "options": [
+      "1595",
+      "1599",
+      "1596",
+      "1597"
+    ],
+    "correct": "1596"
+  },
+  {
+    "question": "Haddii 800 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "203",
+      "200",
+      "201",
+      "199"
+    ],
+    "correct": "200"
+  },
+  {
+    "question": "Waxaa jiray 209 kiilo oo bariis ah, waxaana lagu daray 139 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "348",
+      "349",
+      "347",
+      "351"
+    ],
+    "correct": "348"
+  },
+  {
+    "question": "380 kiilo oo bariis ah ayaa jiray; 16 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "365",
+      "363",
+      "367",
+      "364"
+    ],
+    "correct": "364"
+  },
+  {
+    "question": "Waxaa jira 2 kooxood, koox walbana 135 kiilo oo bariis ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "269",
+      "273",
+      "270",
+      "271"
+    ],
+    "correct": "270"
+  },
+  {
+    "question": "1015 kiilo oo bariis ah ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "206",
+      "203",
+      "204",
+      "202"
+    ],
+    "correct": "203"
+  },
+  {
+    "question": "Xisaabi wadarta 212 iyo 141.",
+    "options": [
+      "353",
+      "354",
+      "352",
+      "356"
+    ],
+    "correct": "353"
+  },
+  {
+    "question": "Xisaabi: 385 laga jaray 17 waa imisa?",
+    "options": [
+      "369",
+      "367",
+      "371",
+      "368"
+    ],
+    "correct": "368"
+  },
+  {
+    "question": "Xisaabi: 3 lagu dhuftay 137 waa imisa?",
+    "options": [
+      "410",
+      "414",
+      "411",
+      "412"
+    ],
+    "correct": "411"
+  },
+  {
+    "question": "Xisaabi: 1236 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "209",
+      "206",
+      "207",
+      "205"
+    ],
+    "correct": "206"
+  },
+  {
+    "question": "Haddii 215 qalin lagu daro 143 kale, wadartu waa imisa?",
+    "options": [
+      "358",
+      "359",
+      "357",
+      "361"
+    ],
+    "correct": "358"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 390 qalin; 18 ayaa baxay. Maxaa haray?",
+    "options": [
+      "373",
+      "371",
+      "375",
+      "372"
+    ],
+    "correct": "372"
+  },
+  {
+    "question": "4 jeer 139 waa imisa?",
+    "options": [
+      "555",
+      "559",
+      "556",
+      "557"
+    ],
+    "correct": "556"
+  },
+  {
+    "question": "Haddii 1463 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "212",
+      "209",
+      "210",
+      "208"
+    ],
+    "correct": "209"
+  },
+  {
+    "question": "Waxaa jiray 218 moos, waxaana lagu daray 145 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "363",
+      "364",
+      "362",
+      "366"
+    ],
+    "correct": "363"
+  },
+  {
+    "question": "395 moos ayaa jiray; 19 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "377",
+      "375",
+      "379",
+      "376"
+    ],
+    "correct": "376"
+  },
+  {
+    "question": "Waxaa jira 5 kooxood, koox walbana 141 moos ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "704",
+      "708",
+      "705",
+      "706"
+    ],
+    "correct": "705"
+  },
+  {
+    "question": "1696 moos ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "215",
+      "212",
+      "213",
+      "211"
+    ],
+    "correct": "212"
+  },
+  {
+    "question": "Xisaabi wadarta 221 iyo 147.",
+    "options": [
+      "368",
+      "369",
+      "367",
+      "371"
+    ],
+    "correct": "368"
+  },
+  {
+    "question": "Xisaabi: 400 laga jaray 20 waa imisa?",
+    "options": [
+      "381",
+      "379",
+      "383",
+      "380"
+    ],
+    "correct": "380"
+  },
+  {
+    "question": "Xisaabi: 6 lagu dhuftay 143 waa imisa?",
+    "options": [
+      "857",
+      "861",
+      "858",
+      "859"
+    ],
+    "correct": "858"
+  },
+  {
+    "question": "Xisaabi: 1935 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "218",
+      "215",
+      "216",
+      "214"
+    ],
+    "correct": "215"
+  },
+  {
+    "question": "Haddii 224 ari lagu daro 149 kale, wadartu waa imisa?",
+    "options": [
+      "373",
+      "374",
+      "372",
+      "376"
+    ],
+    "correct": "373"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 405 ari; 21 ayaa baxay. Maxaa haray?",
+    "options": [
+      "385",
+      "383",
+      "387",
+      "384"
+    ],
+    "correct": "384"
+  },
+  {
+    "question": "7 jeer 145 waa imisa?",
+    "options": [
+      "1014",
+      "1018",
+      "1015",
+      "1016"
+    ],
+    "correct": "1015"
+  },
+  {
+    "question": "Haddii 2180 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "221",
+      "218",
+      "219",
+      "217"
+    ],
+    "correct": "218"
+  },
+  {
+    "question": "Waxaa jiray 227 buug, waxaana lagu daray 151 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "378",
+      "379",
+      "377",
+      "381"
+    ],
+    "correct": "378"
+  },
+  {
+    "question": "410 buug ayaa jiray; 22 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "389",
+      "387",
+      "391",
+      "388"
+    ],
+    "correct": "388"
+  },
+  {
+    "question": "Waxaa jira 8 kooxood, koox walbana 147 buug ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1175",
+      "1179",
+      "1176",
+      "1177"
+    ],
+    "correct": "1176"
+  },
+  {
+    "question": "442 buug ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "224",
+      "221",
+      "222",
+      "220"
+    ],
+    "correct": "221"
+  },
+  {
+    "question": "Xisaabi wadarta 230 iyo 153.",
+    "options": [
+      "383",
+      "384",
+      "382",
+      "386"
+    ],
+    "correct": "383"
+  },
+  {
+    "question": "Xisaabi: 415 laga jaray 23 waa imisa?",
+    "options": [
+      "393",
+      "391",
+      "395",
+      "392"
+    ],
+    "correct": "392"
+  },
+  {
+    "question": "Xisaabi: 9 lagu dhuftay 149 waa imisa?",
+    "options": [
+      "1340",
+      "1344",
+      "1341",
+      "1342"
+    ],
+    "correct": "1341"
+  },
+  {
+    "question": "Xisaabi: 672 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "227",
+      "224",
+      "225",
+      "223"
+    ],
+    "correct": "224"
+  },
+  {
+    "question": "Haddii 233 geed lagu daro 155 kale, wadartu waa imisa?",
+    "options": [
+      "388",
+      "389",
+      "387",
+      "391"
+    ],
+    "correct": "388"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 420 geed; 24 ayaa baxay. Maxaa haray?",
+    "options": [
+      "397",
+      "395",
+      "399",
+      "396"
+    ],
+    "correct": "396"
+  },
+  {
+    "question": "10 jeer 151 waa imisa?",
+    "options": [
+      "1509",
+      "1513",
+      "1510",
+      "1511"
+    ],
+    "correct": "1510"
+  },
+  {
+    "question": "Haddii 908 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "230",
+      "227",
+      "228",
+      "226"
+    ],
+    "correct": "227"
+  },
+  {
+    "question": "Waxaa jiray 236 koob oo biyo ah, waxaana lagu daray 157 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "393",
+      "394",
+      "392",
+      "396"
+    ],
+    "correct": "393"
+  },
+  {
+    "question": "425 koob oo biyo ah ayaa jiray; 25 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "401",
+      "399",
+      "403",
+      "400"
+    ],
+    "correct": "400"
+  },
+  {
+    "question": "Waxaa jira 11 kooxood, koox walbana 153 koob oo biyo ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1682",
+      "1686",
+      "1683",
+      "1684"
+    ],
+    "correct": "1683"
+  },
+  {
+    "question": "1150 koob oo biyo ah ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "233",
+      "230",
+      "231",
+      "229"
+    ],
+    "correct": "230"
+  },
+  {
+    "question": "Xisaabi wadarta 239 iyo 159.",
+    "options": [
+      "398",
+      "399",
+      "397",
+      "401"
+    ],
+    "correct": "398"
+  },
+  {
+    "question": "Xisaabi: 430 laga jaray 26 waa imisa?",
+    "options": [
+      "405",
+      "403",
+      "407",
+      "404"
+    ],
+    "correct": "404"
+  },
+  {
+    "question": "Xisaabi: 12 lagu dhuftay 155 waa imisa?",
+    "options": [
+      "1859",
+      "1863",
+      "1860",
+      "1861"
+    ],
+    "correct": "1860"
+  },
+  {
+    "question": "Xisaabi: 1398 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "236",
+      "233",
+      "234",
+      "232"
+    ],
+    "correct": "233"
+  },
+  {
+    "question": "Haddii 242 kubbad lagu daro 161 kale, wadartu waa imisa?",
+    "options": [
+      "403",
+      "404",
+      "402",
+      "406"
+    ],
+    "correct": "403"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 435 kubbad; 27 ayaa baxay. Maxaa haray?",
+    "options": [
+      "409",
+      "407",
+      "411",
+      "408"
+    ],
+    "correct": "408"
+  },
+  {
+    "question": "2 jeer 157 waa imisa?",
+    "options": [
+      "313",
+      "317",
+      "314",
+      "315"
+    ],
+    "correct": "314"
+  },
+  {
+    "question": "Haddii 1652 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "239",
+      "236",
+      "237",
+      "235"
+    ],
+    "correct": "236"
+  },
+  {
+    "question": "Waxaa jiray 245 qalin, waxaana lagu daray 163 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "408",
+      "409",
+      "407",
+      "411"
+    ],
+    "correct": "408"
+  },
+  {
+    "question": "440 qalin ayaa jiray; 28 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "413",
+      "411",
+      "415",
+      "412"
+    ],
+    "correct": "412"
+  },
+  {
+    "question": "Waxaa jira 3 kooxood, koox walbana 159 qalin ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "476",
+      "480",
+      "477",
+      "478"
+    ],
+    "correct": "477"
+  },
+  {
+    "question": "1912 qalin ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "242",
+      "239",
+      "240",
+      "238"
+    ],
+    "correct": "239"
+  },
+  {
+    "question": "Xisaabi wadarta 248 iyo 165.",
+    "options": [
+      "413",
+      "414",
+      "412",
+      "416"
+    ],
+    "correct": "413"
+  },
+  {
+    "question": "Xisaabi: 445 laga jaray 29 waa imisa?",
+    "options": [
+      "417",
+      "415",
+      "419",
+      "416"
+    ],
+    "correct": "416"
+  },
+  {
+    "question": "Xisaabi: 4 lagu dhuftay 161 waa imisa?",
+    "options": [
+      "643",
+      "647",
+      "644",
+      "645"
+    ],
+    "correct": "644"
+  },
+  {
+    "question": "Xisaabi: 2178 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "245",
+      "242",
+      "243",
+      "241"
+    ],
+    "correct": "242"
+  },
+  {
+    "question": "Haddii 251 geel lagu daro 167 kale, wadartu waa imisa?",
+    "options": [
+      "418",
+      "419",
+      "417",
+      "421"
+    ],
+    "correct": "418"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 450 geel; 10 ayaa baxay. Maxaa haray?",
+    "options": [
+      "441",
+      "439",
+      "443",
+      "440"
+    ],
+    "correct": "440"
+  },
+  {
+    "question": "5 jeer 163 waa imisa?",
+    "options": [
+      "814",
+      "818",
+      "815",
+      "816"
+    ],
+    "correct": "815"
+  },
+  {
+    "question": "Haddii 2450 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "248",
+      "245",
+      "246",
+      "244"
+    ],
+    "correct": "245"
+  },
+  {
+    "question": "Waxaa jiray 254 ari, waxaana lagu daray 169 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "423",
+      "424",
+      "422",
+      "426"
+    ],
+    "correct": "423"
+  },
+  {
+    "question": "455 ari ayaa jiray; 11 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "445",
+      "443",
+      "447",
+      "444"
+    ],
+    "correct": "444"
+  },
+  {
+    "question": "Waxaa jira 6 kooxood, koox walbana 165 ari ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "989",
+      "993",
+      "990",
+      "991"
+    ],
+    "correct": "990"
+  },
+  {
+    "question": "496 ari ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "251",
+      "248",
+      "249",
+      "247"
+    ],
+    "correct": "248"
+  },
+  {
+    "question": "Xisaabi wadarta 257 iyo 171.",
+    "options": [
+      "428",
+      "429",
+      "427",
+      "431"
+    ],
+    "correct": "428"
+  },
+  {
+    "question": "Xisaabi: 460 laga jaray 12 waa imisa?",
+    "options": [
+      "449",
+      "447",
+      "451",
+      "448"
+    ],
+    "correct": "448"
+  },
+  {
+    "question": "Xisaabi: 7 lagu dhuftay 167 waa imisa?",
+    "options": [
+      "1168",
+      "1172",
+      "1169",
+      "1170"
+    ],
+    "correct": "1169"
+  },
+  {
+    "question": "Xisaabi: 753 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "254",
+      "251",
+      "252",
+      "250"
+    ],
+    "correct": "251"
+  },
+  {
+    "question": "Haddii 260 ukun lagu daro 173 kale, wadartu waa imisa?",
+    "options": [
+      "433",
+      "434",
+      "432",
+      "436"
+    ],
+    "correct": "433"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 465 ukun; 13 ayaa baxay. Maxaa haray?",
+    "options": [
+      "453",
+      "451",
+      "455",
+      "452"
+    ],
+    "correct": "452"
+  },
+  {
+    "question": "8 jeer 169 waa imisa?",
+    "options": [
+      "1351",
+      "1355",
+      "1352",
+      "1353"
+    ],
+    "correct": "1352"
+  },
+  {
+    "question": "Haddii 1016 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "257",
+      "254",
+      "255",
+      "253"
+    ],
+    "correct": "254"
+  },
+  {
+    "question": "Waxaa jiray 263 geed, waxaana lagu daray 175 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "438",
+      "439",
+      "437",
+      "441"
+    ],
+    "correct": "438"
+  },
+  {
+    "question": "470 geed ayaa jiray; 14 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "457",
+      "455",
+      "459",
+      "456"
+    ],
+    "correct": "456"
+  },
+  {
+    "question": "Waxaa jira 9 kooxood, koox walbana 171 geed ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1538",
+      "1542",
+      "1539",
+      "1540"
+    ],
+    "correct": "1539"
+  },
+  {
+    "question": "1285 geed ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "260",
+      "257",
+      "258",
+      "256"
+    ],
+    "correct": "257"
+  },
+  {
+    "question": "Xisaabi wadarta 266 iyo 177.",
+    "options": [
+      "443",
+      "444",
+      "442",
+      "446"
+    ],
+    "correct": "443"
+  },
+  {
+    "question": "Xisaabi: 475 laga jaray 15 waa imisa?",
+    "options": [
+      "461",
+      "459",
+      "463",
+      "460"
+    ],
+    "correct": "460"
+  },
+  {
+    "question": "Xisaabi: 10 lagu dhuftay 173 waa imisa?",
+    "options": [
+      "1729",
+      "1733",
+      "1730",
+      "1731"
+    ],
+    "correct": "1730"
+  },
+  {
+    "question": "Xisaabi: 1560 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "263",
+      "260",
+      "261",
+      "259"
+    ],
+    "correct": "260"
+  },
+  {
+    "question": "Haddii 269 kiilo oo bariis ah lagu daro 179 kale, wadartu waa imisa?",
+    "options": [
+      "448",
+      "449",
+      "447",
+      "451"
+    ],
+    "correct": "448"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 480 kiilo oo bariis ah; 16 ayaa baxay. Maxaa haray?",
+    "options": [
+      "465",
+      "463",
+      "467",
+      "464"
+    ],
+    "correct": "464"
+  },
+  {
+    "question": "11 jeer 175 waa imisa?",
+    "options": [
+      "1924",
+      "1928",
+      "1925",
+      "1926"
+    ],
+    "correct": "1925"
+  },
+  {
+    "question": "Haddii 1841 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "266",
+      "263",
+      "264",
+      "262"
+    ],
+    "correct": "263"
+  },
+  {
+    "question": "Waxaa jiray 272 kubbad, waxaana lagu daray 181 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "453",
+      "454",
+      "452",
+      "456"
+    ],
+    "correct": "453"
+  },
+  {
+    "question": "485 kubbad ayaa jiray; 17 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "469",
+      "467",
+      "471",
+      "468"
+    ],
+    "correct": "468"
+  },
+  {
+    "question": "Waxaa jira 12 kooxood, koox walbana 177 kubbad ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "2123",
+      "2127",
+      "2124",
+      "2125"
+    ],
+    "correct": "2124"
+  },
+  {
+    "question": "2128 kubbad ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "269",
+      "266",
+      "267",
+      "265"
+    ],
+    "correct": "266"
+  },
+  {
+    "question": "Xisaabi wadarta 275 iyo 183.",
+    "options": [
+      "458",
+      "459",
+      "457",
+      "461"
+    ],
+    "correct": "458"
+  },
+  {
+    "question": "Xisaabi: 490 laga jaray 18 waa imisa?",
+    "options": [
+      "473",
+      "471",
+      "475",
+      "472"
+    ],
+    "correct": "472"
+  },
+  {
+    "question": "Xisaabi: 2 lagu dhuftay 179 waa imisa?",
+    "options": [
+      "357",
+      "361",
+      "358",
+      "359"
+    ],
+    "correct": "358"
+  },
+  {
+    "question": "Xisaabi: 2421 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "272",
+      "269",
+      "270",
+      "268"
+    ],
+    "correct": "269"
+  },
+  {
+    "question": "Haddii 278 moos lagu daro 185 kale, wadartu waa imisa?",
+    "options": [
+      "463",
+      "464",
+      "462",
+      "466"
+    ],
+    "correct": "463"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 495 moos; 19 ayaa baxay. Maxaa haray?",
+    "options": [
+      "477",
+      "475",
+      "479",
+      "476"
+    ],
+    "correct": "476"
+  },
+  {
+    "question": "3 jeer 181 waa imisa?",
+    "options": [
+      "542",
+      "546",
+      "543",
+      "544"
+    ],
+    "correct": "543"
+  },
+  {
+    "question": "Haddii 2720 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "275",
+      "272",
+      "273",
+      "271"
+    ],
+    "correct": "272"
+  },
+  {
+    "question": "Waxaa jiray 281 geel, waxaana lagu daray 187 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "468",
+      "469",
+      "467",
+      "471"
+    ],
+    "correct": "468"
+  },
+  {
+    "question": "500 geel ayaa jiray; 20 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "481",
+      "479",
+      "483",
+      "480"
+    ],
+    "correct": "480"
+  },
+  {
+    "question": "Waxaa jira 4 kooxood, koox walbana 183 geel ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "731",
+      "735",
+      "732",
+      "733"
+    ],
+    "correct": "732"
+  },
+  {
+    "question": "550 geel ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "278",
+      "275",
+      "276",
+      "274"
+    ],
+    "correct": "275"
+  },
+  {
+    "question": "Xisaabi wadarta 284 iyo 189.",
+    "options": [
+      "473",
+      "474",
+      "472",
+      "476"
+    ],
+    "correct": "473"
+  },
+  {
+    "question": "Xisaabi: 505 laga jaray 21 waa imisa?",
+    "options": [
+      "485",
+      "483",
+      "487",
+      "484"
+    ],
+    "correct": "484"
+  },
+  {
+    "question": "Xisaabi: 5 lagu dhuftay 185 waa imisa?",
+    "options": [
+      "924",
+      "928",
+      "925",
+      "926"
+    ],
+    "correct": "925"
+  },
+  {
+    "question": "Xisaabi: 834 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "281",
+      "278",
+      "279",
+      "277"
+    ],
+    "correct": "278"
+  },
+  {
+    "question": "Haddii 287 buug lagu daro 191 kale, wadartu waa imisa?",
+    "options": [
+      "478",
+      "479",
+      "477",
+      "481"
+    ],
+    "correct": "478"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 510 buug; 22 ayaa baxay. Maxaa haray?",
+    "options": [
+      "489",
+      "487",
+      "491",
+      "488"
+    ],
+    "correct": "488"
+  },
+  {
+    "question": "6 jeer 187 waa imisa?",
+    "options": [
+      "1121",
+      "1125",
+      "1122",
+      "1123"
+    ],
+    "correct": "1122"
+  },
+  {
+    "question": "Haddii 1124 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "284",
+      "281",
+      "282",
+      "280"
+    ],
+    "correct": "281"
+  },
+  {
+    "question": "Waxaa jiray 290 ukun, waxaana lagu daray 193 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "483",
+      "484",
+      "482",
+      "486"
+    ],
+    "correct": "483"
+  },
+  {
+    "question": "515 ukun ayaa jiray; 23 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "493",
+      "491",
+      "495",
+      "492"
+    ],
+    "correct": "492"
+  },
+  {
+    "question": "Waxaa jira 7 kooxood, koox walbana 189 ukun ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1322",
+      "1326",
+      "1323",
+      "1324"
+    ],
+    "correct": "1323"
+  },
+  {
+    "question": "1420 ukun ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "287",
+      "284",
+      "285",
+      "283"
+    ],
+    "correct": "284"
+  },
+  {
+    "question": "Xisaabi wadarta 293 iyo 195.",
+    "options": [
+      "488",
+      "489",
+      "487",
+      "491"
+    ],
+    "correct": "488"
+  },
+  {
+    "question": "Xisaabi: 520 laga jaray 24 waa imisa?",
+    "options": [
+      "497",
+      "495",
+      "499",
+      "496"
+    ],
+    "correct": "496"
+  },
+  {
+    "question": "Xisaabi: 8 lagu dhuftay 191 waa imisa?",
+    "options": [
+      "1527",
+      "1531",
+      "1528",
+      "1529"
+    ],
+    "correct": "1528"
+  },
+  {
+    "question": "Xisaabi: 1722 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "290",
+      "287",
+      "288",
+      "286"
+    ],
+    "correct": "287"
+  },
+  {
+    "question": "Haddii 296 koob oo biyo ah lagu daro 197 kale, wadartu waa imisa?",
+    "options": [
+      "493",
+      "494",
+      "492",
+      "496"
+    ],
+    "correct": "493"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 525 koob oo biyo ah; 25 ayaa baxay. Maxaa haray?",
+    "options": [
+      "501",
+      "499",
+      "503",
+      "500"
+    ],
+    "correct": "500"
+  },
+  {
+    "question": "9 jeer 193 waa imisa?",
+    "options": [
+      "1736",
+      "1740",
+      "1737",
+      "1738"
+    ],
+    "correct": "1737"
+  },
+  {
+    "question": "Haddii 2030 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "293",
+      "290",
+      "291",
+      "289"
+    ],
+    "correct": "290"
+  },
+  {
+    "question": "Waxaa jiray 299 kiilo oo bariis ah, waxaana lagu daray 199 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "498",
+      "499",
+      "497",
+      "501"
+    ],
+    "correct": "498"
+  },
+  {
+    "question": "530 kiilo oo bariis ah ayaa jiray; 26 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "505",
+      "503",
+      "507",
+      "504"
+    ],
+    "correct": "504"
+  },
+  {
+    "question": "Waxaa jira 10 kooxood, koox walbana 195 kiilo oo bariis ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1949",
+      "1953",
+      "1950",
+      "1951"
+    ],
+    "correct": "1950"
+  },
+  {
+    "question": "2344 kiilo oo bariis ah ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "296",
+      "293",
+      "294",
+      "292"
+    ],
+    "correct": "293"
+  },
+  {
+    "question": "Xisaabi wadarta 302 iyo 201.",
+    "options": [
+      "503",
+      "504",
+      "502",
+      "506"
+    ],
+    "correct": "503"
+  },
+  {
+    "question": "Xisaabi: 535 laga jaray 27 waa imisa?",
+    "options": [
+      "509",
+      "507",
+      "511",
+      "508"
+    ],
+    "correct": "508"
+  },
+  {
+    "question": "Xisaabi: 11 lagu dhuftay 197 waa imisa?",
+    "options": [
+      "2166",
+      "2170",
+      "2167",
+      "2168"
+    ],
+    "correct": "2167"
+  },
+  {
+    "question": "Xisaabi: 2664 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "299",
+      "296",
+      "297",
+      "295"
+    ],
+    "correct": "296"
+  },
+  {
+    "question": "Haddii 305 qalin lagu daro 203 kale, wadartu waa imisa?",
+    "options": [
+      "508",
+      "509",
+      "507",
+      "511"
+    ],
+    "correct": "508"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 540 qalin; 28 ayaa baxay. Maxaa haray?",
+    "options": [
+      "513",
+      "511",
+      "515",
+      "512"
+    ],
+    "correct": "512"
+  },
+  {
+    "question": "12 jeer 199 waa imisa?",
+    "options": [
+      "2387",
+      "2391",
+      "2388",
+      "2389"
+    ],
+    "correct": "2388"
+  },
+  {
+    "question": "Haddii 2990 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "302",
+      "299",
+      "300",
+      "298"
+    ],
+    "correct": "299"
+  },
+  {
+    "question": "Waxaa jiray 308 moos, waxaana lagu daray 205 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "513",
+      "514",
+      "512",
+      "516"
+    ],
+    "correct": "513"
+  },
+  {
+    "question": "545 moos ayaa jiray; 29 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "517",
+      "515",
+      "519",
+      "516"
+    ],
+    "correct": "516"
+  },
+  {
+    "question": "Waxaa jira 2 kooxood, koox walbana 201 moos ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "401",
+      "405",
+      "402",
+      "403"
+    ],
+    "correct": "402"
+  },
+  {
+    "question": "604 moos ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "305",
+      "302",
+      "303",
+      "301"
+    ],
+    "correct": "302"
+  },
+  {
+    "question": "Xisaabi wadarta 311 iyo 207.",
+    "options": [
+      "518",
+      "519",
+      "517",
+      "521"
+    ],
+    "correct": "518"
+  },
+  {
+    "question": "Xisaabi: 550 laga jaray 10 waa imisa?",
+    "options": [
+      "541",
+      "539",
+      "543",
+      "540"
+    ],
+    "correct": "540"
+  },
+  {
+    "question": "Xisaabi: 3 lagu dhuftay 203 waa imisa?",
+    "options": [
+      "608",
+      "612",
+      "609",
+      "610"
+    ],
+    "correct": "609"
+  },
+  {
+    "question": "Xisaabi: 915 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "308",
+      "305",
+      "306",
+      "304"
+    ],
+    "correct": "305"
+  },
+  {
+    "question": "Haddii 314 ari lagu daro 209 kale, wadartu waa imisa?",
+    "options": [
+      "523",
+      "524",
+      "522",
+      "526"
+    ],
+    "correct": "523"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 555 ari; 11 ayaa baxay. Maxaa haray?",
+    "options": [
+      "545",
+      "543",
+      "547",
+      "544"
+    ],
+    "correct": "544"
+  },
+  {
+    "question": "4 jeer 205 waa imisa?",
+    "options": [
+      "819",
+      "823",
+      "820",
+      "821"
+    ],
+    "correct": "820"
+  },
+  {
+    "question": "Haddii 1232 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "311",
+      "308",
+      "309",
+      "307"
+    ],
+    "correct": "308"
+  },
+  {
+    "question": "Waxaa jiray 317 buug, waxaana lagu daray 211 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "528",
+      "529",
+      "527",
+      "531"
+    ],
+    "correct": "528"
+  },
+  {
+    "question": "560 buug ayaa jiray; 12 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "549",
+      "547",
+      "551",
+      "548"
+    ],
+    "correct": "548"
+  },
+  {
+    "question": "Waxaa jira 5 kooxood, koox walbana 207 buug ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1034",
+      "1038",
+      "1035",
+      "1036"
+    ],
+    "correct": "1035"
+  },
+  {
+    "question": "1555 buug ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "314",
+      "311",
+      "312",
+      "310"
+    ],
+    "correct": "311"
+  },
+  {
+    "question": "Xisaabi wadarta 320 iyo 213.",
+    "options": [
+      "533",
+      "534",
+      "532",
+      "536"
+    ],
+    "correct": "533"
+  },
+  {
+    "question": "Xisaabi: 565 laga jaray 13 waa imisa?",
+    "options": [
+      "553",
+      "551",
+      "555",
+      "552"
+    ],
+    "correct": "552"
+  },
+  {
+    "question": "Xisaabi: 6 lagu dhuftay 209 waa imisa?",
+    "options": [
+      "1253",
+      "1257",
+      "1254",
+      "1255"
+    ],
+    "correct": "1254"
+  },
+  {
+    "question": "Xisaabi: 1884 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "317",
+      "314",
+      "315",
+      "313"
+    ],
+    "correct": "314"
+  },
+  {
+    "question": "Haddii 323 geed lagu daro 215 kale, wadartu waa imisa?",
+    "options": [
+      "538",
+      "539",
+      "537",
+      "541"
+    ],
+    "correct": "538"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 570 geed; 14 ayaa baxay. Maxaa haray?",
+    "options": [
+      "557",
+      "555",
+      "559",
+      "556"
+    ],
+    "correct": "556"
+  },
+  {
+    "question": "7 jeer 211 waa imisa?",
+    "options": [
+      "1476",
+      "1480",
+      "1477",
+      "1478"
+    ],
+    "correct": "1477"
+  },
+  {
+    "question": "Haddii 2219 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "320",
+      "317",
+      "318",
+      "316"
+    ],
+    "correct": "317"
+  },
+  {
+    "question": "Waxaa jiray 326 koob oo biyo ah, waxaana lagu daray 217 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "543",
+      "544",
+      "542",
+      "546"
+    ],
+    "correct": "543"
+  },
+  {
+    "question": "575 koob oo biyo ah ayaa jiray; 15 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "561",
+      "559",
+      "563",
+      "560"
+    ],
+    "correct": "560"
+  },
+  {
+    "question": "Waxaa jira 8 kooxood, koox walbana 213 koob oo biyo ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1703",
+      "1707",
+      "1704",
+      "1705"
+    ],
+    "correct": "1704"
+  },
+  {
+    "question": "2560 koob oo biyo ah ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "323",
+      "320",
+      "321",
+      "319"
+    ],
+    "correct": "320"
+  },
+  {
+    "question": "Xisaabi wadarta 329 iyo 219.",
+    "options": [
+      "548",
+      "549",
+      "547",
+      "551"
+    ],
+    "correct": "548"
+  },
+  {
+    "question": "Xisaabi: 580 laga jaray 16 waa imisa?",
+    "options": [
+      "565",
+      "563",
+      "567",
+      "564"
+    ],
+    "correct": "564"
+  },
+  {
+    "question": "Xisaabi: 9 lagu dhuftay 215 waa imisa?",
+    "options": [
+      "1934",
+      "1938",
+      "1935",
+      "1936"
+    ],
+    "correct": "1935"
+  },
+  {
+    "question": "Xisaabi: 2907 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "326",
+      "323",
+      "324",
+      "322"
+    ],
+    "correct": "323"
+  },
+  {
+    "question": "Haddii 332 kubbad lagu daro 221 kale, wadartu waa imisa?",
+    "options": [
+      "553",
+      "554",
+      "552",
+      "556"
+    ],
+    "correct": "553"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 585 kubbad; 17 ayaa baxay. Maxaa haray?",
+    "options": [
+      "569",
+      "567",
+      "571",
+      "568"
+    ],
+    "correct": "568"
+  },
+  {
+    "question": "10 jeer 217 waa imisa?",
+    "options": [
+      "2169",
+      "2173",
+      "2170",
+      "2171"
+    ],
+    "correct": "2170"
+  },
+  {
+    "question": "Haddii 3260 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "329",
+      "326",
+      "327",
+      "325"
+    ],
+    "correct": "326"
+  },
+  {
+    "question": "Waxaa jiray 335 qalin, waxaana lagu daray 223 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "558",
+      "559",
+      "557",
+      "561"
+    ],
+    "correct": "558"
+  },
+  {
+    "question": "590 qalin ayaa jiray; 18 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "573",
+      "571",
+      "575",
+      "572"
+    ],
+    "correct": "572"
+  },
+  {
+    "question": "Waxaa jira 11 kooxood, koox walbana 219 qalin ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "2408",
+      "2412",
+      "2409",
+      "2410"
+    ],
+    "correct": "2409"
+  },
+  {
+    "question": "658 qalin ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "332",
+      "329",
+      "330",
+      "328"
+    ],
+    "correct": "329"
+  },
+  {
+    "question": "Xisaabi wadarta 338 iyo 225.",
+    "options": [
+      "563",
+      "564",
+      "562",
+      "566"
+    ],
+    "correct": "563"
+  },
+  {
+    "question": "Xisaabi: 595 laga jaray 19 waa imisa?",
+    "options": [
+      "577",
+      "575",
+      "579",
+      "576"
+    ],
+    "correct": "576"
+  },
+  {
+    "question": "Xisaabi: 12 lagu dhuftay 221 waa imisa?",
+    "options": [
+      "2651",
+      "2655",
+      "2652",
+      "2653"
+    ],
+    "correct": "2652"
+  },
+  {
+    "question": "Xisaabi: 996 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "335",
+      "332",
+      "333",
+      "331"
+    ],
+    "correct": "332"
+  },
+  {
+    "question": "Haddii 341 geel lagu daro 227 kale, wadartu waa imisa?",
+    "options": [
+      "568",
+      "569",
+      "567",
+      "571"
+    ],
+    "correct": "568"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 600 geel; 20 ayaa baxay. Maxaa haray?",
+    "options": [
+      "581",
+      "579",
+      "583",
+      "580"
+    ],
+    "correct": "580"
+  },
+  {
+    "question": "2 jeer 223 waa imisa?",
+    "options": [
+      "445",
+      "449",
+      "446",
+      "447"
+    ],
+    "correct": "446"
+  },
+  {
+    "question": "Haddii 1340 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "338",
+      "335",
+      "336",
+      "334"
+    ],
+    "correct": "335"
+  },
+  {
+    "question": "Waxaa jiray 344 ari, waxaana lagu daray 229 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "573",
+      "574",
+      "572",
+      "576"
+    ],
+    "correct": "573"
+  },
+  {
+    "question": "605 ari ayaa jiray; 21 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "585",
+      "583",
+      "587",
+      "584"
+    ],
+    "correct": "584"
+  },
+  {
+    "question": "Waxaa jira 3 kooxood, koox walbana 225 ari ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "674",
+      "678",
+      "675",
+      "676"
+    ],
+    "correct": "675"
+  },
+  {
+    "question": "1690 ari ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "341",
+      "338",
+      "339",
+      "337"
+    ],
+    "correct": "338"
+  },
+  {
+    "question": "Xisaabi wadarta 347 iyo 231.",
+    "options": [
+      "578",
+      "579",
+      "577",
+      "581"
+    ],
+    "correct": "578"
+  },
+  {
+    "question": "Xisaabi: 610 laga jaray 22 waa imisa?",
+    "options": [
+      "589",
+      "587",
+      "591",
+      "588"
+    ],
+    "correct": "588"
+  },
+  {
+    "question": "Xisaabi: 4 lagu dhuftay 227 waa imisa?",
+    "options": [
+      "907",
+      "911",
+      "908",
+      "909"
+    ],
+    "correct": "908"
+  },
+  {
+    "question": "Xisaabi: 2046 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "344",
+      "341",
+      "342",
+      "340"
+    ],
+    "correct": "341"
+  },
+  {
+    "question": "Haddii 350 ukun lagu daro 233 kale, wadartu waa imisa?",
+    "options": [
+      "583",
+      "584",
+      "582",
+      "586"
+    ],
+    "correct": "583"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 615 ukun; 23 ayaa baxay. Maxaa haray?",
+    "options": [
+      "593",
+      "591",
+      "595",
+      "592"
+    ],
+    "correct": "592"
+  },
+  {
+    "question": "5 jeer 229 waa imisa?",
+    "options": [
+      "1144",
+      "1148",
+      "1145",
+      "1146"
+    ],
+    "correct": "1145"
+  },
+  {
+    "question": "Haddii 2408 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "347",
+      "344",
+      "345",
+      "343"
+    ],
+    "correct": "344"
+  },
+  {
+    "question": "Waxaa jiray 353 geed, waxaana lagu daray 235 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "588",
+      "589",
+      "587",
+      "591"
+    ],
+    "correct": "588"
+  },
+  {
+    "question": "620 geed ayaa jiray; 24 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "597",
+      "595",
+      "599",
+      "596"
+    ],
+    "correct": "596"
+  },
+  {
+    "question": "Waxaa jira 6 kooxood, koox walbana 231 geed ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1385",
+      "1389",
+      "1386",
+      "1387"
+    ],
+    "correct": "1386"
+  },
+  {
+    "question": "2776 geed ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "350",
+      "347",
+      "348",
+      "346"
+    ],
+    "correct": "347"
+  },
+  {
+    "question": "Xisaabi wadarta 356 iyo 237.",
+    "options": [
+      "593",
+      "594",
+      "592",
+      "596"
+    ],
+    "correct": "593"
+  },
+  {
+    "question": "Xisaabi: 625 laga jaray 25 waa imisa?",
+    "options": [
+      "601",
+      "599",
+      "603",
+      "600"
+    ],
+    "correct": "600"
+  },
+  {
+    "question": "Xisaabi: 7 lagu dhuftay 233 waa imisa?",
+    "options": [
+      "1630",
+      "1634",
+      "1631",
+      "1632"
+    ],
+    "correct": "1631"
+  },
+  {
+    "question": "Xisaabi: 3150 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "353",
+      "350",
+      "351",
+      "349"
+    ],
+    "correct": "350"
+  },
+  {
+    "question": "Haddii 359 kiilo oo bariis ah lagu daro 239 kale, wadartu waa imisa?",
+    "options": [
+      "598",
+      "599",
+      "597",
+      "601"
+    ],
+    "correct": "598"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 630 kiilo oo bariis ah; 26 ayaa baxay. Maxaa haray?",
+    "options": [
+      "605",
+      "603",
+      "607",
+      "604"
+    ],
+    "correct": "604"
+  },
+  {
+    "question": "8 jeer 235 waa imisa?",
+    "options": [
+      "1879",
+      "1883",
+      "1880",
+      "1881"
+    ],
+    "correct": "1880"
+  },
+  {
+    "question": "Haddii 3530 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "356",
+      "353",
+      "354",
+      "352"
+    ],
+    "correct": "353"
+  },
+  {
+    "question": "Waxaa jiray 362 kubbad, waxaana lagu daray 241 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "603",
+      "604",
+      "602",
+      "606"
+    ],
+    "correct": "603"
+  },
+  {
+    "question": "635 kubbad ayaa jiray; 27 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "609",
+      "607",
+      "611",
+      "608"
+    ],
+    "correct": "608"
+  },
+  {
+    "question": "Waxaa jira 9 kooxood, koox walbana 237 kubbad ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "2132",
+      "2136",
+      "2133",
+      "2134"
+    ],
+    "correct": "2133"
+  },
+  {
+    "question": "712 kubbad ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "359",
+      "356",
+      "357",
+      "355"
+    ],
+    "correct": "356"
+  },
+  {
+    "question": "Xisaabi wadarta 365 iyo 243.",
+    "options": [
+      "608",
+      "609",
+      "607",
+      "611"
+    ],
+    "correct": "608"
+  },
+  {
+    "question": "Xisaabi: 640 laga jaray 28 waa imisa?",
+    "options": [
+      "613",
+      "611",
+      "615",
+      "612"
+    ],
+    "correct": "612"
+  },
+  {
+    "question": "Xisaabi: 10 lagu dhuftay 239 waa imisa?",
+    "options": [
+      "2389",
+      "2393",
+      "2390",
+      "2391"
+    ],
+    "correct": "2390"
+  },
+  {
+    "question": "Xisaabi: 1077 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "362",
+      "359",
+      "360",
+      "358"
+    ],
+    "correct": "359"
+  },
+  {
+    "question": "Haddii 368 moos lagu daro 245 kale, wadartu waa imisa?",
+    "options": [
+      "613",
+      "614",
+      "612",
+      "616"
+    ],
+    "correct": "613"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 645 moos; 29 ayaa baxay. Maxaa haray?",
+    "options": [
+      "617",
+      "615",
+      "619",
+      "616"
+    ],
+    "correct": "616"
+  },
+  {
+    "question": "11 jeer 241 waa imisa?",
+    "options": [
+      "2650",
+      "2654",
+      "2651",
+      "2652"
+    ],
+    "correct": "2651"
+  },
+  {
+    "question": "Haddii 1448 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "365",
+      "362",
+      "363",
+      "361"
+    ],
+    "correct": "362"
+  },
+  {
+    "question": "Waxaa jiray 371 geel, waxaana lagu daray 247 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "618",
+      "619",
+      "617",
+      "621"
+    ],
+    "correct": "618"
+  },
+  {
+    "question": "650 geel ayaa jiray; 10 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "641",
+      "639",
+      "643",
+      "640"
+    ],
+    "correct": "640"
+  },
+  {
+    "question": "Waxaa jira 12 kooxood, koox walbana 243 geel ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "2915",
+      "2919",
+      "2916",
+      "2917"
+    ],
+    "correct": "2916"
+  },
+  {
+    "question": "1825 geel ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "368",
+      "365",
+      "366",
+      "364"
+    ],
+    "correct": "365"
+  },
+  {
+    "question": "Xisaabi wadarta 374 iyo 249.",
+    "options": [
+      "623",
+      "624",
+      "622",
+      "626"
+    ],
+    "correct": "623"
+  },
+  {
+    "question": "Xisaabi: 655 laga jaray 11 waa imisa?",
+    "options": [
+      "645",
+      "643",
+      "647",
+      "644"
+    ],
+    "correct": "644"
+  },
+  {
+    "question": "Xisaabi: 2 lagu dhuftay 245 waa imisa?",
+    "options": [
+      "489",
+      "493",
+      "490",
+      "491"
+    ],
+    "correct": "490"
+  },
+  {
+    "question": "Xisaabi: 2208 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "371",
+      "368",
+      "369",
+      "367"
+    ],
+    "correct": "368"
+  },
+  {
+    "question": "Haddii 377 buug lagu daro 251 kale, wadartu waa imisa?",
+    "options": [
+      "628",
+      "629",
+      "627",
+      "631"
+    ],
+    "correct": "628"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 660 buug; 12 ayaa baxay. Maxaa haray?",
+    "options": [
+      "649",
+      "647",
+      "651",
+      "648"
+    ],
+    "correct": "648"
+  },
+  {
+    "question": "3 jeer 247 waa imisa?",
+    "options": [
+      "740",
+      "744",
+      "741",
+      "742"
+    ],
+    "correct": "741"
+  },
+  {
+    "question": "Haddii 2597 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "374",
+      "371",
+      "372",
+      "370"
+    ],
+    "correct": "371"
+  },
+  {
+    "question": "Waxaa jiray 380 ukun, waxaana lagu daray 253 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "633",
+      "634",
+      "632",
+      "636"
+    ],
+    "correct": "633"
+  },
+  {
+    "question": "665 ukun ayaa jiray; 13 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "653",
+      "651",
+      "655",
+      "652"
+    ],
+    "correct": "652"
+  },
+  {
+    "question": "Waxaa jira 4 kooxood, koox walbana 249 ukun ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "995",
+      "999",
+      "996",
+      "997"
+    ],
+    "correct": "996"
+  },
+  {
+    "question": "2992 ukun ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "377",
+      "374",
+      "375",
+      "373"
+    ],
+    "correct": "374"
+  },
+  {
+    "question": "Xisaabi wadarta 383 iyo 255.",
+    "options": [
+      "638",
+      "639",
+      "637",
+      "641"
+    ],
+    "correct": "638"
+  },
+  {
+    "question": "Xisaabi: 670 laga jaray 14 waa imisa?",
+    "options": [
+      "657",
+      "655",
+      "659",
+      "656"
+    ],
+    "correct": "656"
+  },
+  {
+    "question": "Xisaabi: 5 lagu dhuftay 251 waa imisa?",
+    "options": [
+      "1254",
+      "1258",
+      "1255",
+      "1256"
+    ],
+    "correct": "1255"
+  },
+  {
+    "question": "Xisaabi: 3393 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "380",
+      "377",
+      "378",
+      "376"
+    ],
+    "correct": "377"
+  },
+  {
+    "question": "Haddii 386 koob oo biyo ah lagu daro 257 kale, wadartu waa imisa?",
+    "options": [
+      "643",
+      "644",
+      "642",
+      "646"
+    ],
+    "correct": "643"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 675 koob oo biyo ah; 15 ayaa baxay. Maxaa haray?",
+    "options": [
+      "661",
+      "659",
+      "663",
+      "660"
+    ],
+    "correct": "660"
+  },
+  {
+    "question": "6 jeer 253 waa imisa?",
+    "options": [
+      "1517",
+      "1521",
+      "1518",
+      "1519"
+    ],
+    "correct": "1518"
+  },
+  {
+    "question": "Haddii 3800 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "383",
+      "380",
+      "381",
+      "379"
+    ],
+    "correct": "380"
+  },
+  {
+    "question": "Waxaa jiray 389 kiilo oo bariis ah, waxaana lagu daray 259 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "648",
+      "649",
+      "647",
+      "651"
+    ],
+    "correct": "648"
+  },
+  {
+    "question": "680 kiilo oo bariis ah ayaa jiray; 16 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "665",
+      "663",
+      "667",
+      "664"
+    ],
+    "correct": "664"
+  },
+  {
+    "question": "Waxaa jira 7 kooxood, koox walbana 255 kiilo oo bariis ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1784",
+      "1788",
+      "1785",
+      "1786"
+    ],
+    "correct": "1785"
+  },
+  {
+    "question": "766 kiilo oo bariis ah ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "386",
+      "383",
+      "384",
+      "382"
+    ],
+    "correct": "383"
+  },
+  {
+    "question": "Xisaabi wadarta 392 iyo 261.",
+    "options": [
+      "653",
+      "654",
+      "652",
+      "656"
+    ],
+    "correct": "653"
+  },
+  {
+    "question": "Xisaabi: 685 laga jaray 17 waa imisa?",
+    "options": [
+      "669",
+      "667",
+      "671",
+      "668"
+    ],
+    "correct": "668"
+  },
+  {
+    "question": "Xisaabi: 8 lagu dhuftay 257 waa imisa?",
+    "options": [
+      "2055",
+      "2059",
+      "2056",
+      "2057"
+    ],
+    "correct": "2056"
+  },
+  {
+    "question": "Xisaabi: 1158 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "389",
+      "386",
+      "387",
+      "385"
+    ],
+    "correct": "386"
+  },
+  {
+    "question": "Haddii 395 qalin lagu daro 263 kale, wadartu waa imisa?",
+    "options": [
+      "658",
+      "659",
+      "657",
+      "661"
+    ],
+    "correct": "658"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 690 qalin; 18 ayaa baxay. Maxaa haray?",
+    "options": [
+      "673",
+      "671",
+      "675",
+      "672"
+    ],
+    "correct": "672"
+  },
+  {
+    "question": "9 jeer 259 waa imisa?",
+    "options": [
+      "2330",
+      "2334",
+      "2331",
+      "2332"
+    ],
+    "correct": "2331"
+  },
+  {
+    "question": "Haddii 1556 shay loo qaybiyo 4 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "392",
+      "389",
+      "390",
+      "388"
+    ],
+    "correct": "389"
+  },
+  {
+    "question": "Waxaa jiray 398 moos, waxaana lagu daray 265 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "663",
+      "664",
+      "662",
+      "666"
+    ],
+    "correct": "663"
+  },
+  {
+    "question": "695 moos ayaa jiray; 19 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "677",
+      "675",
+      "679",
+      "676"
+    ],
+    "correct": "676"
+  },
+  {
+    "question": "Waxaa jira 10 kooxood, koox walbana 261 moos ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "2609",
+      "2613",
+      "2610",
+      "2611"
+    ],
+    "correct": "2610"
+  },
+  {
+    "question": "1960 moos ayaa si siman loogu qaybiyey 5 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "395",
+      "392",
+      "393",
+      "391"
+    ],
+    "correct": "392"
+  },
+  {
+    "question": "Xisaabi wadarta 401 iyo 267.",
+    "options": [
+      "668",
+      "669",
+      "667",
+      "671"
+    ],
+    "correct": "668"
+  },
+  {
+    "question": "Xisaabi: 700 laga jaray 20 waa imisa?",
+    "options": [
+      "681",
+      "679",
+      "683",
+      "680"
+    ],
+    "correct": "680"
+  },
+  {
+    "question": "Xisaabi: 11 lagu dhuftay 263 waa imisa?",
+    "options": [
+      "2892",
+      "2896",
+      "2893",
+      "2894"
+    ],
+    "correct": "2893"
+  },
+  {
+    "question": "Xisaabi: 2370 loo qaybiyey 6 waa imisa?",
+    "options": [
+      "398",
+      "395",
+      "396",
+      "394"
+    ],
+    "correct": "395"
+  },
+  {
+    "question": "Haddii 404 ari lagu daro 269 kale, wadartu waa imisa?",
+    "options": [
+      "673",
+      "674",
+      "672",
+      "676"
+    ],
+    "correct": "673"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 705 ari; 21 ayaa baxay. Maxaa haray?",
+    "options": [
+      "685",
+      "683",
+      "687",
+      "684"
+    ],
+    "correct": "684"
+  },
+  {
+    "question": "12 jeer 265 waa imisa?",
+    "options": [
+      "3179",
+      "3183",
+      "3180",
+      "3181"
+    ],
+    "correct": "3180"
+  },
+  {
+    "question": "Haddii 2786 shay loo qaybiyo 7 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "401",
+      "398",
+      "399",
+      "397"
+    ],
+    "correct": "398"
+  },
+  {
+    "question": "Waxaa jiray 407 buug, waxaana lagu daray 271 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "678",
+      "679",
+      "677",
+      "681"
+    ],
+    "correct": "678"
+  },
+  {
+    "question": "710 buug ayaa jiray; 22 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "689",
+      "687",
+      "691",
+      "688"
+    ],
+    "correct": "688"
+  },
+  {
+    "question": "Waxaa jira 2 kooxood, koox walbana 267 buug ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "533",
+      "537",
+      "534",
+      "535"
+    ],
+    "correct": "534"
+  },
+  {
+    "question": "3208 buug ayaa si siman loogu qaybiyey 8 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "404",
+      "401",
+      "402",
+      "400"
+    ],
+    "correct": "401"
+  },
+  {
+    "question": "Xisaabi wadarta 410 iyo 273.",
+    "options": [
+      "683",
+      "684",
+      "682",
+      "686"
+    ],
+    "correct": "683"
+  },
+  {
+    "question": "Xisaabi: 715 laga jaray 23 waa imisa?",
+    "options": [
+      "693",
+      "691",
+      "695",
+      "692"
+    ],
+    "correct": "692"
+  },
+  {
+    "question": "Xisaabi: 3 lagu dhuftay 269 waa imisa?",
+    "options": [
+      "806",
+      "810",
+      "807",
+      "808"
+    ],
+    "correct": "807"
+  },
+  {
+    "question": "Xisaabi: 3636 loo qaybiyey 9 waa imisa?",
+    "options": [
+      "407",
+      "404",
+      "405",
+      "403"
+    ],
+    "correct": "404"
+  },
+  {
+    "question": "Haddii 413 geed lagu daro 275 kale, wadartu waa imisa?",
+    "options": [
+      "688",
+      "689",
+      "687",
+      "691"
+    ],
+    "correct": "688"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 720 geed; 24 ayaa baxay. Maxaa haray?",
+    "options": [
+      "697",
+      "695",
+      "699",
+      "696"
+    ],
+    "correct": "696"
+  },
+  {
+    "question": "4 jeer 271 waa imisa?",
+    "options": [
+      "1083",
+      "1087",
+      "1084",
+      "1085"
+    ],
+    "correct": "1084"
+  },
+  {
+    "question": "Haddii 4070 shay loo qaybiyo 10 qaybood oo isle'eg, qayb walba waa imisa?",
+    "options": [
+      "410",
+      "407",
+      "408",
+      "406"
+    ],
+    "correct": "407"
+  },
+  {
+    "question": "Waxaa jiray 416 koob oo biyo ah, waxaana lagu daray 277 kale. Imisa ayaa hadda jira?",
+    "options": [
+      "693",
+      "694",
+      "692",
+      "696"
+    ],
+    "correct": "693"
+  },
+  {
+    "question": "725 koob oo biyo ah ayaa jiray; 25 ayaa la isticmaalay. Imisa ayaa hadhay?",
+    "options": [
+      "701",
+      "699",
+      "703",
+      "700"
+    ],
+    "correct": "700"
+  },
+  {
+    "question": "Waxaa jira 5 kooxood, koox walbana 273 koob oo biyo ah ayay leedahay. Dhammaantood waa imisa?",
+    "options": [
+      "1364",
+      "1368",
+      "1365",
+      "1366"
+    ],
+    "correct": "1365"
+  },
+  {
+    "question": "820 koob oo biyo ah ayaa si siman loogu qaybiyey 2 qof. Qofkiiba imisa ayuu helayaa?",
+    "options": [
+      "413",
+      "410",
+      "411",
+      "409"
+    ],
+    "correct": "410"
+  },
+  {
+    "question": "Xisaabi wadarta 419 iyo 279.",
+    "options": [
+      "698",
+      "699",
+      "697",
+      "701"
+    ],
+    "correct": "698"
+  },
+  {
+    "question": "Xisaabi: 730 laga jaray 26 waa imisa?",
+    "options": [
+      "705",
+      "703",
+      "707",
+      "704"
+    ],
+    "correct": "704"
+  },
+  {
+    "question": "Xisaabi: 6 lagu dhuftay 275 waa imisa?",
+    "options": [
+      "1649",
+      "1653",
+      "1650",
+      "1651"
+    ],
+    "correct": "1650"
+  },
+  {
+    "question": "Xisaabi: 1239 loo qaybiyey 3 waa imisa?",
+    "options": [
+      "416",
+      "413",
+      "414",
+      "412"
+    ],
+    "correct": "413"
+  },
+  {
+    "question": "Haddii 422 kubbad lagu daro 281 kale, wadartu waa imisa?",
+    "options": [
+      "703",
+      "704",
+      "702",
+      "706"
+    ],
+    "correct": "703"
+  },
+  {
+    "question": "Kaydku wuxuu ahaa 735 kubbad; 27 ayaa baxay. Maxaa haray?",
+    "options": [
+      "709",
+      "707",
+      "711",
+      "708"
+    ],
+    "correct": "708"
   }
 ]
