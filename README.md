@@ -10,7 +10,7 @@ Bot tartan aqoon (Af-Soomaali) oo ku salaysan **IQ**, **XP**, iyo **dhibcaha tar
 |--------|-----------|
 | `?solo` | Ciyaar kaligiis — sax **+3 IQ**, qalad/waqtiga **−1 IQ** |
 | `?duel @user` | Labadu dhigaan **5 IQ**; guuleystaha **+10 IQ**; barbaro: dib u celinta dhigga |
-| `?td` | Run, Xujo iyo Random — kaar muujinaya qofka codsaday, hawsha, nooca, heerka iyo aqoonsiga |
+| `?td` | Ka dooro **Su’aal**, **Xujo** ama **Random**; su’aasha/hawshu waxay ku muuqataa qoraal cad oo bold ah |
 | `?quiz` | Tartanka kooxda; dhibcaha laga helay waxaa lagu darayaa kayd — `?exchange` |
 | `?exchange xp` / `?exchange iq` | Badal dhibcaha tartanka (1 dhibic = 5 XP ama 1 IQ — `src/config.js`) |
 | `?shop` / `?buy` | Darajooyin lagu iibsanayo **XP** oo keliya |

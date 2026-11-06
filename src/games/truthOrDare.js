@@ -1,11 +1,10 @@
-const crypto = require('node:crypto');
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const prompts = require('../../data/games/truth-or-dare.json');
 
 const lastPromptByMessage = new Map();
 const BUTTONS = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('truthdare_truth').setLabel('Run').setEmoji('💬').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('truthdare_dare').setLabel('Xujo').setEmoji('🔥').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('truthdare_truth').setLabel('Su’aal').setEmoji('💬').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('truthdare_dare').setLabel('Xujo').setEmoji('🧩').setStyle(ButtonStyle.Danger),
     new ButtonBuilder().setCustomId('truthdare_random').setLabel('Random').setEmoji('🎲').setStyle(ButtonStyle.Primary),
 );
 
@@ -16,7 +15,6 @@ function choosePrompt(type, previous) {
     return {
         type: selectedType,
         text: choices[Math.floor(Math.random() * choices.length)] || prompts[selectedType][0],
-        id: crypto.randomBytes(4).toString('hex'),
     };
 }
 
@@ -25,14 +23,8 @@ function promptEmbed(user, prompt) {
     const avatar = user.displayAvatarURL?.();
     const embed = new EmbedBuilder()
         .setTitle('Truth or Dare')
-        .setDescription(prompt.text)
-        .addFields(
-            { name: 'Type', value: isTruth ? 'TRUTH' : 'DARE', inline: true },
-            { name: 'Rating', value: 'PG', inline: true },
-            { name: 'ID', value: `\`${prompt.id}\``, inline: true },
-        )
-        .setColor(isTruth ? '#009c5b' : '#dc3545')
-        .setFooter({ text: 'Dooro mar kale adigoo riixaya badhamada hoose.' });
+        .setDescription(`## ${prompt.text}`)
+        .setColor(isTruth ? '#009c5b' : '#dc3545');
     if (user.username) {
         embed.setAuthor({
             name: `Requested by ${user.username}`,
@@ -54,7 +46,7 @@ async function truthOrDareCommand(message) {
     return message.reply({
         embeds: [new EmbedBuilder()
             .setTitle('Truth or Dare')
-            .setDescription('Riix **Run** si aad su’aal u hesho, **Xujo** si aad hawl u hesho, ama **Random** si midkood loo doorto.')
+            .setDescription('Dooro **Su’aal**, **Xujo**, ama **Random**.')
             .setColor('#5865f2')],
         components: [BUTTONS],
     });
