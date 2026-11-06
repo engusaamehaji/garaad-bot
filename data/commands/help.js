@@ -101,7 +101,7 @@ function buildEcoEmbed() {
             `**Wallet & Earnings**\n` +
             `\`${PREFIX}jeeb\` — Deposit wallet Coins into Garaad Bank and view balances\n` +
             `\`${PREFIX}work\` (\`${PREFIX}shaqo\`) — Earn Coins every 8 hours\n` +
-            `\`${PREFIX}take\` — Claim 100–300 Coins, 10–30 XP, and 1–3 IQ every 6 hours\n` +
+            `\`${PREFIX}take\` — Qabo hadiyadda ku dhacday channel-kan (qofkii ugu horreeya ayaa hela)\n` +
             `\`${PREFIX}rich\` — View the richest players\n\n` +
             `**Banks**\n` +
             `\`${PREFIX}bank\` — Open the bank menu · \`${PREFIX}banks\` — List banks\n` +

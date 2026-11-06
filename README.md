@@ -13,7 +13,7 @@ Bot tartan aqoon (Af-Soomaali) oo ku salaysan **IQ**, **XP**, iyo **dhibcaha tar
 | `?td` | Ka dooro **Su’aal**, **Xujo** ama **Random**; su’aasha/hawshu waxay ku muuqataa qoraal cad oo bold ah |
 | `?sec @user` | U dir casuumaad private DM chat ah; fariimaha bot-ku ayuu labada qof u kala gudbiyaa, lama qoro public channel |
 | `?sec end` | Jooji private DM chat-ka (ku qor bot-ka DM) |
-| `?take` | Qaado abaalmarin random ah: 100–300 Coins, 10–30 XP, iyo 1–3 IQ; 6 saac cooldown |
+| `?take` | Qabo hadiyadda si random ah ugu dhacda chat channel firfircoon (text ama VC chat); qofka ugu horreeya ayaa hela 100–300 Coins, 10–30 XP, iyo 1–3 IQ |
 | `?quiz` | Tartanka kooxda; dhibcaha laga helay waxaa lagu darayaa kayd — `?exchange` |
 | `?exchange xp` / `?exchange iq` | Badal dhibcaha tartanka (1 dhibic = 5 XP ama 1 IQ — `src/config.js`) |
 | `?shop` / `?buy` | Darajooyin lagu iibsanayo **XP** oo keliya |
@@ -88,6 +88,8 @@ Habaynta (prefix, dhibcaha tartanka, duel IQ, iwm.) waxay ku jiraan `src/config.
 Kaydka cusub waxa ku jira **550 su'aalood oo xisaab ah oo Solo ah** iyo **400 su'aalood oo taxane-tiro ah oo Duel ah**. Ciyaarta `?td` waxay leedahay su'aalo iyo hawlo Af-Soomaali ah; Dare kuma jiraan xujooyin xisaabeed.
 
 `?sec @user` wuxuu tirtiraa amarka public-ka isla markiiba wuxuuna casuumaad ugu diraa qofka la xushay. Bot-ku wuxuu u baahan yahay **Manage Messages** channel-kaas iyo in labada qof ay aqbalaan DMs-ka bot-ka. Fariimaha waxaa lagu kala diraa DM-yada bot-ka; dadka kale ee server-ka kama arki karaan, laakiin tani ma aha end-to-end encryption, bot-kuna wuxuu farsameeyaa fariimaha si uu u gudbiyo. Bot restart-ku wuxuu soo afjaraa chats-ka firfircoon.
+
+Hadiyadaha `?take` waxay ku dhacaan random ahaan 15–45 daqiiqo kasta, server kasta oo chat channel-kiisu dhowaan firfircoonaa. Waxay ka muuqan karaan text channel ama chat-ka voice channel-ka. Qofka ugu horreeya ee `?take` ku qora isla channel-kaas ayaa helaya 100–300 Coins, 10–30 XP iyo 1–3 IQ. Haddii aan daqiiqad gudaheed la qaadan, hadiyaddu way dhacaysaa.
 
 ---
 
