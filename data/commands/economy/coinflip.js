@@ -66,15 +66,19 @@ module.exports = async function coinflipCmd(message, args) {
     const chosen = SIDES[side];
     const landed = SIDES[landedSide];
     return message.reply({ embeds: [new EmbedBuilder()
-        .setTitle(won ? '🪙 Coinflip — Waad guulaysatay!' : '🪙 Coinflip — Waad khasaarisay')
+        .setTitle('🪙 Coin Flip')
         .setColor(won ? '#2ecc71' : '#e74c3c')
         .setDescription(
-            `**Doorashadaada:** ${chosen.emoji} ${chosen.label}\n` +
-            `**Natiijada:** ${landed.emoji} ${landed.label}\n\n` +
-            (won
-                ? `🎉 Waxaad ku guulaysatay **+${fmt(amount)} Coins**.\n`
-                : `💸 Waxaad khasaarisay **-${fmt(amount)} Coins**.\n`) +
-            `👛 **Wallet-kaaga cusub:** ${fmt(wallet.coins)} Coins`
-        )
-        .setFooter({ text: 'Mar kale ciyaar: ?cf 200 x • m = Madax, x = Xarash' })] });
+            won
+                ? `✨ **GUUL!**\n` +
+                  `🔄 **Coinka:** ${landed.emoji} ${landed.label}\n` +
+                  `🎯 **Adiga:** ${chosen.emoji} ${chosen.label}\n\n` +
+                  `💰 **Abaal:** **+${fmt(amount)} Coins**\n` +
+                  `👛 **Wallet cusub:** **${fmt(wallet.coins)} Coins**`
+                : `💸 **KHASAARO!**\n` +
+                  `🔄 **Coinka:** ${landed.emoji} ${landed.label}\n` +
+                  `🎯 **Adiga:** ${chosen.emoji} ${chosen.label}\n\n` +
+                  `❌ **Khasaaro:** **-${fmt(amount)} Coins**\n` +
+                  `🏦 **Wallet cusub:** **${fmt(wallet.coins)} Coins**`
+        )] });
 };
