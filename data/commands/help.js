@@ -111,9 +111,7 @@ function buildEcoEmbed() {
             `**Games & Transfers**\n` +
             `\`${PREFIX}cf <coins> <m|x>\` — Coinflip (m = heads, x = tails)\n` +
             `\`${PREFIX}rob @user\` — Try to rob a player\n` +
-            `\`${PREFIX}give @user <amount>\` — Send Coins to a player\n\n` +
-            `**Admin**\n` +
-            `\`${PREFIX}khaznad\` — Manage the Coins treasury (admins only)`
+            `\`${PREFIX}give @user <amount>\` — Send Coins to a player`
         )
         .setFooter({ text: 'All wallet, bank, and reward balances use Coins.' });
 }

@@ -36,11 +36,16 @@ module.exports = async function coinflipCmd(message, args) {
     if (balance < amount) {
         return message.reply(`⚠️ You do not have enough Coins. Wallet balance: **${fmt(balance)} Coins**.`);
     }
-    if (getTreasury().balance < amount) {
-        return message.reply(
-            `⏳ Coinflip paused: treasury cannot cover a **${fmt(amount)}-Coin win** yet. No Coins were taken.\n` +
-            'An admin can add Coins through `?khaznad`.'
-        );
+    const treasury = getTreasury();
+    if (treasury.balance < amount) {
+        const treasuryMessage = treasury.balance <= 0
+            ? '🏛️ **Khaznaddu waa eber.**'
+            : `🏛️ Khaznaddu waxay haysataa **${fmt(treasury.balance)} Coins** oo keliya.`;
+        return message.reply({ embeds: [new EmbedBuilder()
+            .setTitle('🪙 Coinflip waa hakad')
+            .setDescription(`${treasuryMessage}\n\nKhaznaddu ma dabooli karto abaalmarinta **${fmt(amount)} Coins**. Wallet-kaaga waxba lagama jarin.\n\nIsku day mar kale marka khaznaddu Coins hesho.`)
+            .setColor('#e74c3c')
+            .setFooter({ text: 'Garaad Economy • Coinflip' })] });
     }
 
     const landedSide = randomInt(2) === 0 ? 'm' : 'x';
@@ -61,15 +66,15 @@ module.exports = async function coinflipCmd(message, args) {
     const chosen = SIDES[side];
     const landed = SIDES[landedSide];
     return message.reply({ embeds: [new EmbedBuilder()
-        .setTitle(won ? '🪙 Coinflip — You Won!' : '🪙 Coinflip — You Lost')
+        .setTitle(won ? '🪙 Coinflip — Waad guulaysatay!' : '🪙 Coinflip — Waad khasaarisay')
         .setColor(won ? '#2ecc71' : '#e74c3c')
         .setDescription(
-            `**Your choice:** ${chosen.emoji} ${chosen.label}\n` +
-            `**Result:** ${landed.emoji} ${landed.label}\n\n` +
+            `**Doorashadaada:** ${chosen.emoji} ${chosen.label}\n` +
+            `**Natiijada:** ${landed.emoji} ${landed.label}\n\n` +
             (won
-                ? `🎉 You won **+${fmt(amount)} Coins**.\n`
-                : `💸 You lost **-${fmt(amount)} Coins**.\n`) +
-            `👛 **New wallet balance:** ${fmt(wallet.coins)} Coins`
+                ? `🎉 Waxaad ku guulaysatay **+${fmt(amount)} Coins**.\n`
+                : `💸 Waxaad khasaarisay **-${fmt(amount)} Coins**.\n`) +
+            `👛 **Wallet-kaaga cusub:** ${fmt(wallet.coins)} Coins`
         )
-        .setFooter({ text: 'Play again: ?cf 200 x • m = Heads, x = Tails' })] });
+        .setFooter({ text: 'Mar kale ciyaar: ?cf 200 x • m = Madax, x = Xarash' })] });
 };
