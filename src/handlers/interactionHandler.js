@@ -1689,7 +1689,7 @@ module.exports = function setupInteractionHandler(client) {
             const { buildAllPlayersEmbed } = require('../../data/commands/admin/adminEconPanel');
             const { econData: eData } = require('../economy/econStore');
             const totalPages = Math.max(1, Math.ceil(Object.keys(eData).filter(k => /^\d{17,19}$/.test(k)).length / 10));
-            return interaction.update({ embeds: [buildAllPlayersEmbed(0)], components: [buildPlayersPageRow(0, totalPages, ownerId)] });
+            return interaction.update({ embeds: [await buildAllPlayersEmbed(0, interaction.guild)], components: [buildPlayersPageRow(0, totalPages, ownerId)] });
         }
 
         // ── Admin: Players page navigation ──
@@ -1704,7 +1704,7 @@ module.exports = function setupInteractionHandler(client) {
             const { buildAllPlayersEmbed } = require('../../data/commands/admin/adminEconPanel');
             const { econData: eData } = require('../economy/econStore');
             const totalPages = Math.max(1, Math.ceil(Object.keys(eData).filter(k => /^\d{17,19}$/.test(k)).length / 10));
-            return interaction.update({ embeds: [buildAllPlayersEmbed(page)], components: [buildPlayersPageRow(page, totalPages, ownerId)] });
+            return interaction.update({ embeds: [await buildAllPlayersEmbed(page, interaction.guild)], components: [buildPlayersPageRow(page, totalPages, ownerId)] });
         }
 
 

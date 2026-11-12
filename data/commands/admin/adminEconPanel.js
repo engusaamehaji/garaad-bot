@@ -45,7 +45,7 @@ function buildAdminEconEmbed() {
         .setFooter({ text: 'Garaad Admin • Economy' });
 }
 
-function buildAllPlayersEmbed(page = 0) {
+async function buildAllPlayersEmbed(page = 0, guild = null) {
     const PER_PAGE = 10;
 
     const coinWealth = getCoinWealthByUser(econData, banksData);
@@ -53,7 +53,6 @@ function buildAllPlayersEmbed(page = 0) {
         .filter(([uid]) => /^\d{17,19}$/.test(uid))
         .map(([uid, d]) => ({
             uid,
-            username: d.username || null,
             coins: d.coins || 0,
             wealth: coinWealth[uid] || 0,
             bank: Math.max(0, (coinWealth[uid] || 0) - (d.coins || 0)),
@@ -63,12 +62,20 @@ function buildAllPlayersEmbed(page = 0) {
 
     const totalPages = Math.max(1, Math.ceil(players.length / PER_PAGE));
     const slice      = players.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
+    const displayNames = await Promise.all(slice.map(async (player) => {
+        if (!guild) return 'Magac lama heli karo';
+        const member = guild.members.cache.get(player.uid)
+            || await guild.members.fetch(player.uid).catch(() => null);
+        return (member?.displayName || 'Magac lama heli karo')
+            .replace(/([\\*_~|])/g, '\\$1')
+            .replace(/@/g, '@\u200b');
+    }));
 
     const lines = slice.map((p, i) => {
         const rank = page * PER_PAGE + i + 1;
         const bank = p.bank > 0 ? ` 🏦${fmt(p.bank)}` : '';
         const loan = p.loan > 0 ? ` 💳${fmt(p.loan)}` : '';
-        const name = p.username ? `**${p.username}**` : `<@${p.uid}>`;
+        const name = `**${displayNames[i]}**`;
         return `**${rank}.** ${name} — 🪙 **${fmt(p.wealth)} total** (wallet ${fmt(p.coins)}${bank})${loan}`;
     });
 
@@ -214,7 +221,7 @@ module.exports = async function adminEconCmd(message, args) {
     // ?admin econ all [page]
     if (sub === 'all') {
         const page = Math.max(0, (parseInt(args[1]) || 1) - 1);
-        return message.reply({ embeds: [buildAllPlayersEmbed(page)] });
+        return message.reply({ embeds: [await buildAllPlayersEmbed(page, message.guild)] });
     }
 
     // ?admin econ loans
