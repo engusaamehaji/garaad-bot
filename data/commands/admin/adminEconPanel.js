@@ -1,7 +1,7 @@
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { econData, checkEconUser, saveEcon, getTreasury, topUpTreasury, deductFromTreasury, addToTreasury } = require('../../../src/economy/econStore');
 const { ECON_TITLES } = require('../economy/econShop');
-const { fmt } = require('../../../src/utils/helpers');
+const { fmt, getDisplayName } = require('../../../src/utils/helpers');
 const { banksData } = require('../../../src/economy/bankStore');
 const { getCoinWealthByUser } = require('../../../src/economy/coinWealth');
 const { PREFIX } = require('../../../src/config');
@@ -45,7 +45,7 @@ function buildAdminEconEmbed() {
         .setFooter({ text: 'Garaad Admin • Economy' });
 }
 
-async function buildAllPlayersEmbed(page = 0, guild = null) {
+async function buildAllPlayersEmbed(page = 0, guild = null, client = null) {
     const PER_PAGE = 10;
 
     const coinWealth = getCoinWealthByUser(econData, banksData);
@@ -63,10 +63,8 @@ async function buildAllPlayersEmbed(page = 0, guild = null) {
     const totalPages = Math.max(1, Math.ceil(players.length / PER_PAGE));
     const slice      = players.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
     const displayNames = await Promise.all(slice.map(async (player) => {
-        if (!guild) return 'Magac lama heli karo';
-        const member = guild.members.cache.get(player.uid)
-            || await guild.members.fetch(player.uid).catch(() => null);
-        return (member?.displayName || 'Magac lama heli karo')
+        const name = await getDisplayName(client, guild, player.uid);
+        return name
             .replace(/([\\*_~|])/g, '\\$1')
             .replace(/@/g, '@\u200b');
     }));
@@ -221,7 +219,7 @@ module.exports = async function adminEconCmd(message, args) {
     // ?admin econ all [page]
     if (sub === 'all') {
         const page = Math.max(0, (parseInt(args[1]) || 1) - 1);
-        return message.reply({ embeds: [await buildAllPlayersEmbed(page, message.guild)] });
+        return message.reply({ embeds: [await buildAllPlayersEmbed(page, message.guild, message.client)] });
     }
 
     // ?admin econ loans
