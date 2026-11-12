@@ -14,12 +14,12 @@ const { fmt } = require('../../../src/utils/helpers');
 const MIN_BET = 10;
 const MAX_BET = 50_000;
 const SIDES = {
-    m: { label: 'Heads', emoji: '👑' },
-    x: { label: 'Tails', emoji: '🪙' },
+    m: { label: 'Madax', emoji: '👑' },
+    x: { label: 'Xarash', emoji: '🪙' },
 };
 
 module.exports = async function coinflipCmd(message, args) {
-    const usage = 'Usage: `?cf <coins> <x|m>`\nExamples: `?cf 50 x` · `?cf 50 m` · `?cf x 50`\n`x` = Tails · `m` = Heads';
+    const usage = 'Isticmaal: `?cf <coins> <x|m>`\nTusaalooyin: `?cf 50 x` · `?cf 50 m` · `?cf x 50`\n`x` = Xarash · `m` = Madax';
     const side = args.map((arg) => arg.toLowerCase()).find((arg) => SIDES[arg]);
     const amountText = args.find((arg) => /^\d[\d,]*$/.test(arg)) || '';
     const amount = Number(amountText.replace(/,/g, ''));
