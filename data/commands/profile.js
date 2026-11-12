@@ -6,7 +6,7 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('
 const { userData } = require('../../src/store');
 const { econData, checkEconUser } = require('../../src/economy/econStore');
 const { ECON_TITLES } = require('./economy/econShop');
-const { checkUser, getLevel, checkAndAwardBadges } = require('../../src/utils/helpers');
+const { checkUser, getLevel, checkAndAwardBadges, getDisplayName } = require('../../src/utils/helpers');
 const { getTier, getTierProgress } = require('../../src/utils/ranks');
 const { FRAMES, BADGES } = require('../../src/utils/itemDefs');
 const { LEVEL_STEP } = require('../../src/config');
@@ -30,10 +30,7 @@ module.exports = async function profileCommand(message) {
     checkEconUser(target.id);
     checkAndAwardBadges(target.id);
 
-    // Get display name: server nickname > globalName > username
-    let targetMember = null;
-    try { targetMember = await message.guild?.members.fetch(target.id); } catch {}
-    const displayName = targetMember?.nickname || target.globalName || target.displayName || target.username;
+    const displayName = await getDisplayName(message.client, message.guild, target.id, target);
 
     const data = userData[target.id];
     const econ = econData[target.id] || {};
@@ -94,8 +91,7 @@ module.exports = async function profileCommand(message) {
     const rel = data.relationship || {};
     let relTxt = '💕 **Partner:** None';
     if (rel.partnerId) {
-        let pName = rel.partnerUsername || `<@${rel.partnerId}>`;
-        try { const pu = await message.client.users.fetch(rel.partnerId); pName = pu.username; } catch {}
+        const pName = await getDisplayName(message.client, message.guild, rel.partnerId);
         const days    = rel.since ? Math.floor((Date.now() - rel.since) / 86400000) : 0;
         const ringTxt = RING_NAMES[rel.ringType] || '💍 Ring';
         relTxt = `💕 **Partner:** ${pName} ❤️ ${displayName} · 📅 ${days} Days · ${ringTxt}`;
